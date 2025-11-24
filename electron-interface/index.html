@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MFM Assistant</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            pointer-events: none;
+        }
+        .dialog {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            width: 350px;
+            height: 350px;
+            display: flex;
+            flex-direction: column;
+            pointer-events: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .qr-code {
+            width: 80px;
+            height: 80px;
+            border: 3px solid gray;
+            border-radius: 5px;
+        }
+        .history {
+            flex: 1;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 5px;
+            overflow-y: auto;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        .inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        input {
+            padding: 5px;
+            font-size: 12px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        button {
+            padding: 5px;
+            font-size: 12px;
+            cursor: pointer;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .notification {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px;
+            border-radius: 5px;
+            font-size: 12px;
+            max-width: 300px;
+            word-wrap: break-word;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="dialog">
+        <div class="qr-container">
+            <svg class="qr-code" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <!-- Simple QR code placeholder -->
+                <rect width="100" height="100" fill="white"/>
+                <rect x="10" y="10" width="80" height="80" fill="black"/>
+                <rect x="20" y="20" width="60" height="60" fill="white"/>
+                <rect x="30" y="30" width="40" height="40" fill="black"/>
+                <rect x="35" y="35" width="30" height="30" fill="white"/>
+                <rect x="40" y="40" width="20" height="20" fill="black"/>
+                <rect x="45" y="45" width="10" height="10" fill="white"/>
+            </svg>
+        </div>
+        <div class="history" id="history"></div>
+        <div class="inputs">
+            <input type="text" id="query-input" placeholder="Ask IA...">
+            <button id="send-query">Send</button>
+            <input type="text" id="process-input" placeholder="Process name...">
+            <button id="check-process">Check</button>
+        </div>
+        <div class="notification" id="notification"></div>
+    </div>
+
+    <script>
+        const qrCode = document.querySelector('.qr-code');
+        const historyDiv = document.getElementById('history');
+        const notification = document.getElementById('notification');
+        let chatHistory = [];
+
+        function setQRState(state) {
+            const colors = {
+                normal: 'gray',
+                thinking: 'blue',
+                success: 'green',
+                error: 'red'
+            };
+            qrCode.style.borderColor = colors[state] || 'gray';
+        }
+
+        function updateHistory() {
+            historyDiv.innerHTML = chatHistory.map(item =>
+                `<div><strong>User:</strong> ${item.query}</div><div><strong>AI:</strong> ${item.response}</div><hr>`
+            ).join('');
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+        }
+
+        async function sendQuery() {
+            const query = document.getElementById('query-input').value.trim();
+            if (!query) return;
+
+            document.getElementById('query-input').value = '';
+            setQRState('thinking');
+
+            try {
+                const response = await fetch('http://localhost:5000/api/query_gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    chatHistory.push({ query, response: data.response });
+                    if (chatHistory.length > 5) chatHistory.shift();
+                    updateHistory();
+                    setQRState('success');
+                } else {
+                    chatHistory.push({ query, response: data.error || 'Error' });
+                    if (chatHistory.length > 5) chatHistory.shift();
+                    updateHistory();
+                    setQRState('error');
+                }
+            } catch (error) {
+                chatHistory.push({ query, response: 'Error: ' + error.message });
+                if (chatHistory.length > 5) chatHistory.shift();
+                updateHistory();
+                setQRState('error');
+            }
+
+            setTimeout(() => setQRState('normal'), 3000);
+        }
+
+        async function checkProcess() {
+            const processName = document.getElementById('process-input').value.trim();
+            if (!processName) return;
+
+            document.getElementById('process-input').value = '';
+            setQRState('thinking');
+            notification.style.display = 'block';
+            notification.textContent = 'Checking...';
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/check_process?process_name=${encodeURIComponent(processName)}`);
+                const data = await response.json();
+                notification.textContent = data.message;
+                setQRState(data.is_running ? 'success' : 'error');
+            } catch (error) {
+                notification.textContent = 'Error: ' + error.message;
+                setQRState('error');
+            }
+
+            setTimeout(() => {
+                setQRState('normal');
+                notification.style.display = 'none';
+            }, 5000);
+        }
+
+        document.getElementById('send-query').addEventListener('click', sendQuery);
+        document.getElementById('check-process').addEventListener('click', checkProcess);
+
+        // Allow Enter key to send
+        document.getElementById('query-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendQuery();
+        });
+        document.getElementById('process-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkProcess();
+        });
+
+        // Initialize
+        setQRState('normal');
+    </script>
+</body>
+</html>

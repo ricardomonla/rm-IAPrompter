@@ -1,0 +1,13 @@
+{
+  "name": "electron-interface",
+  "version": "1.0.0",
+  "description": "MFM Desktop Assistant Interface",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron . --disable-gpu",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
