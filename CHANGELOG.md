@@ -1,17 +1,29 @@
 # **Changelog**
 
-Todos los cambios notables en el proyecto **Asistente de Escritorio MFM** se documentarán en este archivo.
-
+Todos los cambios notables en el proyecto **Asistente de Escritorio MFM** se documentarán en este archivo.  
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## **\[0.8.2\] \- 2025-11-25**
 
+### **Añadido**
+
+* **Usabilidad:** Implementación de posicionamiento fijo inteligente en la esquina inferior derecha, respetando automáticamente el área de la barra de tareas.
+* **Interfaz:** Ciclo de 3 modos de vista (Mini, Compacto, Expandido) activado mediante clic en el asistente.
+* **Debugging:** Soporte para flag \--debug en app-run.sh que activa logs verbose y DevTools.
+* **Documentación:** Archivo app-docs/02_mis-prompts.md con colección de prompts utilizados en el desarrollo.
+
 ### **Cambiado**
 
-* **Refactorización:** Renombrado del directorio "electron-interface" a "app-interface" para mayor claridad.
-* **Refactorización:** Renombrado del directorio "mfm_data" a "app-data" para consistencia.
-* **Actualización global:** Modificadas todas las referencias en el código, configuración y documentación para reflejar los nuevos nombres de directorios.
+* **Refactorización:** Renombrado del directorio electron-interface a app-interface para mayor claridad.  
+* **Refactorización:** Renombrado del directorio mfm\_data a app-data para consistencia.  
+* **UX Simplificada:** Eliminada la funcionalidad de arrastre libre (Drag & Drop) en favor de una experiencia más estable y predecible con anclaje fijo.  
 * **Mantenimiento:** Optimizado el archivo .gitignore con patrones completos para Python, Node.js/Electron y mejores prácticas de organización.
+
+### **Corregido**
+
+* **Inconsistencia de Rutas:** Sincronización de nombres de directorios entre app-run.sh, docker-compose.yml y documentación.  
+* **Login:** Solucionado error de condición de carrera que impedía hacer clic después de desbloquear la aplicación.  
+* **Estabilidad:** Corregido bucle de eventos en la gestión de estados de ventana de Electron.
 
 ## **\[0.8.1\] \- 2025-11-25**
 
@@ -25,40 +37,24 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
   * Asistente interactivo para generar el archivo .env cifrado.  
   * Lógica de auto-reparación para contenedores en conflicto.  
 * **Backend:** Endpoint /api/initialize para manejar el desbloqueo del sistema.  
-* **Backend:** Endpoint /api/version y archivo VERSION para rastreo de releases.  
 * **Orquestación:** Archivo docker-compose.yml para gestionar servicios y volúmenes de forma declarativa.
 
 ### **Cambiado**
 
-* **Arquitectura:** Eliminada la dependencia de construcción local (Dockerfile). Ahora se usa la imagen oficial python:3.11-slim directamente con instalación de dependencias en tiempo de ejecución.  
-* **Persistencia:** Migración de almacenamiento de configuración a volumen mapeado ./mfm\_data.  
-* **Documentación:** README.md reescrito para reflejar la nueva arquitectura segura y el uso de scripts automatizados.
-
-### **Corregido**
-
-* Error Conflict: container name already in use en el despliegue al reiniciar la aplicación.  
-* Error ReferenceError: require is not defined en el proceso de renderizado de Electron.  
-* Incompatibilidad de comandos entre docker-compose (v1) y docker compose (v2).  
-* Restaurada la lógica de monitoreo de procesos /proc que se había omitido temporalmente durante la fase de implementación de cifrado.
+* **Arquitectura:** Eliminada la dependencia de construcción local (Dockerfile). Ahora se usa la imagen oficial python:3.11-slim.  
+* **Persistencia:** Migración de almacenamiento de configuración a volumen mapeado.
 
 ## **\[0.5.0\] \- 2025-11-24**
 
 ### **Añadido**
 
-* Integración básica con API de Google Gemini (modelo gemini-2.5-flash).  
-* Funcionalidad de monitoreo de procesos mediante lectura de /proc en host Linux.  
-* Interfaz flotante transparente básica en Electron.  
-* Atajo global Ctrl+Shift+G para visibilidad.
-
-### **Corregido**
-
-* Error de inicialización de driver gráfico Intel (libva) mediante flag \--disable-gpu.  
-* Error de importlib.metadata actualizando de Python 3.9 a 3.11.
+* Integración básica con API de Google Gemini.  
+* Funcionalidad de monitoreo de procesos mediante lectura de /proc.  
+* Interfaz flotante transparente básica en Electron.
 
 ## **\[0.1.0\] \- 2025-11-24**
 
 ### **Añadido**
 
 * Estructura inicial del proyecto.  
-* Dockerfile básico.  
 * Servidor Flask "Hello World".

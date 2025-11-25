@@ -1,7 +1,6 @@
 # **Asistente de Escritorio MFM (Modelo Funcional Mínimo)**
 
-El **MFM** es un asistente de escritorio seguro, flotante y portátil diseñado para desarrolladores. Integra consultas de programación potenciadas por IA (**Gemini**) y capacidades de monitoreo del sistema en tiempo real, todo orquestado mediante contenedores.
-
+El **MFM** es un asistente de escritorio seguro, flotante y portátil diseñado para desarrolladores. Integra consultas de programación potenciadas por IA (**Gemini**) y capacidades de monitoreo del sistema en tiempo real, todo orquestado mediante contenedores.  
 El proyecto utiliza una arquitectura de microservicios:
 
 1. **Backend:** API Flask ejecutándose en Docker (Python 3.11) con cifrado de grado militar (Fernet) y persistencia de datos.  
@@ -11,8 +10,11 @@ El proyecto utiliza una arquitectura de microservicios:
 
 * **🔒 Seguridad Primero:** Las API Keys nunca se guardan en texto plano. Se cifran y almacenan en .env utilizando una "Clave Maestra" que solo el usuario conoce.  
 * **🐳 Portabilidad Total:** Uso de **Docker Compose** para orquestar el entorno sin depender de instalaciones locales de Python ni dependencias complejas.  
-* **💾 Persistencia de Datos:** Guarda configuraciones, historial y preferencias en un volumen local (./app-data).
-* **⚡ Modo Dual:** Interfaz moderna con pestañas para cambiar rápidamente entre **"Chat IA"** y **"Monitor de Procesos"**.  
+* **💾 Persistencia de Datos:** Guarda configuraciones, historial y preferencias en un volumen local (./app-data).  
+* **⚡ Modos de Vista Adaptativos:**  
+  * **Modo Mini:** Icono discreto (Cara Robótica) anclado en la esquina inferior derecha.  
+  * **Modo Compacto:** Ventana emergente para consultas rápidas y login.  
+  * **Modo Expandido:** Ventana centrada de gran tamaño para trabajo intensivo.  
 * **🤖 Despliegue Inteligente:** Incluye un script app-run.sh que gestiona todo el ciclo de vida: configuración inicial, cifrado de credenciales, levantamiento de servicios y limpieza al cerrar.  
 * **👀 Monitoreo Real:** Capacidad de verificar procesos activos en el Host Linux mediante el mapeo de /proc.
 
@@ -28,15 +30,15 @@ Olvídate de ejecutar comandos de Docker manualmente. El script maestro se encar
 
 ### **1\. Preparación**
 
-Asegúrate de estar en la carpeta raíz del proyecto y de que el script tenga permisos de ejecución:
-
+Asegúrate de estar en la carpeta raíz del proyecto y de que el script tenga permisos de ejecución:  
 chmod \+x app-run.sh
 
 ### **2\. Ejecutar el Asistente**
 
-Lanza todo el sistema con un solo comando:
-
+Lanza todo el sistema con un solo comando:  
 ./app-run.sh
+
+*Para ver logs y depurar errores, usa: ./app-run.sh \--debug*
 
 ### **3\. Configuración de Seguridad (Solo la primera vez)**
 
@@ -50,62 +52,47 @@ Si es tu primera ejecución, el script detectará que no tienes credenciales cif
 
 ### **1\. Desbloqueo del Sistema (Login)**
 
-Al iniciar la interfaz gráfica, verás una pantalla de **"Acceso Restringido"**.
+Al iniciar, la ventana aparecerá en **Modo Compacto** en la esquina inferior derecha con una pantalla de "Acceso Restringido".
 
-* Introduce la **Clave Maestra** que creaste durante la instalación.  
-* Esto envía la clave al backend para descifrar la API Key en memoria y habilitar la conexión con Google Gemini.
+* Introduce tu **Clave Maestra**.  
+* Al desbloquear, el asistente se minimizará automáticamente al **Modo Mini** (icono flotante) para no estorbar.
 
-### **2\. Pestaña: IA Chat**
+### **2\. Interacción con Modos**
 
-* Selecciona la pestaña **"IA Chat"**.  
-* Escribe consultas técnicas o de programación (ej: *"Explica el patrón Singleton en Python"*).  
-* El indicador visual (QR) cambiará de color:  
-  * 🔵 **Azul:** Pensando/Procesando.  
-  * 🟢 **Verde:** Respuesta exitosa.  
-  * 🔴 **Rojo:** Error.
+El asistente vive en la esquina inferior derecha, justo encima de la barra de tareas.
 
-### **3\. Pestaña: Monitor**
+* **Clic en la Cara:** Alterna entre los modos:  
+  * **Mini** \-\> **Compacto** (Consulta rápida) \-\> **Expandido** (Pantalla centrada) \-\> **Mini**.  
+* **Botón 'X':** Minimiza inmediatamente al Modo Mini.
 
-* Selecciona la pestaña **"Monitor"**.  
-* Escribe el nombre exacto de un proceso de Linux (ej: dockerd, bash, code, firefox).  
-* El sistema verificará en tiempo real si ese proceso está activo en tu máquina anfitriona.
+### **3\. Funcionalidades (Pestañas)**
+
+* **IA Chat:** Escribe consultas técnicas. El indicador visual cambiará de color (Azul=Pensando, Verde=Éxito, Rojo=Error).  
+* **Monitor:** Escribe el nombre de un proceso de Linux (ej: dockerd, bash) para verificar si está corriendo en tu máquina.
 
 ## **🔧 Arquitectura Técnica**
 
 ### **Estructura de Archivos**
 
-* **app-run.sh**: Script maestro. Detecta versiones de Docker, gestiona el cifrado de claves, auto-repara conflictos de contenedores y lanza la app.  
-* **docker-compose.yml**: Define el servicio backend, redes y volúmenes. Usa la imagen oficial python:3.11-slim.  
-* **app.py**: Backend Flask. Contiene la lógica de cifrado Fernet, endpoints de la API de Gemini y lectura del sistema de archivos /host/proc.  
-* **app-interface/**: Código fuente del frontend (HTML/CSS/JS).
+* **app-run.sh**: Script maestro de orquestación.  
+* **docker-compose.yml**: Define el servicio backend y los volúmenes.  
+* **app.py**: Backend Flask (Cifrado, Gemini, Sistema).  
+* **app-interface/**: Código fuente del frontend (Electron).  
+* **app-data/**: Directorio local donde se persisten los datos del usuario.
 
-### **Volúmenes Docker Configuradas**
+### **Volúmenes Docker**
 
 * /proc:/host/proc:ro: **(Solo Lectura)** Permite al contenedor inspeccionar los procesos del host.  
 * ./app.py:/app/app.py: Mapeo de código en vivo para desarrollo.  
 * ./app-data:/app/data: Persistencia de datos (configuración JSON) fuera del contenedor.
 
-## **📡 Endpoints de la API**
-
-El backend se expone localmente en http://localhost:5000.
-
-| Método | Endpoint | Descripción |
-| :---- | :---- | :---- |
-| **POST** | /api/initialize | Recibe la master\_key para desbloquear el sistema y descifrar la API Key. |
-| **GET** | /api/is\_initialized | Verifica si el sistema ya ha sido desbloqueado. |
-| **POST** | /api/query\_gemini | Envía una consulta a la IA (Protegido). |
-| **GET** | /api/check\_process | Verifica si un proceso existe por nombre (Protegido). |
-| **GET** | /api/get\_config | Carga la configuración persistente del usuario. |
-| **POST** | /api/save\_config | Guarda preferencias en el volumen persistente. |
-
 ## **❓ Solución de Problemas**
 
-Error: "Docker Compose not found"  
-El script app-run.sh intenta detectar automáticamente docker-compose o docker compose. Si falla, asegúrate de tener Docker Desktop o Docker Engine actualizado.  
+La ventana no aparece o no responde a clics  
+Ejecuta ./app-run.sh \--debug para abrir la consola de desarrollador y ver si hay errores de JavaScript o bloqueos de IPC.  
 Error: "Conflict. The container name is already in use"  
-El script tiene una función de auto-reparación integrada. Simplemente ejecútalo de nuevo y limpiará los contenedores antiguos automáticamente.  
+El script tiene auto-reparación. Ejecútalo de nuevo y limpiará el contenedor conflictivo.  
 **La ventana aparece pero dice "Backend desconectado"**
 
 1. Verifica que Docker esté corriendo (docker ps).  
-2. Asegúrate de haber introducido correctamente la Clave Maestra.  
-3. Revisa los logs del backend: docker logs mfm-backend.
+2. Revisa los logs del backend: docker logs mfm-backend.
