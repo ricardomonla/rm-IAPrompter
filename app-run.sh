@@ -1,16 +1,16 @@
 #!/bin/bash
-# ----------------------------------------------------
-# Script Maestro de Despliegue MFM (v0.8.2)
-# Sincronizado con docker-compose.yml y CHANGELOG.md
-# ----------------------------------------------------
+# -----------------------------------------------------------------------------
+# Autor: Lic. Ricardo MONLA
+# Versión: v0.8.6
+# Descripción: Script maestro de orquestación, seguridad y despliegue del MFM.
+# -----------------------------------------------------------------------------
 
-# --- Definiciones Coherentes con v0.8.2 ---
-# Actualizado según CHANGELOG: electron-interface -> app-interface
+# --- Definiciones ---
 ELECTRON_DIR="app-interface"
 ENV_FILE=".env"
-# Actualizado según docker-compose: mfm_data -> app-data
 DATA_DIR="./app-data"
 CONTAINER_NAME="mfm-backend" 
+LOG_DIR="./app-logs"
 
 # Colores
 GREEN='\033[0;32m'
@@ -26,7 +26,8 @@ if [[ "$1" == "--debug" || "$1" == "-d" ]]; then
     echo -e "${YELLOW}🐛 MODO DEBUG ACTIVADO 🐛${NC}"
 fi
 
-echo -e "${BLUE}===== MFM Assistant Launcher (v0.8.2) =====${NC}"
+echo -e "${BLUE}===== MFM Assistant Launcher (v0.8.6) =====${NC}"
+echo -e "${BLUE}      Por Lic. Ricardo MONLA      ${NC}"
 
 # --- 0. Detección de Docker Compose ---
 if command -v docker-compose &> /dev/null; then
@@ -87,6 +88,10 @@ if [ ! -d "$DATA_DIR" ]; then
     echo -e "${GREEN}📂 Directorio de datos creado: $DATA_DIR${NC}"
 fi
 
+if [ ! -d "$LOG_DIR" ]; then
+    mkdir -p "$LOG_DIR"
+fi
+
 # --- 3. Lanzamiento del Backend (Con Auto-Reparación) ---
 echo -e "${BLUE}>> Levantando servicios con Docker Compose...${NC}"
 
@@ -99,8 +104,8 @@ fi
 # Limpieza estándar
 $DOCKER_COMPOSE_CMD down --remove-orphans > /dev/null 2>&1
 
-# Levantamiento
-$DOCKER_COMPOSE_CMD up -d
+# Levantamiento CON RECONSTRUCCIÓN (--build) para asegurar imagen optimizada
+$DOCKER_COMPOSE_CMD up -d --build
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Error al iniciar Docker Compose. Verifica tu archivo docker-compose.yml${NC}"
@@ -109,7 +114,18 @@ fi
 
 echo -e "${GREEN}✅ Backend activo.${NC}"
 
-# --- 4. Lanzamiento del Frontend (Electron) ---
+# --- 4. Logging del Backend ---
+if [ "$DEBUG_MODE" = true ]; then
+    TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+    BACKEND_LOG_FILE="$LOG_DIR/backend_$TIMESTAMP.log"
+    FRONTEND_LOG_FILE="../$LOG_DIR/frontend_$TIMESTAMP.log" 
+    
+    echo -e "${YELLOW}>> Capturando logs del Backend en: $BACKEND_LOG_FILE${NC}"
+    docker logs -f "$CONTAINER_NAME" > "$BACKEND_LOG_FILE" 2>&1 &
+    DOCKER_LOG_PID=$!
+fi
+
+# --- 5. Lanzamiento del Frontend (Electron) ---
 echo -e "${BLUE}>> Lanzando Interfaz Electron ($ELECTRON_DIR)...${NC}"
 
 if [ -d "$ELECTRON_DIR" ]; then
@@ -122,16 +138,15 @@ if [ -d "$ELECTRON_DIR" ]; then
 
     echo "Iniciando ventana..."
     
-    # -- LÓGICA DE DEBUG --
+    # -- LÓGICA DE DEBUG Y LOGGING FRONTEND --
     if [ "$DEBUG_MODE" = true ]; then
-        echo -e "${YELLOW}>> Ejecutando en modo DEBUG (Logs + DevTools)${NC}"
+        echo -e "${YELLOW}>> Ejecutando en modo DEBUG (Silencioso en consola)${NC}"
+        echo -e "${YELLOW}>> Logs Frontend guardados en: app-logs/frontend_$TIMESTAMP.log${NC}"
         
-        # Pasamos variables de entorno para que main.js sepa que debe abrir DevTools
         export MFM_DEBUG=true
         export ELECTRON_ENABLE_LOGGING=true
         
-        # Ejecutamos npm start con flags de logging de Chromium
-        npm start -- --disable-gpu --enable-logging --v=1 &
+        npm start -- --disable-gpu --enable-logging --v=1 > "$FRONTEND_LOG_FILE" 2>&1 &
     else
         # Modo Normal
         npm start -- --disable-gpu & 
@@ -145,12 +160,16 @@ if [ -d "$ELECTRON_DIR" ]; then
     wait $ELECTRON_PID
     
     echo -e "\n${YELLOW}Limpiando...${NC}"
+    
+    if [ ! -z "$DOCKER_LOG_PID" ]; then
+        kill $DOCKER_LOG_PID > /dev/null 2>&1
+    fi
+    
     cd ..
     $DOCKER_COMPOSE_CMD down
     echo "Bye!"
 else
     echo -e "${RED}❌ No se encontró el directorio $ELECTRON_DIR${NC}"
-    echo -e "${YELLOW}💡 Sugerencia: ¿Has renombrado la carpeta a 'app-interface' como indica el CHANGELOG?${NC}"
     cd ..
     $DOCKER_COMPOSE_CMD down
 fi

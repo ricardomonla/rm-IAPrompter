@@ -1,3 +1,9 @@
+# -----------------------------------------------------------------------------
+# Autor: Lic. Ricardo MONLA
+# Versión: v0.8.6
+# Descripción: Backend Flask con cifrado Fernet, integración Gemini e inspección de procesos.
+# -----------------------------------------------------------------------------
+
 from flask import Flask, jsonify, request
 import os
 import json
@@ -164,7 +170,7 @@ def query_gemini():
 
 @app.route('/api/check_process')
 def check_process():
-    # --- LÓGICA RESTAURADA Y CORREGIDA ---
+    # --- LÓGICA DE MONITOREO REAL ---
     process_name = request.args.get('process_name')
     if not process_name:
         return jsonify({"error": "Falta parámetro process_name"}), 400

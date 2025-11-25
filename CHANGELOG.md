@@ -1,60 +1,57 @@
 # **Changelog**
 
-Todos los cambios notables en el proyecto **Asistente de Escritorio MFM** se documentarán en este archivo.  
+Todos los cambios notables en el proyecto **Asistente de Escritorio MFM** se documentarán en este archivo.
+
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## **\[0.8.8\] \- 2025-11-25**
+
+### **Añadido**
+
+* **Documentación:** Actualización completa del README.md con información de autor, versión actual, características detalladas y guía de solución de problemas.
+* **Estandarización:** Cabeceras de autoría y versión añadidas a index.html y app.py.
+* **Despliegue:** Creación de Dockerfile para optimizar la construcción de la imagen Docker.
+* **Diagnóstico:** Mejora del sistema de logging en app-run.sh con archivos separados para backend y frontend en app-logs/.
+
+### **Cambiado**
+
+* **Orquestación:** docker-compose.yml actualizado para construir desde Dockerfile en lugar de usar imagen base directa, eliminando instalación de dependencias en tiempo de ejecución.
+* **Interfaz:** Configuración de DevTools en main.js cambiada a modo 'right' para acoplar la consola de desarrollo y evitar ventanas fantasma.
+* **Script Maestro:** app-run.sh actualizado con lógica de logging avanzada y versión 0.8.6.
+
+### **Corregido**
+
+* **Consistencia:** Sincronización de versiones y cabeceras en todos los archivos principales.
+
+## **\[0.8.7\] \- 2025-11-25**
+
+### **Añadido**
+
+* **Estandarización:** Cabeceras de autoría y versión en archivos principales (main.js, app-run.sh).
+
+### **Corregido**
+
+* **Debug:** Modificada la configuración de DevTools en Electron para usar el modo right (acoplado) en lugar de detach, eliminando la confusión visual de una "segunda ventana" al depurar.  
+* **Estabilidad Visual:** Eliminada la lógica de transparencia condicional (ignoreMouseEvents) en Linux que causaba inestabilidad en los clics.
+
+## **\[0.8.6\] \- 2025-11-25**
+
+### **Cambiado**
+
+* **Despliegue:** Optimización crítica del arranque. Se migró la instalación de dependencias (pip install) al Dockerfile (tiempo de construcción) en lugar de ejecutarse en cada inicio (tiempo de ejecución). El arranque ahora es instantáneo.
+
+### **Corregido**
+
+* **Diagnóstico:** El script app-run.sh ahora soporta logging completo a archivos (app-logs/backend\_\*.log y frontend\_\*.log) cuando se usa el flag \--debug.
 
 ## **\[0.8.2\] \- 2025-11-25**
 
 ### **Añadido**
 
-* **Usabilidad:** Implementación de posicionamiento fijo inteligente en la esquina inferior derecha, respetando automáticamente el área de la barra de tareas.
-* **Interfaz:** Ciclo de 3 modos de vista (Mini, Compacto, Expandido) activado mediante clic en el asistente.
-* **Debugging:** Soporte para flag \--debug en app-run.sh que activa logs verbose y DevTools.
-* **Documentación:** Archivo app-docs/02_mis-prompts.md con colección de prompts utilizados en el desarrollo.
+* **Usabilidad:** Implementación de posicionamiento fijo inteligente en la esquina inferior derecha.  
+* **Interfaz:** Ciclo de 3 modos de vista (Mini, Compacto, Expandido).
 
 ### **Cambiado**
 
-* **Refactorización:** Renombrado del directorio electron-interface a app-interface para mayor claridad.  
-* **Refactorización:** Renombrado del directorio mfm\_data a app-data para consistencia.  
-* **UX Simplificada:** Eliminada la funcionalidad de arrastre libre (Drag & Drop) en favor de una experiencia más estable y predecible con anclaje fijo.  
-* **Mantenimiento:** Optimizado el archivo .gitignore con patrones completos para Python, Node.js/Electron y mejores prácticas de organización.
-
-### **Corregido**
-
-* **Inconsistencia de Rutas:** Sincronización de nombres de directorios entre app-run.sh, docker-compose.yml y documentación.  
-* **Login:** Solucionado error de condición de carrera que impedía hacer clic después de desbloquear la aplicación.  
-* **Estabilidad:** Corregido bucle de eventos en la gestión de estados de ventana de Electron.
-
-## **\[0.8.1\] \- 2025-11-25**
-
-### **Añadido**
-
-* **Seguridad:** Implementación de cifrado Fernet (AES) para la API Key de Gemini.  
-* **Interfaz:** Pantalla de bloqueo/login que solicita una "Clave Maestra" para descifrar credenciales en memoria.  
-* **Interfaz:** Sistema de pestañas para cambiar entre modo "Chat IA" y "Monitor de Procesos".  
-* **Despliegue:** Script maestro app-run.sh con:  
-  * Auto-detección de versión de Docker Compose.  
-  * Asistente interactivo para generar el archivo .env cifrado.  
-  * Lógica de auto-reparación para contenedores en conflicto.  
-* **Backend:** Endpoint /api/initialize para manejar el desbloqueo del sistema.  
-* **Orquestación:** Archivo docker-compose.yml para gestionar servicios y volúmenes de forma declarativa.
-
-### **Cambiado**
-
-* **Arquitectura:** Eliminada la dependencia de construcción local (Dockerfile). Ahora se usa la imagen oficial python:3.11-slim.  
-* **Persistencia:** Migración de almacenamiento de configuración a volumen mapeado.
-
-## **\[0.5.0\] \- 2025-11-24**
-
-### **Añadido**
-
-* Integración básica con API de Google Gemini.  
-* Funcionalidad de monitoreo de procesos mediante lectura de /proc.  
-* Interfaz flotante transparente básica en Electron.
-
-## **\[0.1.0\] \- 2025-11-24**
-
-### **Añadido**
-
-* Estructura inicial del proyecto.  
-* Servidor Flask "Hello World".
+* **Refactorización:** Renombrado de directorios a app-interface y app-data.  
+* **UX:** Eliminada funcionalidad de Drag & Drop por estabilidad.

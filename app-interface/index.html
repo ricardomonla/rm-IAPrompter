@@ -1,3 +1,11 @@
+<!--
+  -----------------------------------------------------------------------------
+  Autor: Lic. Ricardo MONLA
+  Versión: v0.8.6
+  Descripción: Interfaz de usuario (Renderer) con sistema de modos, pestañas,
+               seguridad y animaciones de estado.
+  -----------------------------------------------------------------------------
+-->
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,207 +13,60 @@
     <title>MFM Assistant</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: transparent;
-            color: #e0e0e0;
-            font-family: 'JetBrains Mono', monospace;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* --- CONTENEDOR PRINCIPAL --- */
-        #app-container {
-            background-color: rgba(20, 20, 25, 0.95);
-            border: 1px solid #444;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-            position: absolute; 
-            bottom: 0; right: 0; 
-        }
-
-        /* --- MODO MINI (Solo Cara) --- */
-        body.mode-mini #app-container {
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            width: 100%; height: 100%; 
-        }
-        
+        /* ... (MANTENER TODOS LOS ESTILOS ACTUALES, NO CAMBIAN) ... */
+        body { margin: 0; padding: 0; background: transparent; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; }
+        #app-container { background-color: rgba(20, 20, 25, 0.95); border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease; }
+        body.mode-mini #app-container { background: transparent; border: none; box-shadow: none; }
         body.mode-mini #content-wrapper { display: none; }
         body.mode-mini #header { background: transparent; padding: 0; }
-        body.mode-mini #qr-container {
-            width: 100px; height: 100px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            cursor: pointer; 
-        }
-        
-        /* --- CABECERA (La Cara Robótica) --- */
-        #header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-            background: linear-gradient(180deg, rgba(30,30,35,1) 0%, rgba(20,20,25,0) 100%);
-            flex-shrink: 0;
-            /* SE PERMITE ARRASTRAR LA VENTANA ENTERA */
-            -webkit-app-region: drag; 
-        }
-
-        #qr-container {
-            width: 80px;
-            height: 80px;
-            border: 3px solid #555;
-            border-radius: 12px;
-            background-color: #1a1a1a;
-            padding: 5px;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            position: relative;
-
-            /* NO SE PUEDE ARRASTRAR DESDE EL QR (PARA QUE FUNCIONE EL CLIC) */
-            -webkit-app-region: no-drag;
-        }
-        
-        /* --- ESTILOS DE ESTADO --- */
+        body.mode-mini #qr-container { width: 100px; height: 100px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); cursor: pointer; }
+        #header { display: flex; align-items: center; justify-content: center; padding: 15px; background: linear-gradient(180deg, rgba(30,30,35,1) 0%, rgba(20,20,25,0) 100%); flex-shrink: 0; order: 1; -webkit-app-region: drag; }
+        #qr-container { width: 80px; height: 80px; border: 3px solid #555; border-radius: 12px; background-color: #1a1a1a; padding: 5px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; -webkit-app-region: no-drag; }
+        #qr-container:hover { border-color: #00bcd4; }
+        #content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; opacity: 1; transition: opacity 0.3s; order: 0; }
         .status-thinking { border-color: #00bcd4 !important; box-shadow: 0 0 20px #00bcd4; }
         .status-success { border-color: #4caf50 !important; box-shadow: 0 0 20px #4caf50; }
         .status-error { border-color: #f44336 !important; box-shadow: 0 0 20px #f44336; }
         .status-locked { border-color: #ff9800 !important; }
-
         .face-eye { fill: #555; transition: fill 0.3s; }
         .face-mouth { fill: #555; transition: fill 0.3s; }
         .status-thinking .face-eye { fill: #00bcd4; }
         .status-success .face-eye { fill: #4caf50; }
         .status-error .face-eye { fill: #f44336; }
-        
         @keyframes blink { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(0.1); } }
         .face-eye { transform-origin: center; animation: blink 4s infinite; }
-
-        /* --- CONTENIDO --- */
-        #content-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            opacity: 1;
-            transition: opacity 0.3s;
-        }
-
-        /* --- PANTALLAS --- */
-        #login-screen, #main-interface {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        #history {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
+        #login-screen, #main-interface { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        #history { flex: 1; overflow-y: auto; padding: 20px; font-size: 13px; line-height: 1.5; }
         .chat-entry { margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
         .user-query { color: #888; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;}
         .ai-response { color: #ddd; white-space: pre-wrap; }
         .ai-response code { background: #333; padding: 2px 5px; border-radius: 3px; font-family: monospace; }
-
-        /* --- INPUTS Y CONTROLES --- */
         #input-section { background-color: #141414; border-top: 1px solid #333; }
-
         #mode-tabs { display: flex; background: #000; }
-        .tab-btn {
-            flex: 1; padding: 12px; background: none; border: none; color: #555;
-            font-family: inherit; font-size: 11px; cursor: pointer;
-            border-bottom: 2px solid transparent; text-transform: uppercase;
-        }
+        .tab-btn { flex: 1; padding: 12px; background: none; border: none; color: #555; font-family: inherit; font-size: 11px; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; }
         .tab-btn.active { color: #fff; background: #1a1a1a; border-bottom-color: #00bcd4; }
         .tab-btn.active.monitor-mode { border-bottom-color: #e91e63; }
-
         #input-area { padding: 15px; display: flex; gap: 10px; }
-        
-        input {
-            flex: 1; background: #222; border: 1px solid #444; color: white;
-            padding: 12px; border-radius: 6px; font-family: inherit;
-        }
+        input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 12px; border-radius: 6px; font-family: inherit; }
         input:focus { outline: none; border-color: #00bcd4; }
-
-        button.action-btn {
-            padding: 0 20px; background: #333; color: white; border: none;
-            border-radius: 6px; cursor: pointer; font-weight: bold;
-            text-transform: uppercase; font-size: 11px;
-        }
+        button.action-btn { padding: 0 20px; background: #333; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 11px; }
         .btn-primary { background: #00bcd4 !important; color: #000 !important; }
         .btn-monitor { background: #e91e63 !important; color: #fff !important; }
-
-        /* Contenedores de modo */
         .mode-container { display: none; width: 100%; }
         .mode-container.active { display: flex; gap: 10px; }
-
-        /* Botón de cerrar (Visible solo en expandido o compacto) */
-        #close-btn {
-            position: absolute; top: 10px; right: 10px;
-            background: none; border: none; color: #666; cursor: pointer; font-size: 16px;
-            z-index: 10;
-            -webkit-app-region: no-drag; 
-        }
+        #close-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #666; cursor: pointer; font-size: 16px; z-index: 10; }
         #close-btn:hover { color: #fff; }
-
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #111; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
     </style>
 </head>
-<body class="mode-compact"> <!-- Iniciamos en modo compacto (para el login) -->
+<body class="mode-compact"> 
 
     <div id="app-container">
-        
-        <!-- Botón para cerrar/minimizar la app -->
         <button id="close-btn" onclick="minimizeApp()">×</button>
 
-        <!-- CABECERA: El botón principal de interacción (Área de Drag) -->
-        <div id="header">
-            <div id="qr-container"> 
-                <!-- SVG: Cara Robótica (El "Office Pet") -->
-                <svg id="robot-face" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Marco similar a QR -->
-                    <rect x="5" y="5" width="90" height="90" rx="10" fill="none" stroke="#333" stroke-width="2"/>
-                    
-                    <!-- Ojos -->
-                    <rect class="face-eye" x="25" y="35" width="15" height="15" rx="2"/>
-                    <rect class="face-eye" x="60" y="35" width="15" height="15" rx="2"/>
-                    
-                    <!-- Boca (estática por ahora, podría animarse al hablar) -->
-                    <path class="face-mouth" d="M 30 70 Q 50 80 70 70" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>
-                    
-                    <!-- Detalles Tech -->
-                    <rect x="10" y="10" width="5" height="5" fill="#333"/>
-                    <rect x="85" y="10" width="5" height="5" fill="#333"/>
-                    <rect x="10" y="85" width="5" height="5" fill="#333"/>
-                    <rect x="85" y="85" width="5" height="5" fill="#333"/>
-                </svg>
-            </div>
-        </div>
-
-        <!-- CONTENIDO PRINCIPAL (Se oculta en Modo 1) -->
         <div id="content-wrapper">
-            
-            <!-- Login (Si está bloqueado) -->
             <div id="login-screen" style="display:none; align-items:center; justify-content:center; padding:20px;">
                 <h3 style="color:#ff9800;">SISTEMA BLOQUEADO</h3>
                 <input type="password" id="master-key-input" placeholder="Clave Maestra" style="margin-bottom:10px; text-align:center;">
@@ -213,7 +74,6 @@
                 <div id="login-msg" style="color:#f44336; margin-top:10px; font-size:11px;"></div>
             </div>
 
-            <!-- Interfaz de Trabajo -->
             <div id="main-interface" style="display:none;">
                 <div id="history">
                     <div class="chat-entry" style="text-align:center; color:#555; margin-top:20px;">
@@ -229,12 +89,10 @@
                     </div>
 
                     <div id="input-area">
-                        <!-- Chat Input -->
                         <div id="chat-container" class="mode-container active">
                             <input type="text" id="ai-input" placeholder="Pregunta algo..." />
                             <button id="send-ai-btn" class="action-btn btn-primary">→</button>
                         </div>
-                        <!-- Monitor Input -->
                         <div id="monitor-container" class="mode-container">
                             <input type="text" id="process-input" placeholder="Nombre proceso..." />
                             <button id="check-process-btn" class="action-btn btn-monitor">Check</button>
@@ -243,83 +101,79 @@
                 </div>
             </div>
         </div>
+
+        <div id="header">
+            <div id="qr-container"> 
+                <svg id="robot-face" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="5" y="5" width="90" height="90" rx="10" fill="none" stroke="#333" stroke-width="2"/>
+                    <rect class="face-eye" x="25" y="35" width="15" height="15" rx="2"/>
+                    <rect class="face-eye" x="60" y="35" width="15" height="15" rx="2"/>
+                    <path class="face-mouth" d="M 30 70 Q 50 80 70 70" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <rect x="10" y="10" width="5" height="5" fill="#333"/>
+                    <rect x="85" y="10" width="5" height="5" fill="#333"/>
+                    <rect x="10" y="85" width="5" height="5" fill="#333"/>
+                    <rect x="85" y="85" width="5" height="5" fill="#333"/>
+                </svg>
+            </div>
+        </div>
     </div>
 
     <script>
-        
-        // El código debe ser envuelto en un event listener para asegurar el orden de inicialización
         window.addEventListener('load', () => {
-
-            // Obtener ipcRenderer SOLO dentro del listener para asegurar el contexto de Node/Electron
             const { ipcRenderer } = require('electron');
 
             // --- GESTIÓN DE MODOS DE VISTA ---
-            // 0: Mini (Solo Cara/QR en espera)
-            // 1: Compacto (Rápido - Chat/Monitor)
-            // 2: Expandido (Trabajo - Pantalla grande)
+            // 0: Mini -> 1: Compacto -> 2: Expandido
             let currentViewMode = 1; 
-            let isTransitioning = false; // Bloqueo de transición
+            let isTransitioning = false;
+            let isLocked = true; // Variable para saber si estamos bloqueados
 
-            /**
-             * Envia la orden de redimensionar y reposicionar la ventana al main.js.
-             */
             function setViewMode(mode) {
                 currentViewMode = mode;
                 const body = document.body;
-                body.className = ''; // Limpiar clases
+                body.className = ''; 
 
                 let modeString = '';
-
-                if (mode === 0) {
-                    modeString = 'mini';
-                } else if (mode === 1) {
-                    modeString = 'compact';
-                } else if (mode === 2) {
-                    modeString = 'expanded';
-                }
+                if (mode === 0) modeString = 'mini';
+                else if (mode === 1) modeString = 'compact';
+                else if (mode === 2) modeString = 'expanded';
                 
                 body.classList.add(`mode-${modeString}`);
                 ipcRenderer.send('resize-window', modeString);
             }
 
-            // Hacemos las funciones globales para que el HTML pueda acceder a ellas
+            // CICLO DE MODOS (Lógica corregida)
             window.cycleViewMode = function() {
-                if(isTransitioning) return; // Bloquear si estamos en transición de login
+                if(isTransitioning || isLocked) return; // No ciclar si está bloqueado o animando
                 
-                if (currentViewMode === 0) setViewMode(1);
-                else if (currentViewMode === 1) setViewMode(2);
-                else if (currentViewMode === 2) setViewMode(0);
+                let nextMode;
+                if (currentViewMode === 0) nextMode = 1;      // Mini -> Medio
+                else if (currentViewMode === 1) nextMode = 2; // Medio -> Max
+                else if (currentViewMode === 2) nextMode = 0; // Max -> Mini
+                
+                setViewMode(nextMode);
             }
 
             window.minimizeApp = function() {
                 setViewMode(0);
             }
 
-            // Listener para recibir la esquina del main.js (MANTENIDO POR CONSISTENCIA, AUNQUE SIEMPRE ES BOTTOM-RIGHT)
-            ipcRenderer.on('set-corner', (event, corner) => {
-                // Mantenemos la lógica de la clase por si en el futuro se quiere reintroducir la adaptabilidad
-                document.body.className = document.body.className.split(' ').filter(c => !c.startsWith('corner-')).join(' ');
-                document.body.classList.add(`corner-${corner}`);
+            // Sincronizar si el atajo global cambia el modo
+            ipcRenderer.on('force-mode-update', (event, modeString) => {
+                document.body.className = document.body.className.split(' ').filter(c => !c.startsWith('mode-')).join(' ');
+                document.body.classList.add(`mode-${modeString}`);
+                currentViewMode = (modeString === 'mini' ? 0 : 1);
             });
 
-            // Solicitamos el modo actual para la inicialización
-            ipcRenderer.on('current-mode-reply', (event, { mode, corner }) => {
+            ipcRenderer.on('current-mode-reply', (event, { mode }) => {
                 document.body.className = document.body.className.split(' ').filter(c => !c.startsWith('mode-')).join(' ');
                 document.body.classList.add(`mode-${mode}`);
-                currentViewMode = (mode === 'mini' ? 0 : mode === 'compact' ? 1 : 2); 
-                
-                // Aplicar la esquina fija
-                if (corner) {
-                    document.body.className = document.body.className.split(' ').filter(c => !c.startsWith('corner-')).join(' ');
-                    document.body.classList.add(`corner-${corner}`);
-                }
+                currentViewMode = (mode === 'mini' ? 0 : 1); 
             });
 
-
-            // --- UI & LÓGICA (Mantenida y adaptada) ---
+            // --- UI & LÓGICA ---
             const API_URL = 'http://localhost:5000/api';
             
-            // Elementos
             const qrContainer = document.getElementById('qr-container');
             const aiInput = document.getElementById('ai-input');
             const processInput = document.getElementById('process-input');
@@ -330,7 +184,6 @@
             const masterKeyInput = document.getElementById('master-key-input'); 
             const unlockBtn = document.getElementById('unlock-btn'); 
 
-            // --- Listener para el ciclo de modos ---
             document.getElementById('qr-container').addEventListener('click', window.cycleViewMode);
 
             // Tabs
@@ -349,60 +202,51 @@
                 }
             }
 
-            // Estado Visual (Cara)
             function setFaceState(state) {
                 qrContainer.className = '';
                 if (state) qrContainer.classList.add(`status-${state}`);
             }
 
-            // Login
             async function checkInit() {
                 try {
                     const res = await fetch(`${API_URL}/is_initialized`);
                     const data = await res.json();
-                    if(data.initialized) unlockUI(false); // No transicionar si ya estaba desbloqueado
+                    if(data.initialized) unlockUI(false); 
                     else lockUI();
                 } catch(e) { lockUI("Backend Offline"); setFaceState('error'); }
             }
 
             function lockUI(msg) {
+                isLocked = true;
                 loginScreen.style.display = 'flex';
                 mainInterface.style.display = 'none';
                 if(msg) loginMsg.textContent = msg;
                 setFaceState('locked');
-                // Al estar bloqueado, forzamos modo compacto para que se vea el login
+                // Al estar bloqueado, forzamos modo compacto
                 if(currentViewMode === 0) setViewMode(1);
             }
 
             function unlockUI(shouldTransition = true) {
+                isLocked = false;
                 loginScreen.style.display = 'none';
                 mainInterface.style.display = 'flex';
                 setFaceState('success');
                 
                 if (shouldTransition) {
-                    isTransitioning = true; // Bloquear clicks
-                    
-                    // --- Transición Post-Login: De Compacto a Mini (Discreto) ---
+                    isTransitioning = true; 
                     setTimeout(() => {
                         setFaceState(''); 
-                        setViewMode(0); // Transicionar a modo Mini (discreto)
-                        
-                        // Permitir clicks después de que la transición se haya completado
-                        setTimeout(() => {
-                            isTransitioning = false;
-                        }, 500); // 500ms extra para estabilizar
-                        
-                    }, 1000); 
+                        setViewMode(0); // Ir a Mini tras login
+                        setTimeout(() => { isTransitioning = false; }, 500);
+                    }, 1500); 
                 } else {
-                    // Si ya estaba desbloqueado (checkInit), no hacer la transición
                     isTransitioning = false;
+                    setFaceState('');
                 }
             }
 
-            // --- Lógica de Desbloqueo Centralizada ---
             async function unlockAttempt() {
-                if(isTransitioning) return; // Bloquear intento si estamos en transición
-
+                if(isTransitioning) return;
                 const key = masterKeyInput.value;
                 setFaceState('thinking');
                 try {
@@ -417,17 +261,12 @@
                         loginMsg.textContent = "Clave incorrecta";
                         setFaceState('error');
                     }
-                } catch(e) { setFaceState('error'); }
+                } catch(e) { setFaceState('error'); loginMsg.textContent = "Error Conexión"; }
             }
 
-            // Event Listeners
-            // 1. Enter Key en Input de Clave Maestra
             masterKeyInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    unlockAttempt();
-                }
+                if (e.key === 'Enter') unlockAttempt();
             });
-            // 2. Click en Botón de Desbloqueo
             unlockBtn.addEventListener('click', unlockAttempt);
             
             document.getElementById('send-ai-btn').addEventListener('click', sendAI);
@@ -486,12 +325,9 @@
                 } catch(e) { setFaceState('error'); }
             }
 
-            // Init
-            // Solicitamos el modo actual para la inicialización (bottom-right)
             ipcRenderer.send('get-current-mode');
             checkInit();
-        }); // Fin del window.onload
-
+        }); 
     </script>
 </body>
 </html>

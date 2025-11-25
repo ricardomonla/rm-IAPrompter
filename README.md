@@ -1,98 +1,51 @@
 # **Asistente de Escritorio MFM (Modelo Funcional Mínimo)**
 
-El **MFM** es un asistente de escritorio seguro, flotante y portátil diseñado para desarrolladores. Integra consultas de programación potenciadas por IA (**Gemini**) y capacidades de monitoreo del sistema en tiempo real, todo orquestado mediante contenedores.  
-El proyecto utiliza una arquitectura de microservicios:
+El **MFM** es un asistente de escritorio seguro, flotante y portátil diseñado para desarrolladores. Integra consultas de programación potenciadas por IA (**Gemini**) y capacidades de monitoreo del sistema en tiempo real, todo orquestado mediante contenedores.
 
-1. **Backend:** API Flask ejecutándose en Docker (Python 3.11) con cifrado de grado militar (Fernet) y persistencia de datos.  
-2. **Frontend:** Interfaz de escritorio construida con Electron, con diseño transparente, sistema de pestañas y pantalla de bloqueo de seguridad.
+**Autor:** Lic. Ricardo MONLA
+
+**Versión Actual:** v0.8.7
 
 ## **🚀 Características Principales**
 
-* **🔒 Seguridad Primero:** Las API Keys nunca se guardan en texto plano. Se cifran y almacenan en .env utilizando una "Clave Maestra" que solo el usuario conoce.  
-* **🐳 Portabilidad Total:** Uso de **Docker Compose** para orquestar el entorno sin depender de instalaciones locales de Python ni dependencias complejas.  
-* **💾 Persistencia de Datos:** Guarda configuraciones, historial y preferencias en un volumen local (./app-data).  
-* **⚡ Modos de Vista Adaptativos:**  
-  * **Modo Mini:** Icono discreto (Cara Robótica) anclado en la esquina inferior derecha.  
-  * **Modo Compacto:** Ventana emergente para consultas rápidas y login.  
-  * **Modo Expandido:** Ventana centrada de gran tamaño para trabajo intensivo.  
-* **🤖 Despliegue Inteligente:** Incluye un script app-run.sh que gestiona todo el ciclo de vida: configuración inicial, cifrado de credenciales, levantamiento de servicios y limpieza al cerrar.  
-* **👀 Monitoreo Real:** Capacidad de verificar procesos activos en el Host Linux mediante el mapeo de /proc.
+* **🔒 Seguridad Primero:** Cifrado Fernet (AES) para API Keys con desbloqueo mediante "Clave Maestra".  
+* **⚡ Arranque Instantáneo:** Imagen Docker optimizada con dependencias pre-instaladas.  
+* **💾 Persistencia Local:** Datos y configuraciones guardados en ./app-data.  
+* **🖥️ UX Adaptativa:**  
+  * **Posición Fija:** Siempre anclado en la esquina inferior derecha, respetando la barra de tareas.  
+  * **3 Modos:** Mini (Icono), Compacto (Login/Chat), Expandido (Trabajo).  
+* **🤖 Orquestación Total:** Script app-run.sh para gestión de ciclo de vida y diagnóstico.
 
-## **📋 Requisitos del Host**
+## **🛠️ Instalación y Ejecución**
 
-* **Sistema Operativo:** Linux (Requerido para la funcionalidad de monitoreo de procesos /proc).  
-* **Docker & Docker Compose:** Instalados y en ejecución.  
-* **Node.js y npm:** Necesarios para ejecutar la interfaz gráfica de Electron.
+### **1\. Iniciar el Asistente**
 
-## **🛠️ Instalación y Ejecución Rápida**
-
-Olvídate de ejecutar comandos de Docker manualmente. El script maestro se encarga de la configuración, seguridad y despliegue.
-
-### **1\. Preparación**
-
-Asegúrate de estar en la carpeta raíz del proyecto y de que el script tenga permisos de ejecución:  
-chmod \+x app-run.sh
-
-### **2\. Ejecutar el Asistente**
-
-Lanza todo el sistema con un solo comando:  
+chmod \+x app-run.sh  
 ./app-run.sh
 
-*Para ver logs y depurar errores, usa: ./app-run.sh \--debug*
+### **2\. Modo Diagnóstico (Debug)**
 
-### **3\. Configuración de Seguridad (Solo la primera vez)**
+Si encuentras problemas, ejecuta el asistente en modo debug para generar logs detallados en la carpeta app-logs/ y ver la consola de desarrollo integrada:
 
-Si es tu primera ejecución, el script detectará que no tienes credenciales cifradas y iniciará el asistente de seguridad en la terminal:
+./app-run.sh \--debug
 
-1. **API Key Real:** Te pedirá tu API Key de Gemini (obtenida en Google AI Studio).  
-2. **Clave Maestra:** Te pedirá crear una contraseña personal. **¡Recuérdala\!** La necesitarás cada vez que inicies la app.  
-3. **Cifrado Automático:** El script cifrará tu API Key y generará el archivo .env seguro (GEMINI\_API\_KEY\_ENCRYPTED).
+### **3\. Primer Uso**
 
-## **🖥️ Guía de Uso**
-
-### **1\. Desbloqueo del Sistema (Login)**
-
-Al iniciar, la ventana aparecerá en **Modo Compacto** en la esquina inferior derecha con una pantalla de "Acceso Restringido".
-
-* Introduce tu **Clave Maestra**.  
-* Al desbloquear, el asistente se minimizará automáticamente al **Modo Mini** (icono flotante) para no estorbar.
-
-### **2\. Interacción con Modos**
-
-El asistente vive en la esquina inferior derecha, justo encima de la barra de tareas.
-
-* **Clic en la Cara:** Alterna entre los modos:  
-  * **Mini** \-\> **Compacto** (Consulta rápida) \-\> **Expandido** (Pantalla centrada) \-\> **Mini**.  
-* **Botón 'X':** Minimiza inmediatamente al Modo Mini.
-
-### **3\. Funcionalidades (Pestañas)**
-
-* **IA Chat:** Escribe consultas técnicas. El indicador visual cambiará de color (Azul=Pensando, Verde=Éxito, Rojo=Error).  
-* **Monitor:** Escribe el nombre de un proceso de Linux (ej: dockerd, bash) para verificar si está corriendo en tu máquina.
+1. Al iniciar, verás la pantalla de **"Acceso Restringido"** en modo Compacto.  
+2. Introduce tu **Clave Maestra** (creada en la instalación).  
+3. El asistente se desbloqueará y minimizará al **Modo Mini** (Cara Robótica).  
+4. Haz clic en la cara para interactuar o usar los comandos de IA/Monitor.
 
 ## **🔧 Arquitectura Técnica**
 
-### **Estructura de Archivos**
+* **Backend:** Python 3.11 \+ Flask (Dockerizado).  
+* **Frontend:** Electron \+ HTML/CSS/JS puro (Sin frameworks pesados).  
+* **Comunicación:** HTTP REST (http://localhost:5000).  
+* **Seguridad:** cryptography para cifrado de secretos en reposo (.env).
 
-* **app-run.sh**: Script maestro de orquestación.  
-* **docker-compose.yml**: Define el servicio backend y los volúmenes.  
-* **app.py**: Backend Flask (Cifrado, Gemini, Sistema).  
-* **app-interface/**: Código fuente del frontend (Electron).  
-* **app-data/**: Directorio local donde se persisten los datos del usuario.
+## **❓ Solución de Problemas Comunes**
 
-### **Volúmenes Docker**
-
-* /proc:/host/proc:ro: **(Solo Lectura)** Permite al contenedor inspeccionar los procesos del host.  
-* ./app.py:/app/app.py: Mapeo de código en vivo para desarrollo.  
-* ./app-data:/app/data: Persistencia de datos (configuración JSON) fuera del contenedor.
-
-## **❓ Solución de Problemas**
-
-La ventana no aparece o no responde a clics  
-Ejecuta ./app-run.sh \--debug para abrir la consola de desarrollador y ver si hay errores de JavaScript o bloqueos de IPC.  
-Error: "Conflict. The container name is already in use"  
-El script tiene auto-reparación. Ejecútalo de nuevo y limpiará el contenedor conflictivo.  
-**La ventana aparece pero dice "Backend desconectado"**
-
-1. Verifica que Docker esté corriendo (docker ps).  
-2. Revisa los logs del backend: docker logs mfm-backend.
+La ventana de Electron aparece duplicada en modo debug  
+No está duplicada. La segunda ventana es la consola de DevTools. En la versión v0.8.7 se ha configurado para aparecer acoplada a la derecha para evitar confusiones.  
+No puedo hacer clic en el asistente  
+Asegúrate de estar usando la versión v0.8.7 o superior, que corrige la interacción con el ratón en entornos Linux (KDE/Gnome) desactivando la transparencia de eventos.
