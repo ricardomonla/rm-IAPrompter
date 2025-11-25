@@ -1,51 +1,84 @@
 # **Asistente de Escritorio MFM (Modelo Funcional Mínimo)**
 
-El **MFM** es un asistente de escritorio seguro, flotante y portátil diseñado para desarrolladores. Integra consultas de programación potenciadas por IA (**Gemini**) y capacidades de monitoreo del sistema en tiempo real, todo orquestado mediante contenedores.
+El **MFM** es un asistente de escritorio seguro, flotante y futurista diseñado para desarrolladores. Integra consultas de programación potenciadas por IA (**Gemini**) y monitoreo del sistema en tiempo real, orquestado mediante contenedores Docker.
 
 **Autor:** Lic. Ricardo MONLA
 
-**Versión Actual:** v0.8.7
+**Versión Actual:** v0.9.5 (Hex Core Edition)
 
 ## **🚀 Características Principales**
 
-* **🔒 Seguridad Primero:** Cifrado Fernet (AES) para API Keys con desbloqueo mediante "Clave Maestra".  
-* **⚡ Arranque Instantáneo:** Imagen Docker optimizada con dependencias pre-instaladas.  
-* **💾 Persistencia Local:** Datos y configuraciones guardados en ./app-data.  
-* **🖥️ UX Adaptativa:**  
-  * **Posición Fija:** Siempre anclado en la esquina inferior derecha, respetando la barra de tareas.  
-  * **3 Modos:** Mini (Icono), Compacto (Login/Chat), Expandido (Trabajo).  
-* **🤖 Orquestación Total:** Script app-run.sh para gestión de ciclo de vida y diagnóstico.
+* **🔒 Seguridad de Grado Militar:** Las API Keys se cifran con **Fernet (AES)** y solo se descifran en memoria tras introducir tu "Clave Maestra" personal.  
+* **⚛️ Núcleo Hexagonal Reactivo:** Una interfaz minimalista basada en un núcleo de energía animado que indica el estado del sistema (Pensando, Éxito, Error, Bloqueado).  
+* **🖥️ Diseño "Side-by-Side":** La interfaz de chat se despliega lateralmente a la izquierda del núcleo, maximizando el espacio de pantalla y respetando la barra de tareas.  
+* **⚡ Arranque Instantáneo:** Imagen Docker optimizada (python:3.11-slim) con dependencias pre-instaladas.  
+* **💾 Persistencia Local:** Tus configuraciones y el historial de chat se guardan en ./app-data.  
+* **🤖 Orquestación Total:** El script app-run.sh maneja todo: instalación, cifrado, ejecución y limpieza.
 
 ## **🛠️ Instalación y Ejecución**
 
-### **1\. Iniciar el Asistente**
+### **1\. Iniciar**
+
+Asegúrate de estar en Linux y tener Docker instalado.
 
 chmod \+x app-run.sh  
 ./app-run.sh
 
-### **2\. Modo Diagnóstico (Debug)**
+### **2\. Modo Debug**
 
-Si encuentras problemas, ejecuta el asistente en modo debug para generar logs detallados en la carpeta app-logs/ y ver la consola de desarrollo integrada:
+Si necesitas ver qué ocurre "bajo el capó" (logs de backend y frontend \+ consola de desarrollo):
 
 ./app-run.sh \--debug
 
-### **3\. Primer Uso**
+*Los logs se guardarán automáticamente en la carpeta app-logs/.*
 
-1. Al iniciar, verás la pantalla de **"Acceso Restringido"** en modo Compacto.  
-2. Introduce tu **Clave Maestra** (creada en la instalación).  
-3. El asistente se desbloqueará y minimizará al **Modo Mini** (Cara Robótica).  
-4. Haz clic en la cara para interactuar o usar los comandos de IA/Monitor.
+### **3\. Primer Uso (Setup de Seguridad)**
+
+La primera vez que lo ejecutes:
+
+1. El script te pedirá tu **API Key de Google Gemini**.  
+2. Te pedirá definir una **Clave Maestra**.  
+3. Generará un archivo .env cifrado. **Nadie puede usar tu API Key sin tu Clave Maestra.**
+
+## **🎮 Guía de Interacción**
+
+El asistente vive anclado en la **esquina inferior derecha** de tu pantalla.
+
+### **Estados del Núcleo (Hexágono)**
+
+El color del núcleo te indica qué está pasando:
+
+* 🟠 **Naranja (Pulsante):** Sistema Bloqueado. Requiere contraseña.  
+* 🔵 **Azul (Giro Rápido):** Pensando / Procesando consulta.  
+* 🟢 **Verde:** Tarea completada con éxito.  
+* 🔴 **Rojo:** Error de conexión o proceso no encontrado.
+
+### **Modos de Vista**
+
+Haz clic en el Hexágono para ciclar entre modos:
+
+1. **Modo Mini:** Solo el núcleo (60x60px). Discreto y siempre visible.  
+2. **Modo Compacto:** Se despliega la barra de chat a la izquierda. Ideal para consultas rápidas.  
+3. **Modo Expandido:** Se despliega un panel grande hacia arriba con el historial completo.
+
+### **Pestañas Funcionales**
+
+* **IA CHAT:** Pregunta sobre código, algoritmos o dudas técnicas.  
+* **MONITOR:** Escribe el nombre de un proceso (ej: dockerd, code, firefox) para saber si está corriendo en tu máquina.
 
 ## **🔧 Arquitectura Técnica**
 
-* **Backend:** Python 3.11 \+ Flask (Dockerizado).  
-* **Frontend:** Electron \+ HTML/CSS/JS puro (Sin frameworks pesados).  
-* **Comunicación:** HTTP REST (http://localhost:5000).  
-* **Seguridad:** cryptography para cifrado de secretos en reposo (.env).
+* **Frontend:** Electron (HTML5/CSS3/JS puro). Comunicación IPC optimizada.  
+* **Backend:** Python Flask en Docker.  
+* **Comunicación:** REST API en http://localhost:5000.  
+* **Sistema de Archivos:**  
+  * app-interface/: Código fuente de la UI.  
+  * app-data/: Persistencia (JSON).  
+  * app-run.sh: Script de gestión.
 
-## **❓ Solución de Problemas Comunes**
+## **❓ Solución de Problemas**
 
-La ventana de Electron aparece duplicada en modo debug  
-No está duplicada. La segunda ventana es la consola de DevTools. En la versión v0.8.7 se ha configurado para aparecer acoplada a la derecha para evitar confusiones.  
-No puedo hacer clic en el asistente  
-Asegúrate de estar usando la versión v0.8.7 o superior, que corrige la interacción con el ratón en entornos Linux (KDE/Gnome) desactivando la transparencia de eventos.
+El asistente "salta" al cambiar de tamaño  
+Esto está corregido en la v0.9.5. Asegúrate de estar usando la última versión de main.js que desactiva las animaciones de ventana nativas del sistema operativo.  
+"Electron Security Warning" en los logs  
+Ignorable. Hemos implementado una política CSP estricta en el index.html para mitigar riesgos, aunque en modo desarrollo (debug) Electron puede seguir emitiendo la advertencia.

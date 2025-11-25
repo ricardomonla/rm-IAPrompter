@@ -1,333 +1,353 @@
 <!--
   -----------------------------------------------------------------------------
   Autor: Lic. Ricardo MONLA
-  Versión: v0.8.6
-  Descripción: Interfaz de usuario (Renderer) con sistema de modos, pestañas,
-               seguridad y animaciones de estado.
+  Versión: v0.9.6 (No-Clip Hexagon)
+  Descripción: Hexágono con márgenes de seguridad y tamaño unificado (60px).
   -----------------------------------------------------------------------------
 -->
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:5000; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
     <title>MFM Assistant</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* ... (MANTENER TODOS LOS ESTILOS ACTUALES, NO CAMBIAN) ... */
-        body { margin: 0; padding: 0; background: transparent; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end; }
-        #app-container { background-color: rgba(20, 20, 25, 0.95); border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: all 0.3s ease; }
-        body.mode-mini #app-container { background: transparent; border: none; box-shadow: none; }
+        /* --- ESTRUCTURA --- */
+        body { margin: 0; padding: 0; background: transparent; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; width: 100%; position: relative; }
+        
+        /* Contenedor Principal */
+        #app-container {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(15, 17, 22, 0.96); 
+            border: 1px solid #333; 
+            border-radius: 12px; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
+            backdrop-filter: blur(10px);
+            transition: background-color 0.2s;
+        }
+        
+        /* --- MODO MINI --- */
+        body.mode-mini #app-container { background: transparent; border: none; box-shadow: none; backdrop-filter: none; }
         body.mode-mini #content-wrapper { display: none; }
-        body.mode-mini #header { background: transparent; padding: 0; }
-        body.mode-mini #qr-container { width: 100px; height: 100px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); cursor: pointer; }
-        #header { display: flex; align-items: center; justify-content: center; padding: 15px; background: linear-gradient(180deg, rgba(30,30,35,1) 0%, rgba(20,20,25,0) 100%); flex-shrink: 0; order: 1; -webkit-app-region: drag; }
-        #qr-container { width: 80px; height: 80px; border: 3px solid #555; border-radius: 12px; background-color: #1a1a1a; padding: 5px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; justify-content: center; align-items: center; cursor: pointer; position: relative; -webkit-app-region: no-drag; }
-        #qr-container:hover { border-color: #00bcd4; }
-        #content-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; opacity: 1; transition: opacity 0.3s; order: 0; }
-        .status-thinking { border-color: #00bcd4 !important; box-shadow: 0 0 20px #00bcd4; }
-        .status-success { border-color: #4caf50 !important; box-shadow: 0 0 20px #4caf50; }
-        .status-error { border-color: #f44336 !important; box-shadow: 0 0 20px #f44336; }
-        .status-locked { border-color: #ff9800 !important; }
-        .face-eye { fill: #555; transition: fill 0.3s; }
-        .face-mouth { fill: #555; transition: fill 0.3s; }
-        .status-thinking .face-eye { fill: #00bcd4; }
-        .status-success .face-eye { fill: #4caf50; }
-        .status-error .face-eye { fill: #f44336; }
-        @keyframes blink { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(0.1); } }
-        .face-eye { transform-origin: center; animation: blink 4s infinite; }
-        #login-screen, #main-interface { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        #history { flex: 1; overflow-y: auto; padding: 20px; font-size: 13px; line-height: 1.5; }
-        .chat-entry { margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .user-query { color: #888; font-size: 11px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;}
-        .ai-response { color: #ddd; white-space: pre-wrap; }
-        .ai-response code { background: #333; padding: 2px 5px; border-radius: 3px; font-family: monospace; }
-        #input-section { background-color: #141414; border-top: 1px solid #333; }
-        #mode-tabs { display: flex; background: #000; }
-        .tab-btn { flex: 1; padding: 12px; background: none; border: none; color: #555; font-family: inherit; font-size: 11px; cursor: pointer; border-bottom: 2px solid transparent; text-transform: uppercase; }
-        .tab-btn.active { color: #fff; background: #1a1a1a; border-bottom-color: #00bcd4; }
-        .tab-btn.active.monitor-mode { border-bottom-color: #e91e63; }
-        #input-area { padding: 15px; display: flex; gap: 10px; }
-        input { flex: 1; background: #222; border: 1px solid #444; color: white; padding: 12px; border-radius: 6px; font-family: inherit; }
-        input:focus { outline: none; border-color: #00bcd4; }
-        button.action-btn { padding: 0 20px; background: #333; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 11px; }
-        .btn-primary { background: #00bcd4 !important; color: #000 !important; }
-        .btn-monitor { background: #e91e63 !important; color: #fff !important; }
-        .mode-container { display: none; width: 100%; }
-        .mode-container.active { display: flex; gap: 10px; }
-        #close-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #666; cursor: pointer; font-size: 16px; z-index: 10; }
+        body.mode-mini #close-btn { display: none; }
+        
+        /* --- HEADER (HEXÁGONO) --- */
+        #header {
+            position: absolute;
+            /* MARGEN DE SEGURIDAD: Evita que el brillo se corte por el borde de la ventana */
+            bottom: 10px; 
+            right: 10px;
+            
+            width: 60px; /* Tamaño UNIFICADO para todos los modos */
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; 
+            -webkit-app-region: drag;
+        }
+
+        #hex-container {
+            width: 60px; /* Tamaño base del hexágono */
+            height: 60px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; position: relative;
+            -webkit-app-region: no-drag;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            
+            /* Sombra suave permanente */
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+        }
+        #hex-container:hover { transform: scale(1.1); }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        #content-wrapper {
+            position: absolute;
+            top: 0; left: 0; right: 0; 
+            bottom: 0; /* Ocupa todo */
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            z-index: 50;
+        }
+
+        #close-btn { 
+            position: absolute; top: 10px; right: 10px; 
+            background: none; border: none; color: #666; 
+            cursor: pointer; font-size: 16px; z-index: 101; 
+            -webkit-app-region: no-drag;
+        }
         #close-btn:hover { color: #fff; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #111; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+        /* --- PANTALLAS INTERNAS --- */
+        #login-screen { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        #main-interface { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
+        
+        /* Historial */
+        #history { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 15px 20px; 
+            font-size: 12px; line-height: 1.6; color: #ccc;
+            /* Espacio inferior para no chocar con el input */
+            margin-bottom: 80px; 
+        }
+        .chat-entry { margin-bottom: 10px; border-bottom: 1px solid #2a2a2a; padding-bottom: 8px; }
+        .user-query { color: #666; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .ai-response code { background: #111; padding: 2px 5px; border-radius: 4px; color: #a5d6ff; }
+
+        /* --- SECCIÓN DE INPUT (BARRA LATERAL) --- */
+        #input-section { 
+            position: absolute;
+            bottom: 10px; 
+            left: 10px;
+            /* Calcula el ancho restante: Total - MargenIzq - EspacioHexagono - MargenDer */
+            right: 80px; /* 10px margen + 60px hex + 10px espacio */
+            
+            background-color: rgba(10, 10, 12, 0.8); 
+            border: 1px solid #333;
+            border-radius: 8px; 
+            padding: 8px; 
+            
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: auto;
+            min-height: 60px; /* Alineado con la altura del hexágono */
+        }
+
+        /* Tabs e Inputs */
+        #mode-tabs { display: flex; gap: 10px; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+        .tab-btn { background: none; border: none; color: #555; font-size: 10px; cursor: pointer; font-weight: bold; padding: 0; transition: color 0.2s; }
+        .tab-btn.active { color: #fff; border-bottom: 2px solid #00bcd4; }
+        .tab-btn.active.monitor-mode { border-bottom-color: #e91e63; }
+        
+        #input-area { display: flex; gap: 8px; }
+        .mode-container { display: none; width: 100%; gap: 8px; }
+        .mode-container.active { display: flex; }
+        
+        input { flex: 1; background: #050505; border: 1px solid #333; color: white; padding: 8px; border-radius: 4px; font-size: 12px; outline: none; }
+        input:focus { border-color: #00bcd4; }
+        button.action-btn { background: #222; color: white; border: 1px solid #333; border-radius: 4px; cursor: pointer; font-size: 10px; padding: 0 12px; font-weight: bold;}
+        .btn-primary:hover { border-color: #00bcd4; color: #00bcd4; }
+
+        /* --- SVG STYLES --- */
+        svg { overflow: visible; width: 100%; height: 100%; }
+        .hex-outer { fill: none; stroke: #444; stroke-width: 2; transform-origin: 50px 50px; animation: spin 20s linear infinite; transition: stroke 0.3s; }
+        .hex-inner { fill: none; stroke: #333; stroke-width: 1; opacity: 0.7; }
+        .hex-core { fill: #2a2a2a; transform-origin: 50px 50px; transition: fill 0.3s, filter 0.3s; }
+        
+        #hex-container:hover .hex-outer { stroke: #00bcd4; stroke-width: 2.5; }
+
+        .status-thinking .hex-core { fill: #00bcd4; filter: drop-shadow(0 0 8px #00bcd4); animation: pulse 0.8s infinite alternate; }
+        .status-thinking .hex-outer { stroke: #00bcd4; animation: spin 2s linear infinite; }
+        .status-success .hex-core { fill: #4caf50; filter: drop-shadow(0 0 8px #4caf50); }
+        .status-success .hex-outer { stroke: #4caf50; }
+        .status-error .hex-core { fill: #f44336; filter: drop-shadow(0 0 8px #f44336); }
+        .status-error .hex-outer { stroke: #f44336; }
+        .status-locked .hex-core { fill: #ff9800; filter: drop-shadow(0 0 5px #ff9800); }
+        .status-locked .hex-outer { stroke: #ff9800; animation: spin 60s linear infinite; }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.1); opacity: 1; } }
+
+        /* Login Styles */
+        #master-key-input { width: 70% !important; margin-bottom: 10px; text-align: center; }
+        #unlock-btn { width: 70% !important; padding: 10px; }
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
     </style>
 </head>
 <body class="mode-compact"> 
 
     <div id="app-container">
-        <button id="close-btn" onclick="minimizeApp()">×</button>
-
+        <!-- 1. AREA DE CONTENIDO (Arriba) -->
         <div id="content-wrapper">
-            <div id="login-screen" style="display:none; align-items:center; justify-content:center; padding:20px;">
-                <h3 style="color:#ff9800;">SISTEMA BLOQUEADO</h3>
-                <input type="password" id="master-key-input" placeholder="Clave Maestra" style="margin-bottom:10px; text-align:center;">
-                <button id="unlock-btn" class="action-btn" style="width:100%; padding:10px;">Desbloquear</button>
-                <div id="login-msg" style="color:#f44336; margin-top:10px; font-size:11px;"></div>
+            <button id="close-btn" onclick="minimizeApp()">×</button>
+            
+            <!-- Login -->
+            <div id="login-screen" style="display:none;">
+                <h3 style="color:#ff9800; margin:0 0 15px 0; font-size:12px; letter-spacing:2px;">SISTEMA PROTEGIDO</h3>
+                <input type="password" id="master-key-input" placeholder="CLAVE DE ACCESO">
+                <button id="unlock-btn" class="action-btn">INICIAR SISTEMA</button>
+                <div id="login-msg" style="color:#f44336; margin-top:10px; font-size:10px; height:12px;"></div>
             </div>
 
+            <!-- Interfaz Principal -->
             <div id="main-interface" style="display:none;">
                 <div id="history">
-                    <div class="chat-entry" style="text-align:center; color:#555; margin-top:20px;">
-                        <div>⚡ MFM ACTIVADO ⚡</div>
-                        <div style="font-size:10px;">Esperando órdenes...</div>
+                    <div class="chat-entry" style="text-align:center; color:#444; margin-top:30px;">
+                        <div>❖ MFM CORE ONLINE</div>
+                        <div style="font-size:10px;">v0.9.6 Ready</div>
                     </div>
                 </div>
 
+                <!-- BARRA FLOTANTE DE INPUT (Abajo Izquierda) -->
                 <div id="input-section">
                     <div id="mode-tabs">
-                        <button class="tab-btn active" id="tab-chat" onclick="switchTab('chat')">IA / Chat</button>
-                        <button class="tab-btn" id="tab-monitor" onclick="switchTab('monitor')">Monitor</button>
+                        <button class="tab-btn active" id="tab-chat" onclick="switchTab('chat')">IA CHAT</button>
+                        <button class="tab-btn" id="tab-monitor" onclick="switchTab('monitor')">MONITOR</button>
                     </div>
-
                     <div id="input-area">
                         <div id="chat-container" class="mode-container active">
-                            <input type="text" id="ai-input" placeholder="Pregunta algo..." />
-                            <button id="send-ai-btn" class="action-btn btn-primary">→</button>
+                            <input type="text" id="ai-input" placeholder="Consulta..." />
+                            <button id="send-ai-btn" class="action-btn btn-primary">Enviar</button>
                         </div>
                         <div id="monitor-container" class="mode-container">
-                            <input type="text" id="process-input" placeholder="Nombre proceso..." />
-                            <button id="check-process-btn" class="action-btn btn-monitor">Check</button>
+                            <input type="text" id="process-input" placeholder="Proceso..." />
+                            <button id="check-process-btn" class="action-btn btn-monitor">Verificar</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- 2. HEXÁGONO (Fijo Abajo Derecha) -->
         <div id="header">
-            <div id="qr-container"> 
-                <svg id="robot-face" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="5" y="5" width="90" height="90" rx="10" fill="none" stroke="#333" stroke-width="2"/>
-                    <rect class="face-eye" x="25" y="35" width="15" height="15" rx="2"/>
-                    <rect class="face-eye" x="60" y="35" width="15" height="15" rx="2"/>
-                    <path class="face-mouth" d="M 30 70 Q 50 80 70 70" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>
-                    <rect x="10" y="10" width="5" height="5" fill="#333"/>
-                    <rect x="85" y="10" width="5" height="5" fill="#333"/>
-                    <rect x="10" y="85" width="5" height="5" fill="#333"/>
-                    <rect x="85" y="85" width="5" height="5" fill="#333"/>
+            <div id="hex-container"> 
+                <svg viewBox="0 0 100 100">
+                    <path class="hex-outer" d="M50 10 L85 30 L85 70 L50 90 L15 70 L15 30 Z" />
+                    <path class="hex-inner" d="M50 25 L72 37 L72 63 L50 75 L28 63 L28 37 Z" />
+                    <circle class="hex-core" cx="50" cy="50" r="12" />
                 </svg>
             </div>
         </div>
     </div>
 
+    <!-- SCRIPT (Sin cambios lógicos, solo estructura) -->
     <script>
         window.addEventListener('load', () => {
             const { ipcRenderer } = require('electron');
-
-            // --- GESTIÓN DE MODOS DE VISTA ---
-            // 0: Mini -> 1: Compacto -> 2: Expandido
             let currentViewMode = 1; 
             let isTransitioning = false;
-            let isLocked = true; // Variable para saber si estamos bloqueados
+            let isLocked = true; 
 
             function setViewMode(mode) {
                 currentViewMode = mode;
                 const body = document.body;
                 body.className = ''; 
-
-                let modeString = '';
-                if (mode === 0) modeString = 'mini';
-                else if (mode === 1) modeString = 'compact';
-                else if (mode === 2) modeString = 'expanded';
-                
+                let modeString = (mode === 0) ? 'mini' : (mode === 1 ? 'compact' : 'expanded');
                 body.classList.add(`mode-${modeString}`);
                 ipcRenderer.send('resize-window', modeString);
             }
 
-            // CICLO DE MODOS (Lógica corregida)
             window.cycleViewMode = function() {
-                if(isTransitioning || isLocked) return; // No ciclar si está bloqueado o animando
-                
-                let nextMode;
-                if (currentViewMode === 0) nextMode = 1;      // Mini -> Medio
-                else if (currentViewMode === 1) nextMode = 2; // Medio -> Max
-                else if (currentViewMode === 2) nextMode = 0; // Max -> Mini
-                
+                if(isTransitioning || isLocked) return; 
+                let nextMode = (currentViewMode + 1) % 3;
                 setViewMode(nextMode);
             }
+            window.minimizeApp = function() { setViewMode(0); }
 
-            window.minimizeApp = function() {
-                setViewMode(0);
-            }
-
-            // Sincronizar si el atajo global cambia el modo
-            ipcRenderer.on('force-mode-update', (event, modeString) => {
-                document.body.className = document.body.className.split(' ').filter(c => !c.startsWith('mode-')).join(' ');
-                document.body.classList.add(`mode-${modeString}`);
-                currentViewMode = (modeString === 'mini' ? 0 : 1);
+            ipcRenderer.on('force-mode-update', (e, m) => {
+                document.body.className = `mode-${m}`;
+                currentViewMode = (m === 'mini' ? 0 : 1);
             });
-
-            ipcRenderer.on('current-mode-reply', (event, { mode }) => {
-                document.body.className = document.body.className.split(' ').filter(c => !c.startsWith('mode-')).join(' ');
-                document.body.classList.add(`mode-${mode}`);
+            ipcRenderer.on('current-mode-reply', (e, { mode }) => {
+                document.body.className = `mode-${mode}`;
                 currentViewMode = (mode === 'mini' ? 0 : 1); 
             });
 
-            // --- UI & LÓGICA ---
             const API_URL = 'http://localhost:5000/api';
-            
-            const qrContainer = document.getElementById('qr-container');
-            const aiInput = document.getElementById('ai-input');
-            const processInput = document.getElementById('process-input');
-            const historyDiv = document.getElementById('history');
-            const loginScreen = document.getElementById('login-screen');
-            const mainInterface = document.getElementById('main-interface');
-            const loginMsg = document.getElementById('login-msg');
+            const hexContainer = document.getElementById('hex-container');
             const masterKeyInput = document.getElementById('master-key-input'); 
             const unlockBtn = document.getElementById('unlock-btn'); 
-
-            document.getElementById('qr-container').addEventListener('click', window.cycleViewMode);
-
-            // Tabs
-            window.switchTab = function(tab) {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'monitor-mode'));
-                document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-
-                if (tab === 'chat') {
-                    document.getElementById('tab-chat').classList.add('active');
-                    document.getElementById('chat-container').classList.add('active');
-                    aiInput.focus();
-                } else {
-                    document.getElementById('tab-monitor').classList.add('active', 'monitor-mode');
-                    document.getElementById('monitor-container').classList.add('active');
-                    processInput.focus();
-                }
-            }
-
-            function setFaceState(state) {
-                qrContainer.className = '';
-                if (state) qrContainer.classList.add(`status-${state}`);
-            }
+            
+            hexContainer.addEventListener('click', window.cycleViewMode);
+            function setCoreState(state) { hexContainer.className = state ? `status-${state}` : ''; }
 
             async function checkInit() {
                 try {
                     const res = await fetch(`${API_URL}/is_initialized`);
                     const data = await res.json();
-                    if(data.initialized) unlockUI(false); 
-                    else lockUI();
-                } catch(e) { lockUI("Backend Offline"); setFaceState('error'); }
+                    if(data.initialized) unlockUI(false); else lockUI();
+                } catch(e) { lockUI("Backend Offline"); setCoreState('error'); }
             }
 
             function lockUI(msg) {
                 isLocked = true;
-                loginScreen.style.display = 'flex';
-                mainInterface.style.display = 'none';
-                if(msg) loginMsg.textContent = msg;
-                setFaceState('locked');
-                // Al estar bloqueado, forzamos modo compacto
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('main-interface').style.display = 'none';
+                if(msg) document.getElementById('login-msg').textContent = msg;
+                setCoreState('locked');
                 if(currentViewMode === 0) setViewMode(1);
             }
 
             function unlockUI(shouldTransition = true) {
                 isLocked = false;
-                loginScreen.style.display = 'none';
-                mainInterface.style.display = 'flex';
-                setFaceState('success');
-                
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-interface').style.display = 'flex';
+                setCoreState('success');
                 if (shouldTransition) {
                     isTransitioning = true; 
-                    setTimeout(() => {
-                        setFaceState(''); 
-                        setViewMode(0); // Ir a Mini tras login
-                        setTimeout(() => { isTransitioning = false; }, 500);
-                    }, 1500); 
-                } else {
-                    isTransitioning = false;
-                    setFaceState('');
-                }
+                    setTimeout(() => { setCoreState(''); setViewMode(0); setTimeout(() => isTransitioning = false, 500); }, 1500); 
+                } else { isTransitioning = false; setCoreState(''); }
             }
 
-            async function unlockAttempt() {
+            const attemptUnlock = async () => {
                 if(isTransitioning) return;
                 const key = masterKeyInput.value;
-                setFaceState('thinking');
+                setCoreState('thinking');
                 try {
-                    const res = await fetch(`${API_URL}/initialize`, {
-                        method: 'POST', 
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({master_key: key})
-                    });
-                    const data = await res.json();
-                    if(data.success) unlockUI();
-                    else {
-                        loginMsg.textContent = "Clave incorrecta";
-                        setFaceState('error');
+                    const res = await fetch(`${API_URL}/initialize`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({master_key: key}) });
+                    const d = await res.json();
+                    if(d.success) unlockUI(); else { 
+                        setCoreState('error'); document.getElementById('login-msg').textContent = "CLAVE INVÁLIDA"; setTimeout(() => setCoreState('locked'), 2000);
                     }
-                } catch(e) { setFaceState('error'); loginMsg.textContent = "Error Conexión"; }
-            }
+                } catch(e) { setCoreState('error'); }
+            };
+            masterKeyInput.addEventListener('keypress', (e) => e.key === 'Enter' && attemptUnlock());
+            unlockBtn.addEventListener('click', attemptUnlock);
 
-            masterKeyInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') unlockAttempt();
-            });
-            unlockBtn.addEventListener('click', unlockAttempt);
+            window.switchTab = function(tab) {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'monitor-mode'));
+                document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
+                if(tab === 'chat') { 
+                    document.getElementById('tab-chat').classList.add('active'); 
+                    document.getElementById('chat-container').classList.add('active'); 
+                    document.getElementById('ai-input').focus(); 
+                } else { 
+                    document.getElementById('tab-monitor').classList.add('active', 'monitor-mode'); 
+                    document.getElementById('monitor-container').classList.add('active'); 
+                    document.getElementById('process-input').focus(); 
+                }
+            }
             
+            const sendAI = async () => {
+                const q = document.getElementById('ai-input').value; if(!q) return;
+                const h = document.getElementById('history');
+                const userDiv = document.createElement('div'); userDiv.className = 'chat-entry'; userDiv.innerHTML = `<div class="user-query">USER > ${q}</div><div class="ai-response">...</div>`;
+                h.appendChild(userDiv); h.scrollTop = h.scrollHeight; document.getElementById('ai-input').value = ''; setCoreState('thinking');
+                try {
+                    const r = await fetch(`${API_URL}/query_gemini`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query: q})});
+                    const d = await r.json();
+                    userDiv.querySelector('.ai-response').textContent = d.response || d.error;
+                    setCoreState(d.error ? 'error' : 'success');
+                } catch(e) { setCoreState('error'); userDiv.querySelector('.ai-response').textContent = "Error de conexión"; }
+            };
             document.getElementById('send-ai-btn').addEventListener('click', sendAI);
-            aiInput.addEventListener('keypress', (e) => e.key === 'Enter' && sendAI());
+            document.getElementById('ai-input').addEventListener('keypress', (e) => e.key === 'Enter' && sendAI());
 
-            async function sendAI() {
-                const q = aiInput.value;
-                if(!q) return;
-                
-                const entry = document.createElement('div');
-                entry.className = 'chat-entry';
-                entry.innerHTML = `<div class="user-query">${q}</div><div class="ai-response">...</div>`;
-                historyDiv.appendChild(entry);
-                historyDiv.scrollTop = historyDiv.scrollHeight;
-                aiInput.value = '';
-
-                setFaceState('thinking');
+            const checkProc = async () => {
+                const n = document.getElementById('process-input').value; if(!n) return;
+                setCoreState('thinking');
                 try {
-                    const res = await fetch(`${API_URL}/query_gemini`, {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({query: q})
-                    });
-                    const data = await res.json();
-                    const respDiv = entry.querySelector('.ai-response');
-                    
-                    if(data.error) {
-                        respDiv.textContent = "Error: " + data.error;
-                        respDiv.style.color = "#f44336";
-                        setFaceState('error');
-                        if(data.error.includes("no inicializada")) lockUI();
-                    } else {
-                        respDiv.textContent = data.response;
-                        setFaceState('success');
-                    }
-                } catch(e) { setFaceState('error'); }
+                    const r = await fetch(`${API_URL}/check_process?process_name=${encodeURIComponent(n)}`);
+                    const d = await r.json();
+                    const h = document.getElementById('history');
+                    const div = document.createElement('div'); div.className = 'chat-entry'; const color = d.is_running ? '#4caf50' : '#f44336';
+                    div.innerHTML = `<div class="user-query">SYS CHECK > ${n}</div><div class="ai-response" style="color:${color}">${d.message}</div>`;
+                    h.appendChild(div); h.scrollTop = h.scrollHeight; setCoreState(d.is_running ? 'success' : 'error');
+                } catch(e) { setCoreState('error'); }
             }
-
             document.getElementById('check-process-btn').addEventListener('click', checkProc);
-            processInput.addEventListener('keypress', (e) => e.key === 'Enter' && checkProc());
+            document.getElementById('process-input').addEventListener('keypress', (e) => e.key === 'Enter' && checkProc());
 
-            async function checkProc() {
-                const name = processInput.value;
-                if(!name) return;
-                setFaceState('thinking');
-                try {
-                    const res = await fetch(`${API_URL}/check_process?process_name=${encodeURIComponent(name)}`);
-                    const data = await res.json();
-                    
-                    const entry = document.createElement('div');
-                    entry.className = 'chat-entry';
-                    entry.innerHTML = `<div class="user-query">Check: ${name}</div><div class="ai-response" style="color:${data.is_running ? '#4caf50':'#f44336'}">${data.message}</div>`;
-                    historyDiv.appendChild(entry);
-                    historyDiv.scrollTop = historyDiv.scrollHeight;
-                    
-                    setFaceState(data.is_running ? 'success' : 'error');
-                } catch(e) { setFaceState('error'); }
-            }
-
-            ipcRenderer.send('get-current-mode');
-            checkInit();
-        }); 
+            ipcRenderer.send('get-current-mode'); checkInit();
+        });
     </script>
 </body>
 </html>

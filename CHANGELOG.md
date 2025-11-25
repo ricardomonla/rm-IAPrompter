@@ -4,54 +4,51 @@ Todos los cambios notables en el proyecto **Asistente de Escritorio MFM** se doc
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## **\[0.8.8\] \- 2025-11-25**
+## **\[0.9.6\] \- 2025-11-25**
 
 ### **Añadido**
 
-* **Documentación:** Actualización completa del README.md con información de autor, versión actual, características detalladas y guía de solución de problemas.
-* **Estandarización:** Cabeceras de autoría y versión añadidas a index.html y app.py.
-* **Despliegue:** Creación de Dockerfile para optimizar la construcción de la imagen Docker.
-* **Diagnóstico:** Mejora del sistema de logging en app-run.sh con archivos separados para backend y frontend en app-logs/.
+* **Identidad Visual:** Nuevo diseño de **"Núcleo Hexagonal"** animado en SVG que reemplaza a la cara robótica. Incluye estados de color (Azul/Verde/Rojo/Naranja) y animaciones de giro/pulso.  
+* **Layout:** Nueva disposición **"Side-by-Side" (Lado a Lado)**. La barra de chat/input ahora se despliega horizontalmente a la izquierda del núcleo, optimizando el espacio vertical.
 
 ### **Cambiado**
 
-* **Orquestación:** docker-compose.yml actualizado para construir desde Dockerfile en lugar de usar imagen base directa, eliminando instalación de dependencias en tiempo de ejecución.
-* **Interfaz:** Configuración de DevTools en main.js cambiada a modo 'right' para acoplar la consola de desarrollo y evitar ventanas fantasma.
-* **Script Maestro:** app-run.sh actualizado con lógica de logging avanzada y versión 0.8.6.
+* **Estabilidad UX:** Eliminadas las transiciones CSS de tamaño y la interpolación de movimiento de la ventana (setBounds sin animación) para corregir el "salto" visual en Linux. El anclaje en la esquina inferior derecha es ahora sólido e instantáneo.  
+* **Modo Mini:** Ajustado el tamaño mini a **60x60px** para contener perfectamente el nuevo núcleo hexagonal.  
+* **Login:** Mejorada la experiencia de inicio de sesión con validación mediante tecla Enter y feedback visual en el núcleo (Estado "Locked" en naranja).
 
 ### **Corregido**
 
-* **Consistencia:** Sincronización de versiones y cabeceras en todos los archivos principales.
+* **Bug de "Ventana Fantasma":** Configurada la apertura de DevTools en modo right (acoplado) en lugar de detach para evitar confusiones durante el debugging.  
+* **Bug de Clics:** Eliminada la propiedad ignoreMouseEvents en Linux que causaba que la ventana dejara de responder a los clics en ciertos modos.
 
 ## **\[0.8.7\] \- 2025-11-25**
 
 ### **Añadido**
 
-* **Estandarización:** Cabeceras de autoría y versión en archivos principales (main.js, app-run.sh).
-
-### **Corregido**
-
-* **Debug:** Modificada la configuración de DevTools en Electron para usar el modo right (acoplado) en lugar de detach, eliminando la confusión visual de una "segunda ventana" al depurar.  
-* **Estabilidad Visual:** Eliminada la lógica de transparencia condicional (ignoreMouseEvents) en Linux que causaba inestabilidad en los clics.
-
-## **\[0.8.6\] \- 2025-11-25**
-
-### **Cambiado**
-
-* **Despliegue:** Optimización crítica del arranque. Se migró la instalación de dependencias (pip install) al Dockerfile (tiempo de construcción) en lugar de ejecutarse en cada inicio (tiempo de ejecución). El arranque ahora es instantáneo.
-
-### **Corregido**
-
-* **Diagnóstico:** El script app-run.sh ahora soporta logging completo a archivos (app-logs/backend\_\*.log y frontend\_\*.log) cuando se usa el flag \--debug.
+* **Estandarización:** Cabeceras de autoría y versión en archivos principales.  
+* **Debug:** Soporte robusto para logging a archivo con ./app-run.sh \--debug.
 
 ## **\[0.8.2\] \- 2025-11-25**
 
 ### **Añadido**
 
-* **Usabilidad:** Implementación de posicionamiento fijo inteligente en la esquina inferior derecha.  
+* **Usabilidad:** Implementación de posicionamiento fijo en la esquina inferior derecha.  
 * **Interfaz:** Ciclo de 3 modos de vista (Mini, Compacto, Expandido).
 
 ### **Cambiado**
 
-* **Refactorización:** Renombrado de directorios a app-interface y app-data.  
-* **UX:** Eliminada funcionalidad de Drag & Drop por estabilidad.
+* **Refactorización:** Renombrado de directorios a app-interface y app-data.
+
+## **\[0.8.1\] \- 2025-11-25**
+
+### **Añadido**
+
+* **Seguridad:** Cifrado Fernet (AES) para API Keys.  
+* **Despliegue:** Script maestro app-run.sh con auto-reparación.
+
+## **\[0.1.0\] \- 2025-11-24**
+
+### **Añadido**
+
+* Estructura inicial del proyecto (Flask \+ Electron).

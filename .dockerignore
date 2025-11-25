@@ -1,0 +1,7 @@
+app-interface/node_modules/
+app-logs/app-data/*.log
+.git/
+.gitignore
+.env
+.DS_Store
+__pycache__/*.pyc
