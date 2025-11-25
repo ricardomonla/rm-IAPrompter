@@ -1,8 +1,8 @@
 /*
  * -----------------------------------------------------------------------------
  * Autor: Lic. Ricardo MONLA
- * Versión: v0.9.6 (Visual Padding Fix)
- * Descripción: Ajuste de tamaño Mini para evitar recorte de sombras/brillos.
+ * Versión: v0.9.8 (Auto-Minimize)
+ * Descripción: Minimiza al hexágono (Mini) al perder el foco (clic fuera).
  * -----------------------------------------------------------------------------
  */
 
@@ -13,13 +13,13 @@ let mainWindow;
 
 // Definición de los 3 estados de la ventana
 const WINDOW_SIZES = {
-    mini: { width: 80, height: 80 },        // Aumentado a 80 para márgenes visuales
-    compact: { width: 500, height: 500 },   // Ancho para chat lateral
-    expanded: { width: 900, height: 700 }   // Trabajo amplio
+    mini: { width: 80, height: 80 },        
+    compact: { width: 500, height: 500 },   
+    expanded: { width: 900, height: 700 }   
 };
 
 let currentMode = 'compact'; 
-const MARGIN = 20; // Distancia de la ventana al borde de la pantalla
+const MARGIN = 20; 
 
 function getBottomRightPosition(size) {
     const workArea = screen.getPrimaryDisplay().workArea; 
@@ -50,6 +50,17 @@ function createWindow() {
 
     mainWindow.loadFile('index.html');
     
+    // --- LÓGICA DE AUTO-MINIMIZAR (Nuevo) ---
+    mainWindow.on('blur', () => {
+        // Si no estamos en modo mini y no estamos depurando (opcional)
+        if (currentMode !== 'mini') {
+            // 1. Avisar al Frontend para que cambie estilos (ocultar chat)
+            mainWindow.webContents.send('force-mode-update', 'mini');
+            // 2. Cambiar geometría de la ventana
+            updateWindowGeometry('mini');
+        }
+    });
+
     if (process.env.MFM_DEBUG === 'true') {
         mainWindow.webContents.openDevTools({ mode: 'right' }); 
     }
@@ -63,7 +74,6 @@ function updateWindowGeometry(mode) {
     const newSize = WINDOW_SIZES[mode];
     const newPos = getBottomRightPosition(newSize);
     
-    // Animación desactivada (false) para evitar saltos visuales en Linux
     mainWindow.setBounds({ 
         x: Math.round(newPos.x), 
         y: Math.round(newPos.y), 
