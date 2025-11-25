@@ -11,7 +11,7 @@ El proyecto utiliza una arquitectura de microservicios:
 
 * **🔒 Seguridad Primero:** Las API Keys nunca se guardan en texto plano. Se cifran y almacenan en .env utilizando una "Clave Maestra" que solo el usuario conoce.  
 * **🐳 Portabilidad Total:** Uso de **Docker Compose** para orquestar el entorno sin depender de instalaciones locales de Python ni dependencias complejas.  
-* **💾 Persistencia de Datos:** Guarda configuraciones, historial y preferencias en un volumen local (./mfm\_data).  
+* **💾 Persistencia de Datos:** Guarda configuraciones, historial y preferencias en un volumen local (./app-data).
 * **⚡ Modo Dual:** Interfaz moderna con pestañas para cambiar rápidamente entre **"Chat IA"** y **"Monitor de Procesos"**.  
 * **🤖 Despliegue Inteligente:** Incluye un script app-run.sh que gestiona todo el ciclo de vida: configuración inicial, cifrado de credenciales, levantamiento de servicios y limpieza al cerrar.  
 * **👀 Monitoreo Real:** Capacidad de verificar procesos activos en el Host Linux mediante el mapeo de /proc.
@@ -77,13 +77,13 @@ Al iniciar la interfaz gráfica, verás una pantalla de **"Acceso Restringido"**
 * **app-run.sh**: Script maestro. Detecta versiones de Docker, gestiona el cifrado de claves, auto-repara conflictos de contenedores y lanza la app.  
 * **docker-compose.yml**: Define el servicio backend, redes y volúmenes. Usa la imagen oficial python:3.11-slim.  
 * **app.py**: Backend Flask. Contiene la lógica de cifrado Fernet, endpoints de la API de Gemini y lectura del sistema de archivos /host/proc.  
-* **electron-interface/**: Código fuente del frontend (HTML/CSS/JS).
+* **app-interface/**: Código fuente del frontend (HTML/CSS/JS).
 
 ### **Volúmenes Docker Configuradas**
 
 * /proc:/host/proc:ro: **(Solo Lectura)** Permite al contenedor inspeccionar los procesos del host.  
 * ./app.py:/app/app.py: Mapeo de código en vivo para desarrollo.  
-* ./mfm\_data:/app/data: Persistencia de datos (configuración JSON) fuera del contenedor.
+* ./app-data:/app/data: Persistencia de datos (configuración JSON) fuera del contenedor.
 
 ## **📡 Endpoints de la API**
 

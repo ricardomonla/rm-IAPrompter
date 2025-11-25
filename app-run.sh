@@ -4,9 +4,9 @@
 # ----------------------------------------------------
 
 # --- Definiciones ---
-ELECTRON_DIR="electron-interface"
+ELECTRON_DIR="app-interface"
 ENV_FILE=".env"
-DATA_DIR="./mfm_data"
+DATA_DIR="./app-data"
 # Nombre del contenedor definido en docker-compose.yml
 CONTAINER_NAME="mfm-backend" 
 

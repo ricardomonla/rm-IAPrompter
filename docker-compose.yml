@@ -14,7 +14,7 @@ services:
       - ./app.py:/app/app.py
       
       # Persistencia de datos (configuración, historial, claves)
-      - ./mfm_data:/app/data
+      - ./app-data:/app/data
     env_file:
       - .env
     # Comando de inicio: Instala dependencias y arranca

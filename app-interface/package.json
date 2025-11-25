@@ -1,5 +1,5 @@
 {
-  "name": "electron-interface",
+  "name": "app-interface",
   "version": "1.0.0",
   "description": "MFM Desktop Assistant Interface",
   "main": "main.js",

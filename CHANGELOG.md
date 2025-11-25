@@ -4,6 +4,15 @@ Todos los cambios notables en el proyecto **Asistente de Escritorio MFM** se doc
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## **\[0.8.2\] \- 2025-11-25**
+
+### **Cambiado**
+
+* **Refactorización:** Renombrado del directorio "electron-interface" a "app-interface" para mayor claridad.
+* **Refactorización:** Renombrado del directorio "mfm_data" a "app-data" para consistencia.
+* **Actualización global:** Modificadas todas las referencias en el código, configuración y documentación para reflejar los nuevos nombres de directorios.
+* **Mantenimiento:** Optimizado el archivo .gitignore con patrones completos para Python, Node.js/Electron y mejores prácticas de organización.
+
 ## **\[0.8.1\] \- 2025-11-25**
 
 ### **Añadido**
