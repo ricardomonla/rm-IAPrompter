@@ -1,0 +1,23 @@
+services:
+  backend:
+    container_name: mfm-backend
+    # Usamos la imagen oficial de Python directamente
+    image: python:3.11-slim
+    working_dir: /app
+    ports:
+      - "5000:5000"
+    volumes:
+      # --- RESTAURADO: Monitoreo de Procesos del Host (Solo Linux) ---
+      - /proc:/host/proc:ro
+      
+      # Código fuente en vivo (para que no tengas que reconstruir si cambias app.py)
+      - ./app.py:/app/app.py
+      
+      # Persistencia de datos (configuración, historial, claves)
+      - ./mfm_data:/app/data
+    env_file:
+      - .env
+    # Comando de inicio: Instala dependencias y arranca
+    command: >
+      sh -c "pip install flask google-generativeai cryptography && python app.py"
+    restart: unless-stopped

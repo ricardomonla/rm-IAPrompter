@@ -4,77 +4,216 @@ import json
 import logging
 import traceback
 import google.generativeai as genai
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import base64
+import threading
 
+# Configuración básica de logging
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
-# Configure Gemini API
-genai.configure(api_key=os.getenv('AIzaSyC1mvlI2BITv4FRJ7IzSD9GATYdUQWIsG8'))
-model = genai.GenerativeModel('gemini-2.5-flash',
-                              system_instruction="You are a direct and technical AI assistant, ideal for answering programming queries. Respond in a straightforward, technical manner without unnecessary fluff.")
+# Directorios de configuración
+CONFIG_DIR = '/app/data'
+CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 
-@app.route('/api/status')
-def status():
-    return jsonify({"status": "API is operational"})
+# Variables globales para el estado de la API y el modelo
+GEMINI_KEY_ENCRYPTED = os.getenv('GEMINI_API_KEY_ENCRYPTED')
+gemini_model = None
+is_api_initialized = threading.Event()
 
-@app.route('/api/list_models')
-def list_models():
+# --- Cifrado Fernet y Funciones de Seguridad ---
+
+class SecureConfig:
+    def __init__(self, master_key_bytes):
+        salt = b'mfm_assistant_salt' 
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            iterations=480000, 
+        )
+        self.key = base64.urlsafe_b64encode(kdf.derive(master_key_bytes))
+        self.fernet = Fernet(self.key)
+
+    def encrypt(self, data: str) -> str:
+        return self.fernet.encrypt(data.encode()).decode()
+
+    def decrypt(self, token: str) -> str:
+        return self.fernet.decrypt(token.encode()).decode()
+
+# --- Funciones de Configuración Persistente ---
+
+def load_config():
+    if not os.path.exists(CONFIG_DIR):
+        try:
+            os.makedirs(CONFIG_DIR)
+        except OSError as e:
+            logging.error(f"Error creating config dir: {e}")
+            return {}
+        
+    if not os.path.exists(CONFIG_FILE):
+        initial_config = {
+            "favorite_process": "bash",
+            "theme": "light",
+            "chat_history": []
+        }
+        try:
+            with open(CONFIG_FILE, 'w') as f:
+                json.dump(initial_config, f, indent=4)
+            return initial_config
+        except Exception as e:
+            logging.error(f"Error creating initial config file: {e}")
+            return {}
+    
     try:
-        models = genai.list_models()
-        model_names = [model.name for model in models]
-        return jsonify({"models": model_names})
+        with open(CONFIG_FILE, 'r') as f:
+            return json.load(f)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logging.error(f"Error reading config.json: {e}")
+        return {}
 
-@app.route('/api/check_host_access')
-def check_host_access():
+def save_config(data):
+    if not os.path.exists(CONFIG_DIR):
+        os.makedirs(CONFIG_DIR)
+
     try:
-        processes = os.listdir('/host/proc/')
-        return jsonify({"processes": processes})
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(data, f, indent=4)
+        return True
     except Exception as e:
-        return jsonify({"error": "Cannot access host /proc directory"})
+        logging.error(f"Error writing config.json: {e}")
+        return False
+
+# --- Inicialización de la API ---
+
+def initialize_gemini(api_key: str):
+    global gemini_model
+    try:
+        genai.configure(api_key=api_key)
+        gemini_model = genai.GenerativeModel('gemini-2.5-flash',
+                                             system_instruction="You are a direct and technical AI assistant, ideal for answering programming queries. Respond in a straightforward, technical manner without unnecessary fluff.")
+        is_api_initialized.set() 
+        logging.info("Gemini API initialized successfully.")
+        return True
+    except Exception as e:
+        logging.error(f"Failed to initialize Gemini API: {e}")
+        return False
+
+# --- Endpoints de Seguridad y Configuración ---
+
+@app.route('/api/initialize', methods=['POST'])
+def initialize_api():
+    global GEMINI_KEY_ENCRYPTED
+    
+    if not GEMINI_KEY_ENCRYPTED:
+        return jsonify({"success": False, "message": "Clave cifrada no encontrada en entorno."}), 400
+    
+    data = request.get_json()
+    master_key = data.get('master_key')
+    
+    if not master_key:
+        return jsonify({"success": False, "message": "Clave Maestra no proporcionada."}), 400
+
+    try:
+        master_key_bytes = master_key.encode()
+        secure_config = SecureConfig(master_key_bytes)
+        decrypted_key = secure_config.decrypt(GEMINI_KEY_ENCRYPTED)
+        
+        if initialize_gemini(decrypted_key):
+            return jsonify({"success": True, "message": "Sistema desbloqueado."})
+        else:
+            is_api_initialized.clear()
+            return jsonify({"success": False, "message": "Fallo al configurar la API."}), 401
+            
+    except Exception as e:
+        logging.error(f"Decryption error: {e}")
+        is_api_initialized.clear()
+        return jsonify({"success": False, "message": "Clave Maestra incorrecta."}), 401
+
+@app.route('/api/is_initialized', methods=['GET'])
+def is_initialized_status():
+    return jsonify({"initialized": is_api_initialized.is_set()})
+
+# --- Middleware de Seguridad ---
+
+@app.before_request
+def check_initialization():
+    allowed_routes = ['/api/initialize', '/api/is_initialized', '/api/encrypt_key', '/api/status', '/api/get_config', '/api/save_config']
+    if request.path in allowed_routes:
+        return
+        
+    if not is_api_initialized.is_set():
+        return jsonify({"error": "API no inicializada. Por favor, proporcione la Clave Maestra."}), 403
+
+# --- Endpoints Principales ---
 
 @app.route('/api/query_gemini', methods=['POST'])
 def query_gemini():
     data = request.get_json()
     if not data or 'query' not in data:
-        return jsonify({"error": "Missing 'query' field in request"}), 400
+        return jsonify({"error": "Missing 'query'"}), 400
 
-    query = data['query']
     try:
-        response = model.generate_content(query)
+        response = gemini_model.generate_content(data['query'])
         return jsonify({"response": response.text})
     except Exception as e:
-        logging.error("Error in query_gemini: %s", str(e))
-        logging.error("Traceback: %s", traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/check_process')
 def check_process():
+    # --- LÓGICA RESTAURADA Y CORREGIDA ---
     process_name = request.args.get('process_name')
     if not process_name:
-        return jsonify({"error": "Missing process_name parameter"}), 400
+        return jsonify({"error": "Falta parámetro process_name"}), 400
 
     try:
+        # Usamos /host/proc mapeado desde docker-compose
         proc_dir = '/host/proc/'
         if not os.path.exists(proc_dir):
-            return jsonify({"is_running": False, "message": f"El proceso {process_name} está inactivo. (No se puede acceder a /host/proc)"})
+            return jsonify({"is_running": False, "message": f"Error: No se puede acceder a {proc_dir}. Verifica docker-compose."})
 
+        # Recorremos los PIDs
         for pid in os.listdir(proc_dir):
             if not pid.isdigit():
                 continue
+            
+            # Leemos el nombre del comando
             comm_path = os.path.join(proc_dir, pid, 'comm')
             if os.path.exists(comm_path):
-                with open(comm_path, 'r') as f:
-                    comm = f.read().strip()
-                    if comm == process_name:
-                        return jsonify({"is_running": True, "message": f"El proceso {process_name} está activo."})
+                try:
+                    with open(comm_path, 'r') as f:
+                        comm = f.read().strip()
+                        # Comparamos (puedes hacer .lower() si quieres ser flexible)
+                        if comm == process_name:
+                            return jsonify({"is_running": True, "message": f"El proceso '{process_name}' está ACTIVO (PID: {pid})."})
+                except (OSError, IOError):
+                    continue # El proceso pudo haber terminado mientras leíamos
 
-        return jsonify({"is_running": False, "message": f"El proceso {process_name} está inactivo."})
+        return jsonify({"is_running": False, "message": f"El proceso '{process_name}' NO se encontró."})
 
     except Exception as e:
-        return jsonify({"is_running": False, "message": f"El proceso {process_name} está inactivo. Error: {str(e)}"})
+        logging.error(f"Error checking process: {e}")
+        return jsonify({"is_running": False, "message": f"Error verificando: {str(e)}"})
+
+# --- Persistencia ---
+
+@app.route('/api/get_config', methods=['GET'])
+def get_config():
+    return jsonify(load_config())
+
+@app.route('/api/save_config', methods=['POST'])
+def save_config_endpoint():
+    data = request.get_json()
+    if not data or 'config_data' not in data:
+        return jsonify({"success": False, "message": "Missing config_data"}), 400
+    
+    if save_config(data['config_data']):
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False, "message": "Error al guardar"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

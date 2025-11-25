@@ -1,213 +1,448 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MFM Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: transparent;
-            font-family: Arial, sans-serif;
+            background-color: rgba(20, 20, 25, 0.95);
+            color: #e0e0e0;
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+            border-radius: 10px;
+            border: 1px solid #333;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CABECERA (QR) --- */
+        #header {
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            pointer-events: none;
+            padding: 15px; /* Reducido un poco para ganar espacio */
+            background: linear-gradient(180deg, rgba(30,30,35,1) 0%, rgba(20,20,25,0) 100%);
+            /* Hacemos que el header sea clicable para resetear o efectos futuros */
+            cursor: default; 
         }
-        .dialog {
-            background: rgba(255, 255, 255, 0.95);
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            padding: 10px;
-            width: 350px;
-            height: 350px;
-            display: flex;
-            flex-direction: column;
-            pointer-events: auto;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .qr-container {
+
+        #qr-container {
+            width: 70px; /* Un poco más pequeño para elegancia */
+            height: 70px;
+            border: 3px solid #555;
+            border-radius: 8px;
+            background-color: white;
+            padding: 4px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
             display: flex;
             justify-content: center;
-            margin-bottom: 10px;
+            align-items: center;
         }
-        .qr-code {
-            width: 80px;
-            height: 80px;
-            border: 3px solid gray;
-            border-radius: 5px;
-        }
-        .history {
+
+        .status-thinking { border-color: #00bcd4 !important; box-shadow: 0 0 15px #00bcd4; }
+        .status-success { border-color: #4caf50 !important; box-shadow: 0 0 15px #4caf50; }
+        .status-error { border-color: #f44336 !important; box-shadow: 0 0 15px #f44336; }
+        .status-locked { border-color: #ff9800 !important; box-shadow: 0 0 15px #ff9800; }
+
+        #qr-code { width: 100%; height: 100%; }
+
+        /* --- LOGIN --- */
+        #login-screen {
             flex: 1;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 5px;
-            overflow-y: auto;
-            font-size: 12px;
-            margin-bottom: 10px;
-        }
-        .inputs {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
         }
-        input {
-            padding: 5px;
-            font-size: 12px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
+        #login-title { color: #ff9800; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; }
+
+        /* --- INTERFAZ PRINCIPAL --- */
+        #main-interface {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
         }
-        button {
-            padding: 5px;
+
+        #history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
             font-size: 12px;
+            border-top: 1px solid #333;
+        }
+
+        .chat-entry { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #333; }
+        .user-query { color: #aaa; margin-bottom: 4px; font-size: 11px; }
+        .user-query::before { content: "> "; color: #555; }
+        .ai-response { color: #4caf50; white-space: pre-wrap; }
+
+        #notification-bubble {
+            background-color: #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 0 15px 10px 15px;
+            font-size: 11px;
+            display: none;
+            border-left: 3px solid #00bcd4;
+        }
+
+        /* --- ÁREA DE INPUT Y TABS --- */
+        #input-section {
+            background-color: rgba(25, 25, 30, 0.98);
+            border-top: 1px solid #333;
+        }
+
+        /* Tabs de Selección de Modo */
+        #mode-tabs {
+            display: flex;
+            background-color: #1a1a1e;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            background: none;
+            border: none;
+            color: #666;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
             cursor: pointer;
-            background: #007bff;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover { color: #aaa; background-color: #222; }
+        
+        .tab-btn.active {
+            color: #fff;
+            background-color: #2a2a30;
+            border-bottom-color: #00bcd4; /* Azul cián */
+        }
+        
+        .tab-btn.active.monitor-mode {
+            border-bottom-color: #e91e63; /* Rosa para modo monitor */
+        }
+
+        /* Contenedor de Inputs */
+        #input-area { padding: 15px; }
+
+        .mode-container { display: none; } /* Ocultos por defecto */
+        .mode-container.active { display: block; } /* Solo el activo se muestra */
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            background-color: #111;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            box-sizing: border-box;
+        }
+
+        input:focus { outline: none; border-color: #00bcd4; }
+
+        button.action-btn {
+            width: 100%;
+            padding: 8px;
+            background-color: #333;
             color: white;
             border: none;
-            border-radius: 3px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            transition: background 0.2s;
         }
-        button:hover {
-            background: #0056b3;
-        }
-        .notification {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 5px;
-            border-radius: 5px;
-            font-size: 12px;
-            max-width: 300px;
-            word-wrap: break-word;
-            display: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
+
+        button.action-btn:hover { background-color: #444; }
+        button.action-btn:active { background-color: #555; }
+        
+        /* Botones específicos por modo */
+        #send-ai-btn.btn-primary { background-color: #00bcd4; color: #000; font-weight: bold; }
+        #send-ai-btn.btn-primary:hover { background-color: #26c6da; }
+
+        #check-process-btn.btn-monitor { background-color: #e91e63; color: #fff; font-weight: bold; }
+        #check-process-btn.btn-monitor:hover { background-color: #f06292; }
+
+        /* Login button */
+        #unlock-btn { width: 100%; padding: 10px; margin-top: 10px; background-color: #ff9800; border: none; color: black; font-weight: bold; cursor: pointer; border-radius: 4px;}
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
     </style>
 </head>
 <body>
-    <div class="dialog">
-        <div class="qr-container">
-            <svg class="qr-code" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <!-- Simple QR code placeholder -->
-                <rect width="100" height="100" fill="white"/>
-                <rect x="10" y="10" width="80" height="80" fill="black"/>
-                <rect x="20" y="20" width="60" height="60" fill="white"/>
-                <rect x="30" y="30" width="40" height="40" fill="black"/>
-                <rect x="35" y="35" width="30" height="30" fill="white"/>
-                <rect x="40" y="40" width="20" height="20" fill="black"/>
-                <rect x="45" y="45" width="10" height="10" fill="white"/>
+
+    <!-- Cabecera QR -->
+    <div id="header">
+        <div id="qr-container">
+            <svg id="qr-code" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="10" width="30" height="30" fill="black"/>
+                <rect x="60" y="10" width="30" height="30" fill="black"/>
+                <rect x="10" y="60" width="30" height="30" fill="black"/>
+                <rect x="20" y="20" width="10" height="10" fill="white"/>
+                <rect x="70" y="20" width="10" height="10" fill="white"/>
+                <rect x="20" y="70" width="10" height="10" fill="white"/>
+                <rect x="50" y="50" width="10" height="10" fill="black"/>
+                <rect x="60" y="60" width="10" height="10" fill="black"/>
+                <rect x="70" y="50" width="10" height="10" fill="black"/>
+                <rect x="50" y="70" width="10" height="10" fill="black"/>
             </svg>
         </div>
-        <div class="history" id="history"></div>
-        <div class="inputs">
-            <input type="text" id="query-input" placeholder="Ask IA...">
-            <button id="send-query">Send</button>
-            <input type="text" id="process-input" placeholder="Process name...">
-            <button id="check-process">Check</button>
+    </div>
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen">
+        <div id="login-title">Acceso Restringido</div>
+        <input type="password" id="master-key-input" placeholder="Clave Maestra..." autofocus />
+        <button id="unlock-btn">Desbloquear</button>
+        <div id="login-msg" style="margin-top:10px; font-size:10px; color:#f44336;"></div>
+    </div>
+
+    <!-- INTERFAZ PRINCIPAL -->
+    <div id="main-interface">
+        
+        <!-- Área de Historial / Output -->
+        <div id="history">
+            <div class="chat-entry" style="color: #666; font-style: italic;">
+                System ready. Select mode below.
+            </div>
         </div>
-        <div class="notification" id="notification"></div>
+        <div id="notification-bubble"></div>
+
+        <!-- Área de Input con Pestañas -->
+        <div id="input-section">
+            <div id="mode-tabs">
+                <button class="tab-btn active" id="tab-chat" onclick="switchMode('chat')">IA Chat</button>
+                <button class="tab-btn" id="tab-monitor" onclick="switchMode('monitor')">Monitor</button>
+            </div>
+
+            <div id="input-area">
+                <!-- Modo 1: Chat -->
+                <div id="chat-container" class="mode-container active">
+                    <input type="text" id="ai-input" placeholder="Consulta de programación..." />
+                    <button id="send-ai-btn" class="action-btn btn-primary">Enviar Consulta</button>
+                </div>
+
+                <!-- Modo 2: Monitor -->
+                <div id="monitor-container" class="mode-container">
+                    <input type="text" id="process-input" placeholder="Nombre del proceso (ej. docker)..." />
+                    <button id="check-process-btn" class="action-btn btn-monitor">Verificar Estado</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const qrCode = document.querySelector('.qr-code');
+        // --- Elementos UI ---
+        const qrContainer = document.getElementById('qr-container');
+        const loginScreen = document.getElementById('login-screen');
+        const mainInterface = document.getElementById('main-interface');
+        const masterKeyInput = document.getElementById('master-key-input');
+        const unlockBtn = document.getElementById('unlock-btn');
+        const loginMsg = document.getElementById('login-msg');
+
         const historyDiv = document.getElementById('history');
-        const notification = document.getElementById('notification');
-        let chatHistory = [];
+        const notifBubble = document.getElementById('notification-bubble');
 
+        // Inputs y Botones
+        const aiInput = document.getElementById('ai-input');
+        const sendAiBtn = document.getElementById('send-ai-btn');
+        const processInput = document.getElementById('process-input');
+        const checkProcessBtn = document.getElementById('check-process-btn');
+
+        // Tabs
+        const tabChat = document.getElementById('tab-chat');
+        const tabMonitor = document.getElementById('tab-monitor');
+        const chatContainer = document.getElementById('chat-container');
+        const monitorContainer = document.getElementById('monitor-container');
+
+        const API_URL = 'http://localhost:5000/api';
+
+        // --- Lógica de Pestañas (Switch Mode) ---
+        function switchMode(mode) {
+            if (mode === 'chat') {
+                // Activar UI Chat
+                tabChat.classList.add('active');
+                tabMonitor.classList.remove('active', 'monitor-mode');
+                
+                chatContainer.classList.add('active');
+                monitorContainer.classList.remove('active');
+                
+                aiInput.focus();
+            } else {
+                // Activar UI Monitor
+                tabMonitor.classList.add('active', 'monitor-mode');
+                tabChat.classList.remove('active');
+                
+                monitorContainer.classList.add('active');
+                chatContainer.classList.remove('active');
+                
+                processInput.focus();
+            }
+        }
+
+        // --- Funciones de Estado Visual ---
         function setQRState(state) {
-            const colors = {
-                normal: 'gray',
-                thinking: 'blue',
-                success: 'green',
-                error: 'red'
-            };
-            qrCode.style.borderColor = colors[state] || 'gray';
+            qrContainer.className = ''; 
+            if (state) qrContainer.classList.add(`status-${state}`);
         }
 
-        function updateHistory() {
-            historyDiv.innerHTML = chatHistory.map(item =>
-                `<div><strong>User:</strong> ${item.query}</div><div><strong>AI:</strong> ${item.response}</div><hr>`
-            ).join('');
-            historyDiv.scrollTop = historyDiv.scrollHeight;
+        function showNotification(msg, isError = false) {
+            notifBubble.style.display = 'block';
+            notifBubble.textContent = msg;
+            notifBubble.style.borderLeftColor = isError ? '#f44336' : (tabMonitor.classList.contains('active') ? '#e91e63' : '#00bcd4');
+            setTimeout(() => { notifBubble.style.display = 'none'; }, 5000);
         }
 
-        async function sendQuery() {
-            const query = document.getElementById('query-input').value.trim();
-            if (!query) return;
+        // --- Login / Seguridad ---
+        async function checkInitializationStatus() {
+            try {
+                const response = await fetch(`${API_URL}/is_initialized`);
+                const data = await response.json();
+                if (data.initialized) showMainInterface();
+                else showLoginScreen();
+            } catch (error) {
+                console.error("Backend error", error);
+                loginMsg.textContent = "Error: Backend desconectado.";
+                setQRState('error');
+            }
+        }
 
-            document.getElementById('query-input').value = '';
+        function showLoginScreen() {
+            loginScreen.style.display = 'flex';
+            mainInterface.style.display = 'none';
+            setQRState('locked');
+        }
+
+        function showMainInterface() {
+            loginScreen.style.display = 'none';
+            mainInterface.style.display = 'flex';
+            setQRState('');
+            aiInput.focus();
+            loadConfig();
+        }
+
+        unlockBtn.addEventListener('click', attemptUnlock);
+        masterKeyInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') attemptUnlock(); });
+
+        async function attemptUnlock() {
+            const key = masterKeyInput.value;
+            if (!key) return;
             setQRState('thinking');
+            loginMsg.textContent = "Verificando...";
 
             try {
-                const response = await fetch('http://localhost:5000/api/query_gemini', {
+                const response = await fetch(`${API_URL}/initialize`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query })
+                    body: JSON.stringify({ master_key: key })
                 });
                 const data = await response.json();
-                if (response.ok) {
-                    chatHistory.push({ query, response: data.response });
-                    if (chatHistory.length > 5) chatHistory.shift();
-                    updateHistory();
-                    setQRState('success');
-                } else {
-                    chatHistory.push({ query, response: data.error || 'Error' });
-                    if (chatHistory.length > 5) chatHistory.shift();
-                    updateHistory();
-                    setQRState('error');
-                }
-            } catch (error) {
-                chatHistory.push({ query, response: 'Error: ' + error.message });
-                if (chatHistory.length > 5) chatHistory.shift();
-                updateHistory();
-                setQRState('error');
-            }
 
-            setTimeout(() => setQRState('normal'), 3000);
+                if (data.success) showMainInterface();
+                else {
+                    setQRState('error');
+                    loginMsg.textContent = "Clave incorrecta.";
+                    masterKeyInput.value = '';
+                }
+            } catch (e) {
+                setQRState('error');
+                loginMsg.textContent = "Error de conexión.";
+            }
         }
 
-        async function checkProcess() {
-            const processName = document.getElementById('process-input').value.trim();
-            if (!processName) return;
+        // --- Funcionalidad Chat ---
+        async function sendQuery() {
+            const query = aiInput.value;
+            if (!query) return;
 
-            document.getElementById('process-input').value = '';
+            // Add user msg
+            const userEntry = document.createElement('div');
+            userEntry.className = 'chat-entry';
+            userEntry.innerHTML = `<div class="user-query">${query}</div><div class="ai-response">...</div>`;
+            historyDiv.appendChild(userEntry);
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+
+            aiInput.value = '';
             setQRState('thinking');
-            notification.style.display = 'block';
-            notification.textContent = 'Checking...';
 
             try {
-                const response = await fetch(`http://localhost:5000/api/check_process?process_name=${encodeURIComponent(processName)}`);
+                const response = await fetch(`${API_URL}/query_gemini`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
                 const data = await response.json();
-                notification.textContent = data.message;
-                setQRState(data.is_running ? 'success' : 'error');
+                const responseDiv = userEntry.querySelector('.ai-response');
+
+                if (data.error) {
+                    responseDiv.textContent = `Error: ${data.error}`;
+                    responseDiv.style.color = '#f44336';
+                    setQRState('error');
+                    if(data.error.includes("API no inicializada")) showLoginScreen();
+                } else {
+                    responseDiv.textContent = data.response;
+                    setQRState('success');
+                }
             } catch (error) {
-                notification.textContent = 'Error: ' + error.message;
                 setQRState('error');
             }
-
-            setTimeout(() => {
-                setQRState('normal');
-                notification.style.display = 'none';
-            }, 5000);
         }
 
-        document.getElementById('send-query').addEventListener('click', sendQuery);
-        document.getElementById('check-process').addEventListener('click', checkProcess);
+        sendAiBtn.addEventListener('click', sendQuery);
+        aiInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendQuery(); });
 
-        // Allow Enter key to send
-        document.getElementById('query-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendQuery();
-        });
-        document.getElementById('process-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') checkProcess();
-        });
+        // --- Funcionalidad Monitor ---
+        async function checkProcess() {
+            const name = processInput.value;
+            if (!name) return;
 
-        // Initialize
-        setQRState('normal');
+            setQRState('thinking');
+            try {
+                const response = await fetch(`${API_URL}/check_process?process_name=${encodeURIComponent(name)}`);
+                const data = await response.json();
+                
+                showNotification(data.message, !data.is_running);
+                setQRState(data.is_running ? 'success' : 'error');
+            } catch (error) {
+                setQRState('error');
+                showNotification("Error de conexión", true);
+            }
+        }
+
+        checkProcessBtn.addEventListener('click', checkProcess);
+        processInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkProcess(); });
+
+        async function loadConfig() {
+             try {
+                const response = await fetch(`${API_URL}/get_config`);
+                const config = await response.json();
+                if(config.favorite_process) {
+                    processInput.placeholder = `Proceso (Fav: ${config.favorite_process})`;
+                }
+             } catch(e) { console.log("Config not loaded"); }
+        }
+
+        // Start
+        checkInitializationStatus();
+
     </script>
 </body>
 </html>
