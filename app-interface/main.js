@@ -1,8 +1,9 @@
 /*
  * -----------------------------------------------------------------------------
  * Autor: Lic. Ricardo MONLA
- * Versión: v0.9.8 (Auto-Minimize)
- * Descripción: Minimiza al hexágono (Mini) al perder el foco (clic fuera).
+ * Versión: v2.2.0 (Master-Detail Layout)
+ * Versión: v2.0.0 (Master-Detail Layout)
+ * Descripción: Alterna entre Hexágono (Mini) y Panel de Trabajo (Expanded).
  * -----------------------------------------------------------------------------
  */
 
@@ -11,14 +12,12 @@ const path = require('path');
 
 let mainWindow;
 
-// Definición de los 3 estados de la ventana
 const WINDOW_SIZES = {
     mini: { width: 80, height: 80 },        
-    compact: { width: 500, height: 500 },   
-    expanded: { width: 900, height: 700 }   
+    expanded: { width: 1100, height: 720 } // Aumentado ancho para mejor redacción
 };
 
-let currentMode = 'compact'; 
+let currentMode = 'expanded'; 
 const MARGIN = 20; 
 
 function getBottomRightPosition(size) {
@@ -29,7 +28,8 @@ function getBottomRightPosition(size) {
 }
 
 function createWindow() {
-    const initialSize = WINDOW_SIZES.compact;
+    // Iniciamos en Expanded para ver el login, luego el usuario puede minimizar
+    const initialSize = WINDOW_SIZES.expanded;
     const initialPos = getBottomRightPosition(initialSize);
 
     mainWindow = new BrowserWindow({
@@ -50,13 +50,10 @@ function createWindow() {
 
     mainWindow.loadFile('index.html');
     
-    // --- LÓGICA DE AUTO-MINIMIZAR (Nuevo) ---
+    // Auto-Minimizar al perder foco (excepto si estamos en modo mini)
     mainWindow.on('blur', () => {
-        // Si no estamos en modo mini y no estamos depurando (opcional)
         if (currentMode !== 'mini') {
-            // 1. Avisar al Frontend para que cambie estilos (ocultar chat)
             mainWindow.webContents.send('force-mode-update', 'mini');
-            // 2. Cambiar geometría de la ventana
             updateWindowGeometry('mini');
         }
     });
@@ -96,13 +93,14 @@ ipcMain.on('close-app', () => app.quit());
 
 app.whenReady().then(() => {
     createWindow();
+    // Atajo para alternar visibilidad
     globalShortcut.register('Ctrl+Shift+G', () => {
         if (mainWindow.isVisible()) {
-            const nextMode = currentMode === 'mini' ? 'compact' : 'mini';
+            const nextMode = currentMode === 'mini' ? 'expanded' : 'mini';
             mainWindow.webContents.send('force-mode-update', nextMode);
             updateWindowGeometry(nextMode);
         } else {
-            updateWindowGeometry('compact');
+            updateWindowGeometry('expanded');
             mainWindow.show();
         }
     });

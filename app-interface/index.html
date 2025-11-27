@@ -4,561 +4,402 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' http://localhost:5000; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com;">
     
-    <title>MFM Assistant</title>
+    <title>MFM Assistant v2.2</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 
     <style>
-        /* --- ESTRUCTURA & VARIABLES --- */
-        :root { --chat-base-size: 12px; }
+        /* --- ESTRUCTURA BASE --- */
+        :root { --chat-base-size: 13px; --accent: #00bcd4; --bg-dark: rgba(12, 14, 18, 0.98); --border: #333; }
 
-        body { margin: 0; padding: 0; background: transparent; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; width: 100%; position: relative; }
+        body { margin: 0; padding: 0; background: transparent; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; width: 100%; }
         
         #app-container {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(15, 17, 22, 0.96); 
-            border: 1px solid #333; border-radius: 12px; 
+            background-color: var(--bg-dark); 
+            border: 1px solid var(--border); border-radius: 12px; 
             display: flex; flex-direction: column; overflow: hidden; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7); backdrop-filter: blur(12px);
         }
         
         body.mode-mini #app-container { background: transparent; border: none; box-shadow: none; backdrop-filter: none; }
         body.mode-mini #content-wrapper { display: none; }
-        body.mode-mini #close-btn { display: none; }
         
-        /* --- HEADER (HEXÁGONO) --- */
-        #header {
+        /* --- HEADER & HEXAGONO --- */
+        #header-hex {
             position: absolute; bottom: 10px; right: 10px;
-            width: 60px; height: 60px;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 100; -webkit-app-region: drag;
+            width: 60px; height: 60px; z-index: 200; -webkit-app-region: no-drag; cursor: pointer; transition: transform 0.3s;
         }
+        #header-hex:hover { transform: scale(1.1); }
+        #close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; color: #666; cursor: pointer; font-size: 18px; z-index: 101; }
+        #close-btn:hover { color: #f44336; }
 
-        #hex-container {
-            width: 60px; height: 60px;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; position: relative; -webkit-app-region: no-drag;
-            transition: transform 0.3s; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
-        }
-        #hex-container:hover { transform: scale(1.1); }
-
-        /* --- CONTENIDO --- */
-        #content-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; padding: 0; z-index: 50; }
-        #close-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #666; cursor: pointer; font-size: 16px; z-index: 101; -webkit-app-region: no-drag; }
-        #close-btn:hover { color: #fff; }
-
+        /* --- LAYOUT PRINCIPAL (2 COLUMNAS) --- */
+        #content-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; z-index: 50; }
         #login-screen { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        #main-interface { flex: 1; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
         
-        /* --- HISTORIAL Y MARKDOWN --- */
-        #history { 
-            flex: 1; overflow-y: auto; padding: 15px 20px; 
+        #main-interface { flex: 1; display: flex; flex-direction: row; overflow: hidden; height: 100%; }
+
+        /* --- COLUMNA IZQUIERDA: VISOR (LECTURA) 65% --- */
+        #left-panel {
+            flex: 2; /* Ocupa más espacio */
+            display: flex; flex-direction: column;
+            border-right: 1px solid var(--border);
+            position: relative; min-width: 0; background: rgba(0,0,0,0.2);
+        }
+
+        #active-response-area {
+            flex: 1; overflow-y: auto; padding: 30px 40px;
             font-size: var(--chat-base-size); line-height: 1.6; color: #ccc;
-            margin-bottom: 80px; 
-        }
-        .chat-entry { margin-bottom: 15px; border-bottom: 1px solid #2a2a2a; padding-bottom: 10px; }
-        .user-query { color: #666; font-size: calc(var(--chat-base-size) - 2px); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: bold; }
-        
-        /* Markdown Generado */
-        .ai-response p { margin: 5px 0; }
-        .ai-response strong { color: #fff; font-weight: bold; }
-        .ai-response ul, .ai-response ol { margin: 5px 0; padding-left: 20px; }
-        .ai-response code { background: #222; padding: 2px 5px; border-radius: 4px; color: #e06c75; font-size: 0.9em; font-family: 'JetBrains Mono', monospace; }
-        
-        .ai-response pre { 
-            background: #1e1e1e !important; padding: 10px; padding-top: 30px; 
-            border-radius: 6px; overflow-x: auto; margin: 10px 0; border: 1px solid #333; position: relative;
-        }
-        .ai-response pre code { background: transparent; padding: 0; color: inherit; border: none; }
-
-        .copy-btn {
-            position: absolute; top: 0; right: 0;
-            background: #2a2a2a; border: none; border-bottom-left-radius: 4px; border-top-right-radius: 6px;
-            color: #aaa; font-size: 10px; padding: 4px 10px; cursor: pointer; font-family: 'JetBrains Mono', monospace;
-            transition: all 0.2s; border-left: 1px solid #333; border-bottom: 1px solid #333;
-        }
-        .copy-btn:hover { background: #333; color: #fff; }
-        .copy-btn.copied { color: #4caf50; border-color: #4caf50; }
-
-        /* --- INPUT SECTION --- */
-        #input-section { 
-            position: absolute; bottom: 10px; left: 10px; right: 80px;
-            background-color: rgba(10, 10, 12, 0.8); border: 1px solid #333; border-radius: 8px; 
-            padding: 8px; display: flex; flex-direction: column; justify-content: center; min-height: 60px;
         }
 
-        #mode-tabs { display: flex; gap: 10px; margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 4px; }
-        .tab-btn { background: none; border: none; color: #555; font-size: 10px; cursor: pointer; font-weight: bold; padding: 0; transition: color 0.2s; }
-        .tab-btn.active { color: #fff; border-bottom: 2px solid #00bcd4; }
-        .tab-btn.active.monitor-mode { border-bottom-color: #e91e63; }
-        
-        #input-area { display: flex; gap: 8px; position: relative; } /* position relative para anclar sugerencias */
-        .mode-container { display: none; width: 100%; gap: 8px; }
-        .mode-container.active { display: flex; }
-        
-        input { flex: 1; background: #050505; border: 1px solid #333; color: white; padding: 8px; border-radius: 4px; font-size: 12px; outline: none; transition: border 0.2s; }
-        input:focus { border-color: #00bcd4; }
-        
-        button.action-btn { background: #222; color: white; border: 1px solid #333; border-radius: 4px; cursor: pointer; font-size: 10px; padding: 0 12px; font-weight: bold; transition: all 0.2s;}
-        .btn-primary:hover { border-color: #00bcd4; color: #00bcd4; background: #111; }
-        .btn-monitor:hover { border-color: #e91e63; color: #e91e63; }
-        
-        .icon-btn { font-size: 14px; padding: 0 10px; }
-        .icon-btn:hover { border-color: #ff9800; color: #ff9800; }
-        #save-chat-btn:hover { border-color: #4caf50; color: #4caf50; }
+        /* --- COLUMNA DERECHA: CONTROL (HISTORIAL + EDITOR) 35% --- */
+        #right-panel {
+            flex: 1; min-width: 320px; max-width: 450px;
+            display: flex; flex-direction: column;
+            background: rgba(20, 20, 25, 0.4);
+        }
 
-        /* --- SUGGESTION BOX (NUEVO) --- */
-        #suggestion-box {
-            position: absolute;
-            bottom: 100%; /* Arriba del input */
-            left: 0;
-            width: 200px;
-            background-color: #0f1116;
-            border: 1px solid #333;
-            border-radius: 6px;
-            margin-bottom: 6px;
-            display: none;
-            flex-direction: column;
-            z-index: 200;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
-            overflow: hidden;
+        /* SECCIÓN 1: HISTORIAL (ARRIBA) */
+        #history-section {
+            flex: 1; /* Toma el espacio sobrante */
+            display: flex; flex-direction: column;
+            overflow: hidden; border-bottom: 1px solid var(--border);
         }
-        
-        .suggestion-item {
-            padding: 8px 12px;
-            font-size: 11px;
-            color: #aaa;
-            cursor: pointer;
-            border-left: 3px solid transparent;
-            transition: background 0.1s;
+        #history-header {
+            padding: 12px 15px; border-bottom: 1px solid #2a2a2a;
+            font-size: 10px; color: #666; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
+            display: flex; justify-content: space-between; background: rgba(0,0,0,0.2);
         }
-        
-        .suggestion-item:hover, .suggestion-item.active {
-            background-color: #1e1e24;
-            color: #fff;
-            border-left-color: #00bcd4;
-        }
-        
-        .cmd-desc { float: right; color: #555; font-size: 9px; margin-top: 2px;}
+        #history-list { flex: 1; overflow-y: auto; padding: 10px; }
 
-        /* --- SVG --- */
+        .history-item {
+            padding: 10px; margin-bottom: 6px;
+            background: rgba(255,255,255,0.03); border: 1px solid transparent; border-radius: 6px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .history-item:hover { background: rgba(255,255,255,0.07); }
+        .history-item.active { border-color: var(--accent); background: rgba(0, 188, 212, 0.05); }
+        .hist-query { font-size: 11px; color: #ddd; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hist-time { font-size: 9px; color: #555; margin-top: 4px; text-align: right; }
+
+        /* SECCIÓN 2: EDITOR (ABAJO) */
+        #composer-section {
+            height: 35%; /* Altura fija porcentual para el editor */
+            min-height: 200px;
+            display: flex; flex-direction: column;
+            padding: 15px;
+            background: rgba(15, 17, 22, 0.95);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .composer-header { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center;}
+        .composer-label { font-size: 10px; color: var(--accent); font-weight: bold; text-transform: uppercase; }
+        .composer-hint { font-size: 9px; color: #555; }
+
+        textarea {
+            flex: 1; background: #08080a; border: 1px solid #333;
+            color: #eee; padding: 12px; border-radius: 6px;
+            font-size: 12px; outline: none; font-family: 'JetBrains Mono';
+            resize: none; margin-bottom: 10px; line-height: 1.5;
+        }
+        textarea:focus { border-color: var(--accent); background: #0a0a0c; box-shadow: 0 0 8px rgba(0, 188, 212, 0.3); }
+
+        #send-btn {
+            background: #222; color: white; border: 1px solid #333; border-radius: 4px; 
+            cursor: pointer; padding: 8px 0; font-weight: bold; font-size: 11px;
+            transition: all 0.2s; width: 100%;
+        }
+        #send-btn:hover { border-color: var(--accent); color: var(--accent); background: #151515; }
+
+        /* MARKDOWN STYLES */
+        .response-content h1, .response-content h2 { color: #fff; margin-top: 25px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .response-content p { margin-bottom: 12px; }
+        .response-content code { background: #222; padding: 2px 6px; border-radius: 4px; color: #e06c75; font-size: 0.9em; }
+        .response-content pre { background: #18181b; padding: 15px; border-radius: 6px; overflow-x: auto; border: 1px solid #2a2a2a; margin: 15px 0; }
+        
+        /* SVG HEXAGONO */
         svg { overflow: visible; width: 100%; height: 100%; }
         .hex-outer { fill: none; stroke: #444; stroke-width: 2; transform-origin: 50px 50px; animation: spin 20s linear infinite; }
-        .hex-inner { fill: none; stroke: #333; stroke-width: 1; opacity: 0.7; }
+        .hex-inner { fill: none; stroke: #333; stroke-width: 1; }
         .hex-core { fill: #2a2a2a; transform-origin: 50px 50px; transition: fill 0.3s, filter 0.3s; }
-        
-        #hex-container:hover .hex-outer { stroke: #00bcd4; stroke-width: 2.5; }
-        .status-thinking .hex-core { fill: #00bcd4; filter: drop-shadow(0 0 8px #00bcd4); animation: pulse 0.8s infinite alternate; }
-        .status-thinking .hex-outer { stroke: #00bcd4; animation: spin 2s linear infinite; }
-        .status-success .hex-core { fill: #4caf50; filter: drop-shadow(0 0 8px #4caf50); }
-        .status-success .hex-outer { stroke: #4caf50; }
-        .status-error .hex-core { fill: #f44336; filter: drop-shadow(0 0 8px #f44336); }
-        .status-error .hex-outer { stroke: #f44336; }
-        .status-locked .hex-core { fill: #ff9800; filter: drop-shadow(0 0 5px #ff9800); }
-        .status-locked .hex-outer { stroke: #ff9800; animation: spin 60s linear infinite; }
+        #header-hex:hover .hex-outer { stroke: var(--accent); stroke-width: 2.5; }
+        .status-thinking .hex-core { fill: var(--accent); filter: drop-shadow(0 0 8px var(--accent)); animation: pulse 0.8s infinite alternate; }
+        .status-thinking .hex-outer { stroke: var(--accent); animation: spin 2s linear infinite; }
+        .status-success .hex-core { fill: #4caf50; }
+        .status-error .hex-core { fill: #f44336; }
         
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes pulse { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.1); opacity: 1; } }
 
-        #master-key-input { width: 70% !important; margin-bottom: 10px; text-align: center; }
-        #unlock-btn { width: 70% !important; padding: 10px; }
-        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+        .hidden { display: none !important; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        #master-key-input { width: 200px; padding: 10px; margin-bottom: 10px; text-align: center; border: 1px solid #444; background: #000; color: #fff; border-radius: 4px; }
     </style>
 
-    <script>
-        if (typeof module === 'object') { window.module = module; module = undefined; }
-    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script>
-        if (window.module) module = window.module;
-    </script>
 </head>
-<body class="mode-compact"> 
+<body class="mode-expanded"> 
 
     <div id="app-container">
         <div id="content-wrapper">
             <button id="close-btn" onclick="minimizeApp()">×</button>
             
-            <div id="login-screen" style="display:none;">
-                <h3 style="color:#ff9800; margin:0 0 15px 0; font-size:12px; letter-spacing:2px;">SISTEMA PROTEGIDO</h3>
+            <div id="login-screen" class="hidden">
+                <h3 style="color:#ff9800; letter-spacing:2px; font-size:12px;">SISTEMA PROTEGIDO</h3>
                 <input type="password" id="master-key-input" placeholder="CLAVE DE ACCESO">
-                <button id="unlock-btn" class="action-btn">INICIAR SISTEMA</button>
-                <div id="login-msg" style="color:#f44336; margin-top:10px; font-size:10px; height:12px;"></div>
+                <button id="unlock-btn" style="background:#222; color:#fff; border:1px solid #333; padding:5px 15px; margin-top:5px; cursor:pointer;">INICIAR</button>
             </div>
 
-            <div id="main-interface" style="display:none;">
-                <div id="history">
-                    <div class="chat-entry" style="text-align:center; color:#444; margin-top:30px;">
-                        <div>❖ MFM CORE ONLINE</div>
-                        <div style="font-size:10px;">v1.1.0 Autocomplete</div>
+            <div id="main-interface" class="hidden">
+                
+                <div id="left-panel">
+                    <div id="active-response-area">
+                        <div style="text-align:center; color:#444; margin-top:150px;">
+                            <div style="font-size:14px; margin-bottom:5px;">❖ MFM CORE ONLINE</div>
+                            <div style="font-size:11px;">Redacta tu consulta en el panel derecho →</div>
+                        </div>
                     </div>
                 </div>
 
-                <div id="input-section">
-                    <div id="mode-tabs">
-                        <button class="tab-btn active" id="tab-chat" onclick="switchTab('chat')">IA CHAT</button>
-                        <button class="tab-btn" id="tab-monitor" onclick="switchTab('monitor')">MONITOR</button>
-                    </div>
+                <div id="right-panel">
                     
-                    <div id="suggestion-box">
-                        <div class="suggestion-item" data-cmd="/clear">/clear <span class="cmd-desc">Limpiar pantalla</span></div>
-                        <div class="suggestion-item" data-cmd="/reset">/reset <span class="cmd-desc">Reinicio total</span></div>
+                    <div id="history-section">
+                        <div id="history-header">
+                            <span>Historial</span>
+                            <span id="new-chat-btn" style="cursor:pointer; color:var(--accent);">[+ NUEVO]</span>
+                        </div>
+                        <div id="history-list"></div>
                     </div>
 
-                    <div id="input-area">
-                        <div id="chat-container" class="mode-container active">
-                            <input type="text" id="ai-input" placeholder="Consulta o escribe // para comandos..." autocomplete="off"/>
-                            
-                            <button id="paste-analyze-btn" class="action-btn icon-btn" title="Pegar y Analizar">📋</button>
-                            <button id="save-chat-btn" class="action-btn icon-btn" title="Exportar MD">💾</button>
-                            <button id="send-ai-btn" class="action-btn btn-primary">Enviar</button>
+                    <div id="composer-section">
+                        <div class="composer-header">
+                            <span class="composer-label">Editor</span>
+                            <span class="composer-hint">Enter: Enviar | Shift+Enter: Salto</span>
                         </div>
-                        <div id="monitor-container" class="mode-container">
-                            <input type="text" id="process-input" placeholder="Proceso..." />
-                            <button id="check-process-btn" class="action-btn btn-monitor">Verificar</button>
-                        </div>
+                        <textarea id="ai-input" placeholder="Escribe tu consulta aquí..."></textarea>
+                        <button id="send-btn">ENVIAR CONSULTA</button>
                     </div>
+
                 </div>
             </div>
         </div>
 
-        <div id="header">
-            <div id="hex-container"> 
-                <svg viewBox="0 0 100 100">
-                    <path class="hex-outer" d="M50 10 L85 30 L85 70 L50 90 L15 70 L15 30 Z" />
-                    <path class="hex-inner" d="M50 25 L72 37 L72 63 L50 75 L28 63 L28 37 Z" />
-                    <circle class="hex-core" cx="50" cy="50" r="12" />
-                </svg>
-            </div>
+        <div id="header-hex">
+            <svg viewBox="0 0 100 100">
+                <path class="hex-outer" d="M50 10 L85 30 L85 70 L50 90 L15 70 L15 30 Z" />
+                <path class="hex-inner" d="M50 25 L72 37 L72 63 L50 75 L28 63 L28 37 Z" />
+                <circle class="hex-core" cx="50" cy="50" r="12" />
+            </svg>
         </div>
     </div>
 
     <script>
-        window.addEventListener('load', () => {
-            const { ipcRenderer, clipboard } = require('electron');
-            
-            // Config Marked
-            if (typeof marked !== 'undefined') marked.use({ breaks: true, gfm: true });
+        const { ipcRenderer, clipboard } = require('electron');
+        if (typeof marked !== 'undefined') marked.use({ breaks: true, gfm: true });
 
-            // --- VARIABLES DE ESTADO ---
-            let commandHistory = []; 
-            let historyIndex = -1;
-            let chatSession = [];
-            const SESSION_KEY = 'mfm_chat_session';
+        // ESTADO
+        let chatSession = [];
+        let activeIndex = -1;
+        const SESSION_KEY = 'mfm_chat_session_v2';
+        const API_URL = 'http://localhost:5000/api';
+        let isProcessing = false;
 
-            // --- SUGGESTION LOGIC ---
-            const aiInput = document.getElementById('ai-input');
-            const suggestionBox = document.getElementById('suggestion-box');
-            const suggestionItems = document.querySelectorAll('.suggestion-item');
-            let isSuggestionVisible = false;
-            let suggestionIndex = -1;
+        // DOM UI
+        const ui = {
+            login: document.getElementById('login-screen'),
+            main: document.getElementById('main-interface'),
+            responseArea: document.getElementById('active-response-area'),
+            historyList: document.getElementById('history-list'),
+            input: document.getElementById('ai-input'),
+            hexContainer: document.getElementById('header-hex'),
+            sendBtn: document.getElementById('send-btn')
+        };
 
-            function showSuggestions() {
-                suggestionBox.style.display = 'flex';
-                isSuggestionVisible = true;
-                suggestionIndex = -1;
-                updateSuggestionHighlight();
-            }
+        // --- FUNCIONES CORE ---
+        function setHexState(state) {
+            ui.hexContainer.className = state ? `status-${state}` : '';
+        }
 
-            function hideSuggestions() {
-                suggestionBox.style.display = 'none';
-                isSuggestionVisible = false;
-            }
-
-            function updateSuggestionHighlight() {
-                suggestionItems.forEach((item, index) => {
-                    if (index === suggestionIndex) item.classList.add('active');
-                    else item.classList.remove('active');
-                });
-            }
-
-            function applySuggestion(cmd) {
-                aiInput.value = cmd;
-                hideSuggestions();
-                aiInput.focus();
-            }
-
-            // --- EVENTOS DEL INPUT (MODIFICADOS PARA AUTOCOMPLETE) ---
-            aiInput.addEventListener('input', (e) => {
-                const val = aiInput.value;
-                if (val === '//') {
-                    showSuggestions();
-                } else {
-                    hideSuggestions();
-                }
-            });
-
-            aiInput.addEventListener('keydown', (e) => {
-                // Si las sugerencias están visibles, capturamos navegación
-                if (isSuggestionVisible) {
-                    if (e.key === 'ArrowUp') {
-                        e.preventDefault();
-                        suggestionIndex = Math.max(0, suggestionIndex - 1);
-                        updateSuggestionHighlight();
-                        return;
-                    } else if (e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        suggestionIndex = Math.min(suggestionItems.length - 1, suggestionIndex + 1);
-                        updateSuggestionHighlight();
-                        return;
-                    } else if (e.key === 'Enter') {
-                        e.preventDefault();
-                        if (suggestionIndex > -1) {
-                            const cmd = suggestionItems[suggestionIndex].getAttribute('data-cmd');
-                            applySuggestion(cmd);
-                        } else {
-                            // Si no hay nada seleccionado y da enter, oculta y envía (opcional)
-                            hideSuggestions();
-                        }
-                        return;
-                    } else if (e.key === 'Escape') {
-                        hideSuggestions();
-                        return;
-                    }
-                }
-
-                // Navegación de Historial (Solo si NO hay sugerencias activas)
-                if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    if (historyIndex > 0) { historyIndex--; aiInput.value = commandHistory[historyIndex]; }
-                } else if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    if (historyIndex < commandHistory.length - 1) { historyIndex++; aiInput.value = commandHistory[historyIndex]; } 
-                    else { historyIndex = commandHistory.length; aiInput.value = ''; }
-                } else if (e.key === 'Enter') { 
-                    sendAI(); 
-                }
-            });
-
-            // Click en sugerencias
-            suggestionItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    applySuggestion(item.getAttribute('data-cmd'));
-                });
-            });
-
-
-            // --- VARIABLES DE LA APP ---
-            let currentViewMode = 1; 
-            let isTransitioning = false;
-            let isLocked = true; 
-            const API_URL = 'http://localhost:5000/api';
-            const hexContainer = document.getElementById('hex-container');
-
-            // --- ZOOM (CTRL + SCROLL) ---
-            let currentFontSize = 12; 
-            const rootElement = document.documentElement; 
-            window.addEventListener('wheel', (e) => {
-                if (e.ctrlKey) {
-                    e.preventDefault();
-                    if (e.deltaY < 0) currentFontSize += 1; else currentFontSize -= 1;
-                    if (currentFontSize < 9) currentFontSize = 9;
-                    if (currentFontSize > 24) currentFontSize = 24;
-                    rootElement.style.setProperty('--chat-base-size', `${currentFontSize}px`);
-                }
-            }, { passive: false });
-
-            // --- PERSISTENCIA ---
-            function loadSession() {
-                const saved = localStorage.getItem(SESSION_KEY);
-                if (saved) {
-                    try {
-                        chatSession = JSON.parse(saved);
-                        chatSession.forEach(entry => renderEntryToDOM(entry.role, entry.content));
-                        const h = document.getElementById('history');
-                        h.scrollTop = h.scrollHeight;
-                    } catch(e) { console.error("Error loading session", e); }
-                }
-            }
-
-            function saveSession() { localStorage.setItem(SESSION_KEY, JSON.stringify(chatSession)); }
-
-            function clearSession(fullReset = false) {
-                const h = document.getElementById('history');
-                h.innerHTML = `<div class="chat-entry" style="text-align:center; color:#444; margin-top:30px;"><div>❖ MFM CORE ONLINE</div><div style="font-size:10px;">v1.1.0 Reset</div></div>`;
-                if (fullReset) { chatSession = []; localStorage.removeItem(SESSION_KEY); }
-            }
-
-            function renderEntryToDOM(role, content) {
-                const h = document.getElementById('history');
-                const div = document.createElement('div'); 
-                div.className = 'chat-entry'; 
-
-                if (role === 'user') {
-                    div.innerHTML = `<div class="user-query">USER</div><div class="ai-response" style="color:#aaa;">${content}</div>`;
-                } else {
-                    div.innerHTML = `<div class="user-query">MFM CORE</div><div class="ai-response"></div>`;
-                    const responseDiv = div.querySelector('.ai-response');
-                    
-                    if (typeof marked !== 'undefined') {
-                        responseDiv.innerHTML = marked.parse(content);
-                        if(typeof hljs !== 'undefined') responseDiv.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
-                        
-                        responseDiv.querySelectorAll('pre').forEach((preBlock) => {
-                            const btn = document.createElement('button');
-                            btn.className = 'copy-btn';
-                            btn.textContent = 'Copiar';
-                            btn.addEventListener('click', () => {
-                                const code = preBlock.querySelector('code').innerText;
-                                clipboard.writeText(code);
-                                btn.textContent = '¡Copiado!';
-                                btn.classList.add('copied');
-                                setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
-                            });
-                            preBlock.appendChild(btn);
-                        });
-                    } else {
-                        responseDiv.textContent = content;
-                    }
-                }
-                h.appendChild(div);
-                return div;
-            }
-
-            // --- VISTAS Y WINDOW ---
-            function setViewMode(mode) {
-                currentViewMode = mode;
-                document.body.className = (mode === 0) ? 'mode-mini' : (mode === 1 ? 'mode-compact' : 'mode-expanded');
-                ipcRenderer.send('resize-window', (mode === 0) ? 'mini' : (mode === 1 ? 'compact' : 'expanded'));
-            }
-            window.cycleViewMode = function() { if(!isTransitioning && !isLocked) setViewMode((currentViewMode + 1) % 3); }
-            window.minimizeApp = function() { setViewMode(0); }
-            
-            ipcRenderer.on('force-mode-update', (e, m) => { document.body.className = `mode-${m}`; currentViewMode = (m === 'mini' ? 0 : 1); });
-            ipcRenderer.on('current-mode-reply', (e, { mode }) => { document.body.className = `mode-${mode}`; currentViewMode = (mode === 'mini' ? 0 : 1); });
-            hexContainer.addEventListener('click', window.cycleViewMode);
-            function setCoreState(state) { hexContainer.className = state ? `status-${state}` : ''; }
-
-            // --- SEGURIDAD ---
-            async function checkInit() {
+        function loadSession() {
+            const saved = localStorage.getItem(SESSION_KEY);
+            if (saved) {
                 try {
-                    const res = await fetch(`${API_URL}/is_initialized`);
-                    const data = await res.json();
-                    if(data.initialized) unlockUI(false); else lockUI();
-                } catch(e) { lockUI("Backend Offline"); setCoreState('error'); }
+                    chatSession = JSON.parse(saved);
+                    renderHistoryList();
+                    if (chatSession.length > 0) selectItem(chatSession.length - 1);
+                } catch(e) { console.error(e); }
             }
-            function lockUI(msg) {
-                isLocked = true;
-                document.getElementById('login-screen').style.display = 'flex';
-                document.getElementById('main-interface').style.display = 'none';
-                if(msg) document.getElementById('login-msg').textContent = msg;
-                setCoreState('locked');
-            }
-            function unlockUI(shouldTransition = true) {
-                isLocked = false;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-interface').style.display = 'flex';
-                setCoreState('success');
-                loadSession();
-                if (shouldTransition) {
-                    isTransitioning = true; 
-                    setTimeout(() => { setCoreState(''); setViewMode(0); setTimeout(() => isTransitioning = false, 500); }, 1500); 
-                } else setCoreState('');
-            }
-            const attemptUnlock = async () => {
-                const key = document.getElementById('master-key-input').value;
-                setCoreState('thinking');
-                try {
-                    const res = await fetch(`${API_URL}/initialize`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({master_key: key}) });
-                    const d = await res.json();
-                    if(d.success) unlockUI(); else { setCoreState('error'); setTimeout(() => setCoreState('locked'), 2000); }
-                } catch(e) { setCoreState('error'); }
-            };
-            document.getElementById('master-key-input').addEventListener('keypress', (e) => e.key === 'Enter' && attemptUnlock());
-            document.getElementById('unlock-btn').addEventListener('click', attemptUnlock);
+        }
+        function saveSession() { localStorage.setItem(SESSION_KEY, JSON.stringify(chatSession)); }
 
-            // --- TABS ---
-            window.switchTab = function(tab) {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'monitor-mode'));
-                document.querySelectorAll('.mode-container').forEach(c => c.classList.remove('active'));
-                if(tab === 'chat') { 
-                    document.getElementById('tab-chat').classList.add('active'); 
-                    document.getElementById('chat-container').classList.add('active'); 
-                    document.getElementById('ai-input').focus(); 
-                } else { 
-                    document.getElementById('tab-monitor').classList.add('active', 'monitor-mode'); 
-                    document.getElementById('monitor-container').classList.add('active'); 
-                }
-            }
-
-            document.getElementById('paste-analyze-btn').addEventListener('click', () => {
-                const text = clipboard.readText();
-                if (text) { aiInput.value = `Analiza esto: ${text}`; aiInput.focus(); }
-            });
-
-            document.getElementById('save-chat-btn').addEventListener('click', () => {
-                if (chatSession.length === 0) return;
-                const now = new Date();
-                const timestamp = `${now.getFullYear()}-${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate()}_${now.getHours()}-${now.getMinutes()}`;
-                let fileContent = `# MFM Assistant Log - ${timestamp}\n\n`;
-                chatSession.forEach(entry => {
-                    fileContent += (entry.role === 'user') ? `### USER\n${entry.content}\n\n` : `### MFM CORE\n${entry.content}\n\n---\n\n`;
-                });
-                const blob = new Blob([fileContent], { type: 'text/markdown' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = `MFM_Log_${timestamp}.md`;
-                a.click(); URL.revokeObjectURL(url);
-            });
-
-            // --- SEND AI ---
-            const sendAI = async () => {
-                const q = aiInput.value.trim(); if(!q) return;
+        // RENDER HISTORIAL
+        function renderHistoryList() {
+            ui.historyList.innerHTML = '';
+            chatSession.forEach((entry, index) => {
+                const div = document.createElement('div');
+                div.className = `history-item ${index === activeIndex ? 'active' : ''}`;
+                div.onclick = () => selectItem(index);
                 
-                if (q === '/reset') { clearSession(true); aiInput.value = ''; return; }
-                if (q === '/clear') { clearSession(false); aiInput.value = ''; return; }
+                const queryText = entry.query.length > 40 ? entry.query.substring(0, 40) + "..." : entry.query;
+                div.innerHTML = `
+                    <div class="hist-query">${queryText.replace(/</g, "&lt;")}</div>
+                    <div class="hist-time">${entry.timestamp || ''}</div>
+                `;
+                ui.historyList.prepend(div);
+            });
+        }
 
-                commandHistory.push(q); historyIndex = commandHistory.length;
-                aiInput.value = ''; 
-                
-                chatSession.push({ role: 'user', content: q });
-                saveSession();
-                const userDiv = renderEntryToDOM('user', q);
-                userDiv.scrollIntoView({ behavior: 'smooth' });
-
-                setCoreState('thinking');
-                const h = document.getElementById('history');
-                const loadingDiv = document.createElement('div');
-                loadingDiv.className = 'chat-entry';
-                loadingDiv.innerHTML = `<div class="user-query">MFM CORE</div><div class="ai-response">...</div>`;
-                h.appendChild(loadingDiv); h.scrollTop = h.scrollHeight;
-
-                try {
-                    const r = await fetch(`${API_URL}/query_gemini`, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query: q})});
-                    const d = await r.json();
-                    h.removeChild(loadingDiv);
-                    
-                    const rawResponse = d.response || d.error || "Error";
-                    chatSession.push({ role: 'ai', content: rawResponse });
-                    saveSession();
-                    renderEntryToDOM('ai', rawResponse);
-                    setCoreState(d.error ? 'error' : 'success');
-                } catch(e) { 
-                    setCoreState('error'); h.removeChild(loadingDiv);
-                    renderEntryToDOM('ai', "Error de conexión con el núcleo.");
-                }
-                h.scrollTop = h.scrollHeight;
-            };
-            document.getElementById('send-ai-btn').addEventListener('click', sendAI);
-
-            // --- MONITOR ---
-            const checkProc = async () => {
-                const n = document.getElementById('process-input').value; if(!n) return;
-                setCoreState('thinking');
-                try {
-                    const r = await fetch(`${API_URL}/check_process?process_name=${encodeURIComponent(n)}`);
-                    const d = await r.json();
-                    const h = document.getElementById('history');
-                    const div = document.createElement('div'); div.className = 'chat-entry'; const color = d.is_running ? '#4caf50' : '#f44336';
-                    div.innerHTML = `<div class="user-query">SYS CHECK > ${n}</div><div class="ai-response" style="color:${color}">${d.message}</div>`;
-                    h.appendChild(div); h.scrollTop = h.scrollHeight; setCoreState(d.is_running ? 'success' : 'error');
-                } catch(e) { setCoreState('error'); }
+        // SELECCIONAR ITEM
+        function selectItem(index) {
+            if (index < 0 || index >= chatSession.length) return;
+            activeIndex = index;
+            renderHistoryList();
+            
+            const entry = chatSession[index];
+            
+            // Render contenido en Panel Izquierdo
+            let html = `<div style="margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:10px;">
+                            <strong style="color:#666; font-size:10px;">TU CONSULTA:</strong>
+                            <div style="color:#ddd; margin-top:5px; white-space:pre-wrap;">${entry.query.replace(/</g, "&lt;")}</div>
+                        </div>`;
+            
+            html += `<div class="response-content">`;
+            if (entry.response) {
+                html += marked.parse(entry.response);
+            } else if (entry.error) {
+                html += `<div style="color:#f44336">Error: ${entry.error}</div>`;
+            } else {
+                html += `<div style="color:var(--accent); font-style:italic;">... Generando respuesta ...</div>`;
             }
-            document.getElementById('check-process-btn').addEventListener('click', checkProc);
-            document.getElementById('process-input').addEventListener('keypress', (e) => e.key === 'Enter' && checkProc());
+            html += `</div>`;
 
-            ipcRenderer.send('get-current-mode'); checkInit();
+            ui.responseArea.innerHTML = html;
+            
+            // Syntax Highlighting
+            ui.responseArea.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+            // Botones de copiar
+            ui.responseArea.querySelectorAll('pre').forEach((preBlock) => {
+                if(preBlock.querySelector('button')) return;
+                const btn = document.createElement('button');
+                btn.textContent = 'Copiar';
+                btn.style.cssText = "position:absolute; top:5px; right:5px; background:#333; color:#aaa; border:none; padding:3px 8px; font-size:10px; cursor:pointer; border-radius:3px;";
+                btn.addEventListener('click', () => {
+                    clipboard.writeText(preBlock.querySelector('code').innerText);
+                    btn.textContent = '¡Hecho!'; setTimeout(()=>btn.textContent='Copiar', 2000);
+                });
+                preBlock.appendChild(btn);
+            });
+        }
+
+        // ENVIAR
+        async function sendAI() {
+            const query = ui.input.value.trim();
+            if (!query || isProcessing) return;
+
+            isProcessing = true;
+            ui.input.value = ''; // Limpiar editor
+            setHexState('thinking');
+
+            const now = new Date();
+            const timestamp = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+
+            const newEntry = { query: query, response: null, timestamp: timestamp };
+            chatSession.push(newEntry);
+            saveSession();
+
+            const newIndex = chatSession.length - 1;
+            selectItem(newIndex);
+            
+            // Scroll top en respuesta
+            ui.responseArea.scrollTop = 0;
+
+            try {
+                const res = await fetch(`${API_URL}/query_gemini`, {
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({query: query})
+                });
+                const data = await res.json();
+                chatSession[newIndex].response = data.response || "Sin respuesta";
+                if(data.error) chatSession[newIndex].error = data.error;
+                setHexState('success');
+            } catch (e) {
+                chatSession[newIndex].error = "Error de conexión.";
+                setHexState('error');
+            }
+
+            saveSession();
+            selectItem(newIndex);
+            isProcessing = false;
+            setTimeout(() => setHexState(''), 2500);
+        }
+
+        // EVENTOS
+        // Manejo inteligente del Textarea: Enter envía, Shift+Enter salta
+        ui.input.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Evitar salto de línea
+                sendAI();
+            }
         });
+
+        ui.sendBtn.addEventListener('click', sendAI);
+        
+        document.getElementById('new-chat-btn').addEventListener('click', () => {
+            activeIndex = -1;
+            renderHistoryList();
+            ui.responseArea.innerHTML = `<div style="text-align:center; color:#444; margin-top:150px;">
+                                            <div>❖ NUEVA CONSULTA</div>
+                                            <div style="font-size:11px;">Escribe en el editor de la derecha</div>
+                                         </div>`;
+            ui.input.focus();
+        });
+
+        // Minimizador / Toggle
+        let isMini = false;
+        window.minimizeApp = function() { ipcRenderer.send('resize-window', 'mini'); }
+        
+        ui.hexContainer.addEventListener('click', () => {
+            const targetMode = isMini ? 'expanded' : 'mini';
+            ipcRenderer.send('resize-window', targetMode);
+            isMini = !isMini;
+        });
+        
+        ipcRenderer.on('force-mode-update', (e, mode) => {
+            document.body.className = `mode-${mode}`;
+            isMini = (mode === 'mini');
+        });
+
+        // Seguridad
+        const attemptUnlock = async () => {
+            const key = document.getElementById('master-key-input').value;
+            setHexState('thinking');
+            try {
+                const res = await fetch(`${API_URL}/initialize`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({master_key: key}) });
+                const d = await res.json();
+                if(d.success) unlockUI(); else { setHexState('error'); setTimeout(() => setHexState('locked'), 1000); }
+            } catch(e) { setHexState('error'); }
+        };
+        function unlockUI() {
+            ui.login.classList.add('hidden');
+            ui.main.classList.remove('hidden');
+            setHexState('success');
+            loadSession();
+        }
+        async function checkInit() {
+            try {
+                const res = await fetch(`${API_URL}/is_initialized`);
+                const data = await res.json();
+                if(data.initialized) unlockUI(); else { ui.login.classList.remove('hidden'); setHexState('locked'); }
+            } catch(e) { setHexState('error'); }
+        }
+
+        document.getElementById('unlock-btn').addEventListener('click', attemptUnlock);
+        document.getElementById('master-key-input').addEventListener('keypress', (e) => e.key === 'Enter' && attemptUnlock());
+
+        checkInit();
     </script>
 </body>
 </html>
