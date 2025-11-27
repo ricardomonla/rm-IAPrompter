@@ -12,6 +12,10 @@ DATA_DIR="./app-data"
 CONTAINER_NAME="mfm-backend" 
 LOG_DIR="./app-logs"
 
+# Change to script directory to ensure relative paths work from anywhere
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
 # Colores
 GREEN='\033[0;32m'
 RED='\033[0;31m'
