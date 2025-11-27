@@ -4,6 +4,12 @@ Todos los cambios notables en el proyecto **Asistente de Escritorio MFM** se doc
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## **[1.2.1] - 2025-11-27**
+
+### **Corregido**
+
+* Corrección en `app-run.sh` para permitir la ejecución del script desde fuera del directorio.
+
 ## **[1.2.0] - 2025-11-25**
 
 ### **Añadido**
