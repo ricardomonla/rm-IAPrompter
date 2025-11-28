@@ -5,20 +5,54 @@ Todos los cambios notables en el proyecto **Asistente de Escritorio MFM** se doc
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [2.4.0] - 2025-11-27
 
-## **[2.4.1] - 2025-11-28**
+### Añadido
 
-### **Añadido**
+* **Funcionalidad de Pegar desde Portapapeles:** Restaurada la función "Pegar + Analizar" con botón dedicado en la interfaz para insertar contenido del portapapeles y analizarlo con la IA.
+* **Opción --restart en Launcher:** Nuevo parámetro `--restart` para detener y reiniciar servicios en un solo comando.
+* **Logging Dual Mejorado:** Separación estricta de logs backend/frontend en modo debug con timestamps únicos.
+* **Desvinculación Completa en Debug:** El script se desvincula completamente de la consola en modo debug, permitiendo cerrar la terminal.
 
-* **Restauración de Funcionalidades Perdidas:** Re-implementadas características de la versión 1.x en la interfaz 2.x.
-    * **Análisis Automático de Portapapeles:** El botón 📋 PEGAR ahora prepara consulta automática con contenido del portapapeles y la envía directamente a la IA.
-    * **Comandos Slash:** Restaurados `/clear` (limpia pantalla manteniendo historial) y `/reset` (reinicio completo).
-    * **Exportación de Conversaciones:** Botón 💾 EXPORTAR en panel de historial para descargar conversación como Markdown.
-    * **Menú de Autocompletado:** Al escribir `//` aparece menú flotante para comandos, navegable con flechas.
+### Cambiado
 
-### **Corregido**
+* **Optimización del Script Launcher:** Refactorización completa de `app-run.sh` con funciones reutilizables, mejor manejo de errores y estructura modular (versión v0.9.1).
+* **Actualización de Electron:** De v38.7.1 a v39.2.4 para compatibilidad con Node.js v22.
+* **Interfaz Mejorada:** Ajustes en layout del editor para incluir botón de portapapeles.
 
-* **Bug de Auto-Minimización:** Removida la ocultación automática al perder foco para prevenir desaparición de la app dejando solo el hexágono.
+### Corregido
+
+* **Bug de Foco en Interfaz:** Resuelto crash en arranque causado por incompatibilidad de versiones, permitiendo funcionamiento correcto de eventos de minimización al perder foco.
+* **Incompatibilidad Node.js/Electron:** Corregida la carga de APIs de Electron mediante actualización de versión.
+
+## [2.2.0] - 2025-11-27
+
+### Añadido
+
+* **Layout Master-Detail:** Nuevo diseño con panel de visor (izquierda) y editor (derecha) para mejor experiencia de redacción.
+* **Historial de Consultas:** Panel lateral con lista de consultas anteriores, navegación intuitiva.
+* **Interfaz Mejorada:** Ventana expandida por defecto, mejor estética del foco en textarea, título actualizado a v2.2.
+* **Navegación por Teclado:** Enter para enviar, Shift+Enter para salto de línea en el editor.
+
+### Cambiado
+
+* **Versión de la Interfaz:** Actualizada a v2.2.0 en package.json y main.js.
+
+## [2.3.0] - 2025-11-27
+
+### Añadido
+
+* **Modo Desacoplado (Detached Mode):** El launcher `app-run.sh` ahora opera en modo asíncrono, liberando la terminal inmediatamente después de iniciar la aplicación. Permite cerrar la terminal sin interrumpir el funcionamiento del asistente.
+* **Opción de Parada Segura:** Nuevo parámetro `--stop` (o `-s`) para detener ordenadamente todos los servicios activos (interfaz Electron y contenedores Docker).
+
+### Cambiado
+
+* **Actualización del Orquestador:** Script `app-run.sh` actualizado a versión v0.9.0 con verificación inteligente de servicios en ejecución, evitando reinicios innecesarios del backend y simplificación del flujo de lanzamiento.
+
+### Removido
+
+* **Limpieza de Documentación:** Eliminado archivo obsoleto `app-docs/02_mis-prompts.md` (prompt anterior para gestión de changelog).
+
 
 ## **[1.2.1] - 2025-11-27**
 

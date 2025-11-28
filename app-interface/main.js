@@ -1,8 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  * Autor: Lic. Ricardo MONLA
- * Versión: v2.2.0 (Master-Detail Layout)
- * Versión: v2.0.0 (Master-Detail Layout)
+ * Versión: v2.4.0 (Enhanced Features)
  * Descripción: Alterna entre Hexágono (Mini) y Panel de Trabajo (Expanded).
  * -----------------------------------------------------------------------------
  */
@@ -49,14 +48,6 @@ function createWindow() {
     });
 
     mainWindow.loadFile('index.html');
-    
-    // Auto-Minimizar al perder foco (excepto si estamos en modo mini)
-    mainWindow.on('blur', () => {
-        if (currentMode !== 'mini') {
-            mainWindow.webContents.send('force-mode-update', 'mini');
-            updateWindowGeometry('mini');
-        }
-    });
 
     if (process.env.MFM_DEBUG === 'true') {
         mainWindow.webContents.openDevTools({ mode: 'right' }); 
@@ -67,19 +58,20 @@ function createWindow() {
 
 function updateWindowGeometry(mode) {
     if (!mainWindow) return;
-    
+
     const newSize = WINDOW_SIZES[mode];
     const newPos = getBottomRightPosition(newSize);
-    
-    mainWindow.setBounds({ 
-        x: Math.round(newPos.x), 
-        y: Math.round(newPos.y), 
-        width: newSize.width, 
-        height: newSize.height 
-    }, false); 
-    
+
+    mainWindow.setBounds({
+        x: Math.round(newPos.x),
+        y: Math.round(newPos.y),
+        width: newSize.width,
+        height: newSize.height
+    }, false);
+
     mainWindow.setIgnoreMouseEvents(false);
-    
+    mainWindow.show(); // Asegurar que la ventana sea visible
+
     if (mode !== 'mini') {
         mainWindow.focus();
     }
@@ -87,7 +79,10 @@ function updateWindowGeometry(mode) {
     currentMode = mode;
 }
 
-ipcMain.on('resize-window', (event, mode) => updateWindowGeometry(mode));
+ipcMain.on('resize-window', (event, mode) => {
+    console.log('IPC: resize-window called with mode:', mode);
+    updateWindowGeometry(mode);
+});
 ipcMain.on('get-current-mode', (event) => event.reply('current-mode-reply', { mode: currentMode }));
 ipcMain.on('close-app', () => app.quit());
 
@@ -95,11 +90,13 @@ app.whenReady().then(() => {
     createWindow();
     // Atajo para alternar visibilidad
     globalShortcut.register('Ctrl+Shift+G', () => {
+        console.log('Global shortcut Ctrl+Shift+G triggered');
         if (mainWindow.isVisible()) {
             const nextMode = currentMode === 'mini' ? 'expanded' : 'mini';
             mainWindow.webContents.send('force-mode-update', nextMode);
             updateWindowGeometry(nextMode);
         } else {
+            console.log('Window not visible, expanding');
             updateWindowGeometry('expanded');
             mainWindow.show();
         }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' http://localhost:5000; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com;">
     
-    <title>MFM Assistant v2.2</title>
+    <title>MFM Assistant v2.4.1</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 
@@ -96,6 +96,8 @@
         .composer-header { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center;}
         .composer-label { font-size: 10px; color: var(--accent); font-weight: bold; text-transform: uppercase; }
         .composer-hint { font-size: 9px; color: #555; }
+        #paste-btn { background: #333; color: #aaa; border: 1px solid #555; padding: 4px 8px; cursor: pointer; border-radius: 4px; font-size: 9px; margin-left: 8px; }
+        #paste-btn:hover { background: #444; color: #fff; }
 
         textarea {
             flex: 1; background: #08080a; border: 1px solid #333;
@@ -104,6 +106,17 @@
             resize: none; margin-bottom: 10px; line-height: 1.5;
         }
         textarea:focus { border-color: var(--accent); background: #0a0a0c; box-shadow: 0 0 8px rgba(0, 188, 212, 0.3); }
+
+        #autocomplete-menu {
+            position: absolute; background: #222; border: 1px solid #555; border-radius: 4px;
+            z-index: 1000; display: none; max-height: 150px; overflow-y: auto;
+        }
+        .autocomplete-item {
+            padding: 8px 12px; cursor: pointer; color: #eee;
+        }
+        .autocomplete-item:hover, .autocomplete-item.selected {
+            background: var(--accent); color: #000;
+        }
 
         #send-btn {
             background: #222; color: white; border: 1px solid #333; border-radius: 4px; 
@@ -168,7 +181,10 @@
                     <div id="history-section">
                         <div id="history-header">
                             <span>Historial</span>
-                            <span id="new-chat-btn" style="cursor:pointer; color:var(--accent);">[+ NUEVO]</span>
+                            <div>
+                                <span id="export-btn" style="cursor:pointer; color:var(--accent); margin-right:10px;">💾 EXPORTAR</span>
+                                <span id="new-chat-btn" style="cursor:pointer; color:var(--accent);">[+ NUEVO]</span>
+                            </div>
                         </div>
                         <div id="history-list"></div>
                     </div>
@@ -176,9 +192,15 @@
                     <div id="composer-section">
                         <div class="composer-header">
                             <span class="composer-label">Editor</span>
-                            <span class="composer-hint">Enter: Enviar | Shift+Enter: Salto</span>
+                            <div>
+                                <button id="paste-btn">📋 PEGAR</button>
+                                <span class="composer-hint">Enter: Enviar | Shift+Enter: Salto</span>
+                            </div>
                         </div>
-                        <textarea id="ai-input" placeholder="Escribe tu consulta aquí..."></textarea>
+                        <div style="position: relative;">
+                            <textarea id="ai-input" placeholder="Escribe tu consulta aquí..."></textarea>
+                            <div id="autocomplete-menu"></div>
+                        </div>
                         <button id="send-btn">ENVIAR CONSULTA</button>
                     </div>
 
@@ -214,8 +236,15 @@
             historyList: document.getElementById('history-list'),
             input: document.getElementById('ai-input'),
             hexContainer: document.getElementById('header-hex'),
-            sendBtn: document.getElementById('send-btn')
+            sendBtn: document.getElementById('send-btn'),
+            pasteBtn: document.getElementById('paste-btn'),
+            autocompleteMenu: document.getElementById('autocomplete-menu')
         };
+
+        // Autocomplete state
+        let autocompleteVisible = false;
+        let selectedIndex = -1;
+        const commands = ['/clear', '/reset'];
 
         // --- FUNCIONES CORE ---
         function setHexState(state) {
@@ -298,6 +327,13 @@
             const query = ui.input.value.trim();
             if (!query || isProcessing) return;
 
+            // Handle slash commands
+            if (query.startsWith('/')) {
+                handleSlashCommand(query);
+                ui.input.value = '';
+                return;
+            }
+
             isProcessing = true;
             ui.input.value = ''; // Limpiar editor
             setHexState('thinking');
@@ -311,14 +347,14 @@
 
             const newIndex = chatSession.length - 1;
             selectItem(newIndex);
-            
+
             // Scroll top en respuesta
             ui.responseArea.scrollTop = 0;
 
             try {
                 const res = await fetch(`${API_URL}/query_gemini`, {
-                    method: 'POST', 
-                    headers: {'Content-Type': 'application/json'}, 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({query: query})
                 });
                 const data = await res.json();
@@ -336,16 +372,104 @@
             setTimeout(() => setHexState(''), 2500);
         }
 
+        function handleSlashCommand(command) {
+            if (command === '/clear') {
+                // Clear visual response but keep session
+                ui.responseArea.innerHTML = '<div style="text-align:center; color:#444; margin-top:150px;"><div>❖ Pantalla limpiada</div><div style="font-size:11px;">Historial mantenido</div></div>';
+                activeIndex = -1;
+                renderHistoryList();
+            } else if (command === '/reset') {
+                // Hard reset: clear everything
+                chatSession = [];
+                saveSession();
+                activeIndex = -1;
+                renderHistoryList();
+                ui.responseArea.innerHTML = '<div style="text-align:center; color:#444; margin-top:150px;"><div>❖ Sesión reiniciada</div><div style="font-size:11px;">Historial borrado completamente</div></div>';
+            }
+        }
+
         // EVENTOS
         // Manejo inteligente del Textarea: Enter envía, Shift+Enter salta
         ui.input.addEventListener('keydown', (e) => {
-            if(e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Evitar salto de línea
-                sendAI();
+            if (autocompleteVisible) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = (selectedIndex + 1) % commands.length;
+                    updateAutocompleteSelection();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = selectedIndex <= 0 ? commands.length - 1 : selectedIndex - 1;
+                    updateAutocompleteSelection();
+                } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                    e.preventDefault();
+                    insertCommand(commands[selectedIndex]);
+                    hideAutocomplete();
+                } else if (e.key === 'Escape') {
+                    hideAutocomplete();
+                }
+            } else {
+                if(e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault(); // Evitar salto de línea
+                    sendAI();
+                }
             }
         });
 
+        ui.input.addEventListener('input', () => {
+            const value = ui.input.value;
+            if (value === '//') {
+                showAutocomplete();
+            } else if (!value.startsWith('//')) {
+                hideAutocomplete();
+            }
+        });
+
+        function showAutocomplete() {
+            ui.autocompleteMenu.innerHTML = '';
+            commands.forEach((cmd, index) => {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                div.textContent = cmd;
+                div.addEventListener('click', () => {
+                    insertCommand(cmd);
+                    hideAutocomplete();
+                });
+                ui.autocompleteMenu.appendChild(div);
+            });
+            ui.autocompleteMenu.style.display = 'block';
+            selectedIndex = -1;
+            updateAutocompleteSelection();
+        }
+
+        function hideAutocomplete() {
+            ui.autocompleteMenu.style.display = 'none';
+            autocompleteVisible = false;
+            selectedIndex = -1;
+        }
+
+        function updateAutocompleteSelection() {
+            const items = ui.autocompleteMenu.querySelectorAll('.autocomplete-item');
+            items.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedIndex);
+            });
+            autocompleteVisible = true;
+        }
+
+        function insertCommand(cmd) {
+            ui.input.value = cmd;
+            ui.input.focus();
+        }
+
         ui.sendBtn.addEventListener('click', sendAI);
+        
+        ui.pasteBtn.addEventListener('click', async () => {
+            const text = clipboard.readText();
+            if (text) {
+                ui.input.value = text; // Set instead of append for automatic query preparation
+                ui.input.focus();
+                await sendAI(); // Auto-analyze/send
+            }
+        });
         
         document.getElementById('new-chat-btn').addEventListener('click', () => {
             activeIndex = -1;
@@ -353,9 +477,50 @@
             ui.responseArea.innerHTML = `<div style="text-align:center; color:#444; margin-top:150px;">
                                             <div>❖ NUEVA CONSULTA</div>
                                             <div style="font-size:11px;">Escribe en el editor de la derecha</div>
-                                         </div>`;
+                                          </div>`;
             ui.input.focus();
         });
+
+        document.getElementById('export-btn').addEventListener('click', () => {
+            exportConversation();
+        });
+
+        function exportConversation() {
+            if (chatSession.length === 0) {
+                alert('No hay conversación para exportar.');
+                return;
+            }
+
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 19).replace(/:/g, '-');
+            let markdown = `# Conversación Exportada - MFM Assistant\n\n`;
+            markdown += `**Fecha de Exportación:** ${now.toLocaleString()}\n\n`;
+            markdown += `---\n\n`;
+
+            chatSession.forEach((entry, index) => {
+                markdown += `## Consulta ${index + 1}\n\n`;
+                markdown += `**Timestamp:** ${entry.timestamp || 'N/A'}\n\n`;
+                markdown += `**Usuario:** ${entry.query}\n\n`;
+                if (entry.response) {
+                    markdown += `**Asistente:** ${entry.response}\n\n`;
+                } else if (entry.error) {
+                    markdown += `**Error:** ${entry.error}\n\n`;
+                } else {
+                    markdown += `**Estado:** Procesando...\n\n`;
+                }
+                markdown += `---\n\n`;
+            });
+
+            const blob = new Blob([markdown], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `conversacion_${dateStr}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
 
         // Minimizador / Toggle
         let isMini = false;

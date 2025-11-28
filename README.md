@@ -38,7 +38,7 @@ El asistente ha evolucionado de un chat simple a una **Suite de Desarrollo**:
 
 ### **1. Iniciar**
 
-Asegúrate de estar en Linux y tener Docker instalado.
+Asegúrate de estar en Linux, tener Docker instalado y **Node.js v20** (compatible con Electron).
 
 ```bash
 chmod +x app-run.sh  
