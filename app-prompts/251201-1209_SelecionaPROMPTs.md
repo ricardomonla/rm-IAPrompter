@@ -12,12 +12,31 @@ En el sector de la redaccion del prompt, Ahora agregaremos que se puedan selecci
 
 **PROMPT EN ESPAÑOL**
 
-En el sector de la redacción del prompt, ahora agregaremos la capacidad de seleccionar desde una lista usando la funcionalidad de // muestra las acciones, que ahora mostrará la lista de los últimos prompts que he utilizado y me permitirá seleccionar uno de ellos para usarlo como base para el nuevo prompt. Además, al modificar el seleccionado, se debe actualizar el prompt actual.
-
+> "Actúa como experto en Frontend. Refactoriza el layout de la aplicación para seguir estrictamente la siguiente distribución espacial de 3 sectores:
+>
+> 1.  **Panel Lateral Derecho (Contenedor de Inputs):** Divide este panel verticalmente en dos secciones:
+>     * **Superior (Selector de Cabeceras):** Un área para 'Cabeceras' que incluya un input con lógica de autocompletado activada por `//` para insertar plantillas.
+>     * **Inferior (Editor de Prompt):** Un área de texto dedicada exclusivamente a la redacción del prompt inicial.
+>
+> 2.  **Panel Principal Izquierdo (Visualización):**
+>     * Este sector debe ocupar el resto de la pantalla.
+>     * **Lógica de Renderizado:** Debe mostrar **únicamente** la respuesta de la IA. Filtra la vista para que el prompt original del usuario NO se renderice en este panel, manteniendo la salida limpia.
+>
+> **Acción:** No necesito un plan ni explicaciones. Genera el código para implementar esta nueva arquitectura de interfaz ahora mismo."
 -----
 
 **PROMPT EN INGLÉS**
 
-In the prompt writing section, we will now add the ability to select from a list using the // show actions functionality, which will now display the list of the last prompts I have used and allow me to select one of them to use as a base for the new prompt. Additionally, when modifying the selected one, the current prompt must be updated.
+> "Refactor the UI layout to implement a split-view architecture consisting of three functional components:
+>
+> **1. Right Sidebar (Vertical Split):**
+> * **Top Section (Header Logic):** Input field triggered by `//` slash commands to select prompt templates.
+> * **Bottom Section (Input):** Dedicated text area for the prompt body.
+>
+> **2. Main Viewport (Left/Center):**
+> * **Output Display:** A large container for the AI response.
+> * **Constraint:** Modify the render logic to **sanitize the output view**: display ONLY the AI's response text. The user's input/prompt must be strictly hidden from this specific panel.
+>
+> **Execute:** Output the necessary code to restructure the layout and logic immediately. Do not generate a plan."
 
 -----

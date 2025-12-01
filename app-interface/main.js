@@ -1,7 +1,7 @@
 /*
  * -----------------------------------------------------------------------------
  * Autor: Lic. Ricardo MONLA
- * Versión: v2.4.0 (Enhanced Features)
+ * Versión: v3.0.0 (Layout Modular 3-Sectores)
  * Descripción: Alterna entre Hexágono (Mini) y Panel de Trabajo (Expanded).
  * -----------------------------------------------------------------------------
  */
@@ -13,7 +13,7 @@ let mainWindow;
 
 const WINDOW_SIZES = {
     mini: { width: 80, height: 80 },        
-    expanded: { width: 1100, height: 720 } // Aumentado ancho para mejor redacción
+    expanded: { width: 1100, height: 720 } // Ancho optimizado para el panel de 3 sectores
 };
 
 let currentMode = 'expanded'; 
@@ -27,7 +27,7 @@ function getBottomRightPosition(size) {
 }
 
 function createWindow() {
-    // Iniciamos en Expanded para ver el login, luego el usuario puede minimizar
+    // Iniciamos en Expanded para ver el login o la interfaz principal
     const initialSize = WINDOW_SIZES.expanded;
     const initialPos = getBottomRightPosition(initialSize);
 
@@ -43,7 +43,9 @@ function createWindow() {
         skipTaskbar: true,      
         webPreferences: {
             nodeIntegration: true,
-            contextIsolation: false
+            contextIsolation: false,
+            // Habilitar si necesitas cargar imágenes locales fuera de la app
+            webSecurity: false 
         }
     });
 
@@ -52,8 +54,6 @@ function createWindow() {
     if (process.env.MFM_DEBUG === 'true') {
         mainWindow.webContents.openDevTools({ mode: 'right' }); 
     }
-
-    mainWindow.setIgnoreMouseEvents(false); 
 }
 
 function updateWindowGeometry(mode) {
@@ -67,10 +67,10 @@ function updateWindowGeometry(mode) {
         y: Math.round(newPos.y),
         width: newSize.width,
         height: newSize.height
-    }, false);
+    }, false); // 'false' para evitar animación nativa lenta en Windows
 
     mainWindow.setIgnoreMouseEvents(false);
-    mainWindow.show(); // Asegurar que la ventana sea visible
+    mainWindow.show(); 
 
     if (mode !== 'mini') {
         mainWindow.focus();
@@ -79,28 +79,34 @@ function updateWindowGeometry(mode) {
     currentMode = mode;
 }
 
+// IPC Events
 ipcMain.on('resize-window', (event, mode) => {
-    console.log('IPC: resize-window called with mode:', mode);
     updateWindowGeometry(mode);
 });
+
 ipcMain.on('get-current-mode', (event) => event.reply('current-mode-reply', { mode: currentMode }));
+
 ipcMain.on('close-app', () => app.quit());
 
+// App Lifecycle
 app.whenReady().then(() => {
     createWindow();
-    // Atajo para alternar visibilidad
+    
+    // Atajo Global para alternar visibilidad (Ctrl+Shift+G)
     globalShortcut.register('Ctrl+Shift+G', () => {
-        console.log('Global shortcut Ctrl+Shift+G triggered');
         if (mainWindow.isVisible()) {
+            // Toggle lógica: Si está visible, cambia de modo.
             const nextMode = currentMode === 'mini' ? 'expanded' : 'mini';
             mainWindow.webContents.send('force-mode-update', nextMode);
             updateWindowGeometry(nextMode);
         } else {
-            console.log('Window not visible, expanding');
+            // Si estaba oculta (por alguna razón del SO), restaurar.
             updateWindowGeometry('expanded');
             mainWindow.show();
         }
     });
 });
 
-app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+app.on('window-all-closed', () => { 
+    if (process.platform !== 'darwin') app.quit(); 
+});

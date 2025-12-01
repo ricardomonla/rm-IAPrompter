@@ -6,6 +6,28 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Unreleased]
 
+## **[3.0.0] - 2025-12-01**
+
+### **Añadido**
+
+* **Refactorización Mayor del Layout:** Implementado diseño modular de 3 sectores.
+    * **Sector 1 (Izquierda):** Panel de visualización exclusivo para respuestas de la IA (65% ancho).
+    * **Sector 2 (Superior Derecha):** Área de cabeceras con autocompletado activado por `//` para seleccionar plantillas.
+    * **Sector 3 (Inferior Derecha):** Editor dedicado para el cuerpo del prompt (35% ancho total derecho).
+* **Autocompletado de Cabeceras:** Menú flotante con plantillas predefinidas al escribir `//` en el sector de cabeceras.
+* **Renderizado Limpio:** La visualización ahora muestra únicamente la respuesta de la IA, ocultando el prompt del usuario para una salida más limpia.
+* **Botones de Copia Mejorados:** Funcionalidad de copiar código con feedback visual.
+
+### **Cambiado**
+
+* **Eliminación del Historial Visual:** Removido el panel de historial; la sesión se maneja internamente sin mostrar historial en la UI.
+* **Título de la Aplicación:** Actualizado a "MFM Assistant v3.0 - Modular Layout".
+* **Comentarios de Versión:** Actualizados en `main.js` a v3.0.0.
+
+### **Corregido**
+
+* **Compatibilidad de Layout:** Ajustes en CSS para el nuevo diseño de 3 sectores, optimizando el uso del espacio.
+
 ## **[2.4.1] - 2025-11-28**
 
 ### **Añadido**

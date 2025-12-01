@@ -4,13 +4,20 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' http://localhost:5000; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com;">
     
-    <title>MFM Assistant v2.4.1</title>
+    <title>MFM Assistant v3.0 - Modular Layout</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 
     <style>
         /* --- ESTRUCTURA BASE --- */
-        :root { --chat-base-size: 13px; --accent: #00bcd4; --bg-dark: rgba(12, 14, 18, 0.98); --border: #333; }
+        :root { 
+            --chat-base-size: 13px; 
+            --accent: #00bcd4; 
+            --bg-dark: rgba(12, 14, 18, 0.98); 
+            --panel-bg: rgba(20, 20, 25, 0.6);
+            --border: #333; 
+            --input-bg: #08080a;
+        }
 
         body { margin: 0; padding: 0; background: transparent; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; width: 100%; }
         
@@ -40,98 +47,102 @@
         
         #main-interface { flex: 1; display: flex; flex-direction: row; overflow: hidden; height: 100%; }
 
-        /* --- COLUMNA IZQUIERDA: VISOR (LECTURA) 65% --- */
+        /* --- SECTOR 1: VISUALIZACIÓN (IZQUIERDA) --- */
         #left-panel {
-            flex: 2; /* Ocupa más espacio */
+            flex: 65; /* 65% del ancho */
             display: flex; flex-direction: column;
             border-right: 1px solid var(--border);
             position: relative; min-width: 0; background: rgba(0,0,0,0.2);
         }
 
         #active-response-area {
-            flex: 1; overflow-y: auto; padding: 30px 40px;
+            flex: 1; overflow-y: auto; padding: 40px 50px;
             font-size: var(--chat-base-size); line-height: 1.6; color: #ccc;
         }
 
-        /* --- COLUMNA DERECHA: CONTROL (HISTORIAL + EDITOR) 35% --- */
+        /* --- SECTOR DERECHO (CONTENEDOR) --- */
         #right-panel {
-            flex: 1; min-width: 320px; max-width: 450px;
+            flex: 35; /* 35% del ancho */
+            min-width: 320px; max-width: 480px;
             display: flex; flex-direction: column;
-            background: rgba(20, 20, 25, 0.4);
+            background: rgba(10, 10, 12, 0.3);
         }
 
-        /* SECCIÓN 1: HISTORIAL (ARRIBA) */
-        #history-section {
-            flex: 1; /* Toma el espacio sobrante */
+        /* TÍTULOS DE SECCIÓN */
+        .section-label {
+            font-size: 10px; color: #666; font-weight: bold; 
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 8px; display: block;
+        }
+
+        /* --- SECTOR 2: CABECERAS (ARRIBA DERECHA) --- */
+        #headers-section {
+            flex: 0 0 auto; /* Altura automática basada en contenido, o fija si prefieres */
+            height: 35%; /* Aproximadamente 1/3 del panel derecho */
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
             display: flex; flex-direction: column;
-            overflow: hidden; border-bottom: 1px solid var(--border);
+            background: var(--panel-bg);
+            position: relative;
         }
-        #history-header {
-            padding: 12px 15px; border-bottom: 1px solid #2a2a2a;
-            font-size: 10px; color: #666; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;
-            display: flex; justify-content: space-between; background: rgba(0,0,0,0.2);
-        }
-        #history-list { flex: 1; overflow-y: auto; padding: 10px; }
 
-        .history-item {
-            padding: 10px; margin-bottom: 6px;
-            background: rgba(255,255,255,0.03); border: 1px solid transparent; border-radius: 6px;
-            cursor: pointer; transition: all 0.2s;
+        #header-input {
+            flex: 1; background: var(--input-bg); border: 1px solid #333;
+            color: var(--accent); padding: 12px; border-radius: 6px;
+            font-size: 12px; outline: none; font-family: 'JetBrains Mono';
+            resize: none;
         }
-        .history-item:hover { background: rgba(255,255,255,0.07); }
-        .history-item.active { border-color: var(--accent); background: rgba(0, 188, 212, 0.05); }
-        .hist-query { font-size: 11px; color: #ddd; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .hist-time { font-size: 9px; color: #555; margin-top: 4px; text-align: right; }
+        #header-input::placeholder { color: #444; font-style: italic; }
+        #header-input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(0, 188, 212, 0.1); }
 
-        /* SECCIÓN 2: EDITOR (ABAJO) */
+        /* --- SECTOR 3: EDITOR (ABAJO DERECHA) --- */
         #composer-section {
-            height: 35%; /* Altura fija porcentual para el editor */
-            min-height: 200px;
+            flex: 1; /* Ocupa el resto del espacio */
+            padding: 20px;
             display: flex; flex-direction: column;
-            padding: 15px;
             background: rgba(15, 17, 22, 0.95);
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
         }
-        
-        .composer-header { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center;}
-        .composer-label { font-size: 10px; color: var(--accent); font-weight: bold; text-transform: uppercase; }
-        .composer-hint { font-size: 9px; color: #555; }
-        #paste-btn { background: #333; color: #aaa; border: 1px solid #555; padding: 4px 8px; cursor: pointer; border-radius: 4px; font-size: 9px; margin-left: 8px; }
-        #paste-btn:hover { background: #444; color: #fff; }
 
-        textarea {
-            flex: 1; background: #08080a; border: 1px solid #333;
+        #ai-input {
+            flex: 1; background: var(--input-bg); border: 1px solid #333;
             color: #eee; padding: 12px; border-radius: 6px;
             font-size: 12px; outline: none; font-family: 'JetBrains Mono';
-            resize: none; margin-bottom: 10px; line-height: 1.5;
+            resize: none; margin-bottom: 15px; line-height: 1.5;
         }
-        textarea:focus { border-color: var(--accent); background: #0a0a0c; box-shadow: 0 0 8px rgba(0, 188, 212, 0.3); }
+        #ai-input:focus { border-color: #555; background: #0e0e11; }
 
-        #autocomplete-menu {
-            position: absolute; background: #222; border: 1px solid #555; border-radius: 4px;
-            z-index: 1000; display: none; max-height: 150px; overflow-y: auto;
-        }
-        .autocomplete-item {
-            padding: 8px 12px; cursor: pointer; color: #eee;
-        }
-        .autocomplete-item:hover, .autocomplete-item.selected {
-            background: var(--accent); color: #000;
-        }
-
+        /* BOTÓN ENVIAR */
         #send-btn {
             background: #222; color: white; border: 1px solid #333; border-radius: 4px; 
-            cursor: pointer; padding: 8px 0; font-weight: bold; font-size: 11px;
-            transition: all 0.2s; width: 100%;
+            cursor: pointer; padding: 12px 0; font-weight: bold; font-size: 11px;
+            transition: all 0.2s; width: 100%; text-transform: uppercase; letter-spacing: 1px;
         }
         #send-btn:hover { border-color: var(--accent); color: var(--accent); background: #151515; }
 
-        /* MARKDOWN STYLES */
+        /* AUTOCOMPLETE MENU */
+        #autocomplete-menu {
+            position: absolute; top: 60px; left: 20px; right: 20px;
+            background: #1a1a1d; border: 1px solid var(--accent); border-radius: 4px;
+            z-index: 1000; display: none; max-height: 200px; overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .autocomplete-item {
+            padding: 10px 12px; cursor: pointer; color: #aaa; font-size: 11px; border-bottom: 1px solid #222;
+        }
+        .autocomplete-item strong { color: #fff; display: block; margin-bottom: 2px; }
+        .autocomplete-item:hover, .autocomplete-item.selected {
+            background: rgba(0, 188, 212, 0.1); color: #fff;
+        }
+
+        /* MARKDOWN RESPONSE STYLES */
+        .response-content { animation: fadeIn 0.3s ease-in; }
         .response-content h1, .response-content h2 { color: #fff; margin-top: 25px; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .response-content p { margin-bottom: 12px; }
         .response-content code { background: #222; padding: 2px 6px; border-radius: 4px; color: #e06c75; font-size: 0.9em; }
         .response-content pre { background: #18181b; padding: 15px; border-radius: 6px; overflow-x: auto; border: 1px solid #2a2a2a; margin: 15px 0; }
-        
-        /* SVG HEXAGONO */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* HEXAGONO & ESTADOS */
         svg { overflow: visible; width: 100%; height: 100%; }
         .hex-outer { fill: none; stroke: #444; stroke-width: 2; transform-origin: 50px 50px; animation: spin 20s linear infinite; }
         .hex-inner { fill: none; stroke: #333; stroke-width: 1; }
@@ -167,41 +178,37 @@
 
             <div id="main-interface" class="hidden">
                 
+                <!-- SECTOR 1: RESULTADO (IZQUIERDA) -->
                 <div id="left-panel">
                     <div id="active-response-area">
-                        <div style="text-align:center; color:#444; margin-top:150px;">
-                            <div style="font-size:14px; margin-bottom:5px;">❖ MFM CORE ONLINE</div>
-                            <div style="font-size:11px;">Redacta tu consulta en el panel derecho →</div>
+                        <div style="text-align:center; color:#444; margin-top:20vh;">
+                            <div style="font-size:14px; margin-bottom:5px; color:var(--accent);">❖ MFM CORE ONLINE</div>
+                            <div style="font-size:11px;">Esperando instrucciones...</div>
                         </div>
                     </div>
                 </div>
 
                 <div id="right-panel">
                     
-                    <div id="history-section">
-                        <div id="history-header">
-                            <span>Historial</span>
-                            <div>
-                                <span id="export-btn" style="cursor:pointer; color:var(--accent); margin-right:10px;">💾 EXPORTAR</span>
-                                <span id="new-chat-btn" style="cursor:pointer; color:var(--accent);">[+ NUEVO]</span>
-                            </div>
-                        </div>
-                        <div id="history-list"></div>
-                    </div>
-
-                    <div id="composer-section">
-                        <div class="composer-header">
-                            <span class="composer-label">Editor</span>
-                            <div>
-                                <button id="paste-btn">📋 PEGAR</button>
-                                <span class="composer-hint">Enter: Enviar | Shift+Enter: Salto</span>
-                            </div>
-                        </div>
-                        <div style="position: relative;">
-                            <textarea id="ai-input" placeholder="Escribe tu consulta aquí..."></textarea>
+                    <!-- SECTOR 2: CABECERAS (ARRIBA DERECHA) -->
+                    <div id="headers-section">
+                        <span class="section-label">Cabeceras (Contexto)</span>
+                        <div style="position: relative; height: 100%; display: flex; flex-direction: column;">
+                            <textarea id="header-input" placeholder="Escribe '//' para seleccionar plantilla..."></textarea>
                             <div id="autocomplete-menu"></div>
                         </div>
-                        <button id="send-btn">ENVIAR CONSULTA</button>
+                    </div>
+
+                    <!-- SECTOR 3: EDITOR DE PROMPT (ABAJO DERECHA) -->
+                    <div id="composer-section">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="section-label">Prompt Inicial</span>
+                            <button id="clear-btn" style="background:none; border:none; color:#555; cursor:pointer; font-size:10px;">LIMPIAR</button>
+                        </div>
+                        
+                        <textarea id="ai-input" placeholder="Redacta el cuerpo de tu solicitud aquí..."></textarea>
+                        
+                        <button id="send-btn">GENERAR CÓDIGO</button>
                     </div>
 
                 </div>
@@ -221,306 +228,195 @@
         const { ipcRenderer, clipboard } = require('electron');
         if (typeof marked !== 'undefined') marked.use({ breaks: true, gfm: true });
 
-        // ESTADO
-        let chatSession = [];
-        let activeIndex = -1;
-        const SESSION_KEY = 'mfm_chat_session_v2';
+        // CONFIGURACIÓN Y ESTADO
         const API_URL = 'http://localhost:5000/api';
         let isProcessing = false;
 
-        // DOM UI
+        // PLANTILLAS DE CABECERA
+        const HEADER_TEMPLATES = [
+            { label: 'Mejora de Prompt', value: 'Mejora la redacción del siguiente PROMPT teniendo en cuenta que va dirigido a una IA experta:' },
+            { label: 'Generación de Código', value: 'Actúa como desarrollador Senior. Genera el código completo y funcional para:' },
+            { label: 'Refactorización', value: 'Analiza el siguiente código, busca errores y refactoriza aplicando mejores prácticas:' },
+            { label: 'Explicación Técnica', value: 'Explica detalladamente el funcionamiento lógico del siguiente fragmento:' },
+            { label: 'Traducción Técnica', value: 'Traduce el siguiente texto técnico al Inglés preservando la terminología:' }
+        ];
+
+        // UI REFERENCES
         const ui = {
-            login: document.getElementById('login-screen'),
-            main: document.getElementById('main-interface'),
             responseArea: document.getElementById('active-response-area'),
-            historyList: document.getElementById('history-list'),
-            input: document.getElementById('ai-input'),
-            hexContainer: document.getElementById('header-hex'),
+            headerInput: document.getElementById('header-input'),
+            bodyInput: document.getElementById('ai-input'),
+            autocompleteMenu: document.getElementById('autocomplete-menu'),
             sendBtn: document.getElementById('send-btn'),
-            pasteBtn: document.getElementById('paste-btn'),
-            autocompleteMenu: document.getElementById('autocomplete-menu')
+            hexContainer: document.getElementById('header-hex'),
+            login: document.getElementById('login-screen'),
+            main: document.getElementById('main-interface')
         };
 
-        // Autocomplete state
-        let autocompleteVisible = false;
-        let selectedIndex = -1;
-        const commands = ['/clear', '/reset'];
-
-        // --- FUNCIONES CORE ---
+        // --- ESTADOS VISUALES ---
         function setHexState(state) {
             ui.hexContainer.className = state ? `status-${state}` : '';
         }
 
-        function loadSession() {
-            const saved = localStorage.getItem(SESSION_KEY);
-            if (saved) {
-                try {
-                    chatSession = JSON.parse(saved);
-                    renderHistoryList();
-                    if (chatSession.length > 0) selectItem(chatSession.length - 1);
-                } catch(e) { console.error(e); }
-            }
-        }
-        function saveSession() { localStorage.setItem(SESSION_KEY, JSON.stringify(chatSession)); }
+        // --- LÓGICA DE AUTOCOMPLETADO (Sector 2) ---
+        let selectedIndex = -1;
 
-        // RENDER HISTORIAL
-        function renderHistoryList() {
-            ui.historyList.innerHTML = '';
-            chatSession.forEach((entry, index) => {
-                const div = document.createElement('div');
-                div.className = `history-item ${index === activeIndex ? 'active' : ''}`;
-                div.onclick = () => selectItem(index);
-                
-                const queryText = entry.query.length > 40 ? entry.query.substring(0, 40) + "..." : entry.query;
-                div.innerHTML = `
-                    <div class="hist-query">${queryText.replace(/</g, "&lt;")}</div>
-                    <div class="hist-time">${entry.timestamp || ''}</div>
-                `;
-                ui.historyList.prepend(div);
-            });
-        }
-
-        // SELECCIONAR ITEM
-        function selectItem(index) {
-            if (index < 0 || index >= chatSession.length) return;
-            activeIndex = index;
-            renderHistoryList();
-            
-            const entry = chatSession[index];
-            
-            // Render contenido en Panel Izquierdo
-            let html = `<div style="margin-bottom:20px; border-bottom:1px solid #333; padding-bottom:10px;">
-                            <strong style="color:#666; font-size:10px;">TU CONSULTA:</strong>
-                            <div style="color:#ddd; margin-top:5px; white-space:pre-wrap;">${entry.query.replace(/</g, "&lt;")}</div>
-                        </div>`;
-            
-            html += `<div class="response-content">`;
-            if (entry.response) {
-                html += marked.parse(entry.response);
-            } else if (entry.error) {
-                html += `<div style="color:#f44336">Error: ${entry.error}</div>`;
-            } else {
-                html += `<div style="color:var(--accent); font-style:italic;">... Generando respuesta ...</div>`;
-            }
-            html += `</div>`;
-
-            ui.responseArea.innerHTML = html;
-            
-            // Syntax Highlighting
-            ui.responseArea.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
-            // Botones de copiar
-            ui.responseArea.querySelectorAll('pre').forEach((preBlock) => {
-                if(preBlock.querySelector('button')) return;
-                const btn = document.createElement('button');
-                btn.textContent = 'Copiar';
-                btn.style.cssText = "position:absolute; top:5px; right:5px; background:#333; color:#aaa; border:none; padding:3px 8px; font-size:10px; cursor:pointer; border-radius:3px;";
-                btn.addEventListener('click', () => {
-                    clipboard.writeText(preBlock.querySelector('code').innerText);
-                    btn.textContent = '¡Hecho!'; setTimeout(()=>btn.textContent='Copiar', 2000);
-                });
-                preBlock.appendChild(btn);
-            });
-        }
-
-        // ENVIAR
-        async function sendAI() {
-            const query = ui.input.value.trim();
-            if (!query || isProcessing) return;
-
-            // Handle slash commands
-            if (query.startsWith('/')) {
-                handleSlashCommand(query);
-                ui.input.value = '';
-                return;
-            }
-
-            isProcessing = true;
-            ui.input.value = ''; // Limpiar editor
-            setHexState('thinking');
-
-            const now = new Date();
-            const timestamp = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
-
-            const newEntry = { query: query, response: null, timestamp: timestamp };
-            chatSession.push(newEntry);
-            saveSession();
-
-            const newIndex = chatSession.length - 1;
-            selectItem(newIndex);
-
-            // Scroll top en respuesta
-            ui.responseArea.scrollTop = 0;
-
-            try {
-                const res = await fetch(`${API_URL}/query_gemini`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({query: query})
-                });
-                const data = await res.json();
-                chatSession[newIndex].response = data.response || "Sin respuesta";
-                if(data.error) chatSession[newIndex].error = data.error;
-                setHexState('success');
-            } catch (e) {
-                chatSession[newIndex].error = "Error de conexión.";
-                setHexState('error');
-            }
-
-            saveSession();
-            selectItem(newIndex);
-            isProcessing = false;
-            setTimeout(() => setHexState(''), 2500);
-        }
-
-        function handleSlashCommand(command) {
-            if (command === '/clear') {
-                // Clear visual response but keep session
-                ui.responseArea.innerHTML = '<div style="text-align:center; color:#444; margin-top:150px;"><div>❖ Pantalla limpiada</div><div style="font-size:11px;">Historial mantenido</div></div>';
-                activeIndex = -1;
-                renderHistoryList();
-            } else if (command === '/reset') {
-                // Hard reset: clear everything
-                chatSession = [];
-                saveSession();
-                activeIndex = -1;
-                renderHistoryList();
-                ui.responseArea.innerHTML = '<div style="text-align:center; color:#444; margin-top:150px;"><div>❖ Sesión reiniciada</div><div style="font-size:11px;">Historial borrado completamente</div></div>';
-            }
-        }
-
-        // EVENTOS
-        // Manejo inteligente del Textarea: Enter envía, Shift+Enter salta
-        ui.input.addEventListener('keydown', (e) => {
-            if (autocompleteVisible) {
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    selectedIndex = (selectedIndex + 1) % commands.length;
-                    updateAutocompleteSelection();
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    selectedIndex = selectedIndex <= 0 ? commands.length - 1 : selectedIndex - 1;
-                    updateAutocompleteSelection();
-                } else if (e.key === 'Enter' && selectedIndex >= 0) {
-                    e.preventDefault();
-                    insertCommand(commands[selectedIndex]);
-                    hideAutocomplete();
-                } else if (e.key === 'Escape') {
-                    hideAutocomplete();
-                }
-            } else {
-                if(e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault(); // Evitar salto de línea
-                    sendAI();
-                }
-            }
-        });
-
-        ui.input.addEventListener('input', () => {
-            const value = ui.input.value;
-            if (value === '//') {
+        ui.headerInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            if (val.trim() === '//') {
                 showAutocomplete();
-            } else if (!value.startsWith('//')) {
+            } else {
                 hideAutocomplete();
             }
         });
 
         function showAutocomplete() {
             ui.autocompleteMenu.innerHTML = '';
-            commands.forEach((cmd, index) => {
+            HEADER_TEMPLATES.forEach((tpl, index) => {
                 const div = document.createElement('div');
                 div.className = 'autocomplete-item';
-                div.textContent = cmd;
-                div.addEventListener('click', () => {
-                    insertCommand(cmd);
-                    hideAutocomplete();
-                });
+                div.innerHTML = `<strong>${tpl.label}</strong><span style="opacity:0.6">${tpl.value.substring(0, 40)}...</span>`;
+                div.onclick = () => selectTemplate(tpl.value);
                 ui.autocompleteMenu.appendChild(div);
             });
             ui.autocompleteMenu.style.display = 'block';
-            selectedIndex = -1;
-            updateAutocompleteSelection();
         }
 
         function hideAutocomplete() {
             ui.autocompleteMenu.style.display = 'none';
-            autocompleteVisible = false;
             selectedIndex = -1;
         }
 
-        function updateAutocompleteSelection() {
-            const items = ui.autocompleteMenu.querySelectorAll('.autocomplete-item');
-            items.forEach((item, index) => {
-                item.classList.toggle('selected', index === selectedIndex);
+        function selectTemplate(text) {
+            ui.headerInput.value = text;
+            hideAutocomplete();
+            ui.bodyInput.focus();
+        }
+
+        // Navegación teclado en menú
+        ui.headerInput.addEventListener('keydown', (e) => {
+            if (ui.autocompleteMenu.style.display === 'block') {
+                const items = document.querySelectorAll('.autocomplete-item');
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedIndex = (selectedIndex + 1) % items.length;
+                    highlightItem(items);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedIndex = (selectedIndex - 1 + items.length) % items.length;
+                    highlightItem(items);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (selectedIndex >= 0) selectTemplate(HEADER_TEMPLATES[selectedIndex].value);
+                } else if (e.key === 'Escape') {
+                    hideAutocomplete();
+                }
+            }
+        });
+
+        function highlightItem(items) {
+            items.forEach(i => i.classList.remove('selected'));
+            if(items[selectedIndex]) items[selectedIndex].classList.add('selected');
+        }
+
+        // --- ENVÍO Y RENDERIZADO (Sector 1 & 3) ---
+        async function sendAI() {
+            if (isProcessing) return;
+            
+            const header = ui.headerInput.value.trim();
+            const body = ui.bodyInput.value.trim();
+            
+            if (!header && !body) return;
+
+            // Construir Prompt Final
+            const fullQuery = (header ? header + "\n\n" : "") + body;
+
+            isProcessing = true;
+            setHexState('thinking');
+            
+            // Render de estado "Pensando" (Sin mostrar el prompt del usuario)
+            ui.responseArea.innerHTML = `
+                <div style="display:flex; justify-content:center; align-items:center; height:100%; flex-direction:column; opacity:0.7;">
+                    <div style="margin-bottom:10px; color:var(--accent);">PROCESANDO SOLICITUD...</div>
+                    <div style="font-size:10px; color:#555;">La IA está generando tu respuesta</div>
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`${API_URL}/query_gemini`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query: fullQuery})
+                });
+                const data = await res.json();
+                
+                if (data.response) {
+                    renderResponse(data.response);
+                    setHexState('success');
+                } else {
+                    renderError(data.error || "Respuesta vacía del servidor");
+                    setHexState('error');
+                }
+            } catch (e) {
+                renderError("Error de conexión con el backend local.");
+                setHexState('error');
+            }
+
+            isProcessing = false;
+            setTimeout(() => setHexState(''), 3000);
+        }
+
+        function renderResponse(markdownText) {
+            // Renderizado Limpio: SOLO la respuesta de la IA
+            const htmlContent = marked.parse(markdownText);
+            
+            ui.responseArea.innerHTML = `
+                <div class="response-content">
+                    ${htmlContent}
+                </div>
+                <div style="margin-top:40px; border-top:1px solid #333; padding-top:10px; font-size:10px; color:#444; text-align:right;">
+                    FINALIZADO A LAS ${new Date().toLocaleTimeString()}
+                </div>
+            `;
+
+            // Syntax Highlighting y Botones de Copiar
+            ui.responseArea.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+            ui.responseArea.querySelectorAll('pre').forEach((preBlock) => {
+                if(preBlock.querySelector('button')) return;
+                const btn = document.createElement('button');
+                btn.textContent = 'COPIAR';
+                btn.style.cssText = "position:absolute; top:10px; right:10px; background:#222; color:#var(--accent); border:1px solid #444; padding:4px 8px; font-size:9px; cursor:pointer; border-radius:3px; opacity:0.8;";
+                
+                // Asegurar posición relativa para el botón absoluto
+                preBlock.style.position = 'relative';
+                
+                btn.addEventListener('click', () => {
+                    clipboard.writeText(preBlock.querySelector('code').innerText);
+                    btn.textContent = 'COPIADO';
+                    btn.style.color = '#4caf50';
+                    setTimeout(()=> { btn.textContent='COPIAR'; btn.style.color=''; }, 2000);
+                });
+                preBlock.appendChild(btn);
             });
-            autocompleteVisible = true;
         }
 
-        function insertCommand(cmd) {
-            ui.input.value = cmd;
-            ui.input.focus();
+        function renderError(msg) {
+            ui.responseArea.innerHTML = `<div style="color:#f44336; padding:20px; border:1px solid #f44336; border-radius:8px;">ERROR DEL SISTEMA: ${msg}</div>`;
         }
 
+        // --- EVENTOS GLOBALES ---
         ui.sendBtn.addEventListener('click', sendAI);
         
-        ui.pasteBtn.addEventListener('click', async () => {
-            const text = clipboard.readText();
-            if (text) {
-                ui.input.value = text; // Set instead of append for automatic query preparation
-                ui.input.focus();
-                await sendAI(); // Auto-analyze/send
-            }
-        });
-        
-        document.getElementById('new-chat-btn').addEventListener('click', () => {
-            activeIndex = -1;
-            renderHistoryList();
-            ui.responseArea.innerHTML = `<div style="text-align:center; color:#444; margin-top:150px;">
-                                            <div>❖ NUEVA CONSULTA</div>
-                                            <div style="font-size:11px;">Escribe en el editor de la derecha</div>
-                                          </div>`;
-            ui.input.focus();
+        // Enviar con Ctrl+Enter desde el editor de cuerpo
+        ui.bodyInput.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') sendAI();
         });
 
-        document.getElementById('export-btn').addEventListener('click', () => {
-            exportConversation();
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            ui.headerInput.value = '';
+            ui.bodyInput.value = '';
+            ui.responseArea.innerHTML = '<div style="text-align:center; color:#444; margin-top:20vh;"><div style="font-size:11px;">Esperando instrucciones...</div></div>';
         });
-
-        function exportConversation() {
-            if (chatSession.length === 0) {
-                alert('No hay conversación para exportar.');
-                return;
-            }
-
-            const now = new Date();
-            const dateStr = now.toISOString().slice(0, 19).replace(/:/g, '-');
-            let markdown = `# Conversación Exportada - MFM Assistant\n\n`;
-            markdown += `**Fecha de Exportación:** ${now.toLocaleString()}\n\n`;
-            markdown += `---\n\n`;
-
-            chatSession.forEach((entry, index) => {
-                markdown += `## Consulta ${index + 1}\n\n`;
-                markdown += `**Timestamp:** ${entry.timestamp || 'N/A'}\n\n`;
-                markdown += `**Usuario:** ${entry.query}\n\n`;
-                if (entry.response) {
-                    markdown += `**Asistente:** ${entry.response}\n\n`;
-                } else if (entry.error) {
-                    markdown += `**Error:** ${entry.error}\n\n`;
-                } else {
-                    markdown += `**Estado:** Procesando...\n\n`;
-                }
-                markdown += `---\n\n`;
-            });
-
-            const blob = new Blob([markdown], { type: 'text/markdown' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `conversacion_${dateStr}.md`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
 
         // Minimizador / Toggle
         let isMini = false;
@@ -537,7 +433,7 @@
             isMini = (mode === 'mini');
         });
 
-        // Seguridad
+        // Seguridad (Mock o Real según Backend)
         const attemptUnlock = async () => {
             const key = document.getElementById('master-key-input').value;
             setHexState('thinking');
@@ -547,18 +443,24 @@
                 if(d.success) unlockUI(); else { setHexState('error'); setTimeout(() => setHexState('locked'), 1000); }
             } catch(e) { setHexState('error'); }
         };
+
         function unlockUI() {
             ui.login.classList.add('hidden');
             ui.main.classList.remove('hidden');
             setHexState('success');
-            loadSession();
         }
+
         async function checkInit() {
             try {
                 const res = await fetch(`${API_URL}/is_initialized`);
                 const data = await res.json();
                 if(data.initialized) unlockUI(); else { ui.login.classList.remove('hidden'); setHexState('locked'); }
-            } catch(e) { setHexState('error'); }
+            } catch(e) { 
+                // Fallback para desarrollo offline si no hay backend
+                console.warn("Backend no detectado. Modo Offline UI.");
+                // unlockUI(); // Descomentar para debug visual sin backend
+                setHexState('error'); 
+            }
         }
 
         document.getElementById('unlock-btn').addEventListener('click', attemptUnlock);
