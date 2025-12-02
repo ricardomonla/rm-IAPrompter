@@ -1,0 +1,26 @@
+[
+    {
+        "label": "Mejora de Prompt",
+        "value": "Mejora la redacci\u00f3n del siguiente PROMPT teniendo en cuenta que va dirigido a una IA que genera c\u00f3digo.\n- Est\u00e1 dirigido a una IA que genera c\u00f3digo.\n- Se espara 2 versiones, una el PROMPT EN ESPA\u00d1OL y la otra el PROMPT EN INGL\u00c9S dirigida a la IA, sin necesidad de tanta est\u00e9tica para este \u00faltima.\n- Se le pide a la IA haga las acciones y no un plan."
+    },
+    {
+        "label": "Generaci\u00f3n de C\u00f3digo",
+        "value": "Act\u00faa como desarrollador Senior. Genera el c\u00f3digo completo y funcional para:"
+    },
+    {
+        "label": "Refactorizaci\u00f3n",
+        "value": "Analiza el siguiente c\u00f3digo, busca errores y refactoriza aplicando mejores pr\u00e1cticas:"
+    },
+    {
+        "label": "Explicaci\u00f3n T\u00e9cnica",
+        "value": "Explica detalladamente el funcionamiento l\u00f3gico del siguiente fragmento:"
+    },
+    {
+        "label": "Traducci\u00f3n T\u00e9cnica",
+        "value": "Traduce el siguiente texto t\u00e9cnico al Ingl\u00e9s preservando la terminolog\u00eda:"
+    },
+    {
+        "label": "Plantilla de Prueba",
+        "value": "Esta es una plantilla de prueba para testing"
+    }
+]

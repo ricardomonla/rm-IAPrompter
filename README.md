@@ -1,6 +1,6 @@
 # **Asistente de Escritorio MFM (Modelo Funcional Mínimo)**
 
-![Version](https://img.shields.io/badge/version-v3.0.1-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Author](https://img.shields.io/badge/autor-Lic._Ricardo_MONLA-orange)
+![Version](https://img.shields.io/badge/version-v3.0.2-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Author](https://img.shields.io/badge/autor-Lic._Ricardo_MONLA-orange)
 
 **El MFM es un asistente de escritorio seguro, flotante y futurista diseñado específicamente para desarrolladores.** Integra consultas de programación potenciadas por IA (Gemini) y monitoreo del sistema en tiempo real, todo orquestado mediante contenedores Docker y una interfaz Electron "No-Clip".
 
@@ -16,12 +16,14 @@ Este software es propiedad intelectual exclusiva del **Lic. Ricardo MONLA**.
 
 ---
 
-## **🚀 Nuevas Características (v1.1.0)**
+## **🚀 Nuevas Características (v3.0.2)**
 
-El asistente ha evolucionado de un chat simple a una **Suite de Desarrollo**:
+El asistente ha evolucionado de un chat simple a una **Suite de Desarrollo** con arquitectura centralizada:
 
-* **🧠 Autocompletado de Comandos:** Escribe `//` para desplegar un menú flotante con acciones rápidas y navega con el teclado.
-* **💾 Persistencia de Sesión:** Tu conversación se guarda automáticamente. Si cierras la app, al volver todo estará ahí.
+* **📋 Gestión Avanzada de Plantillas:** Sistema completo para crear, editar y organizar plantillas de prompts con interfaz visual moderna.
+* **🔄 Persistencia Centralizada:** Migración completa de datos hacia `app-data/` para gestión unificada junto con configuración global.
+* **🧠 Autocompletado de Comandos:** Escribe `//` para desplegar un menú flotante con plantillas y acciones rápidas.
+* **💾 Persistencia de Sesión:** Tu conversación y plantillas se guardan automáticamente. Si cierras la app, al volver todo estará ahí.
 * **🎨 Renderizado Rico:** Respuestas con **Markdown** completo y **Syntax Highlighting** (Tema Atom One Dark) para lectura fácil de código.
 * **📋 Smart Copy:** Cada bloque de código generado tiene un botón flotante de "Copiar" para extracción rápida sin errores.
 * **📤 Exportación:** Descarga tu sesión completa como un archivo Markdown (`.md`) con un solo clic.
@@ -81,8 +83,11 @@ La primera vez que lo ejecutes:
 
 * **Frontend:** Electron (HTML5/CSS3/JS puro) con inyección de dependencias controlada.
 * **Backend:** Python Flask en Docker (Imagen `python:3.11-slim`).
-* **Persistencia:** `localStorage` para sesiones y JSON para configuración global.
-* **Comunicación:** REST API en `http://localhost:5000`.
+* **Persistencia Centralizada:** 
+  - `app-data/config.json` - Configuración global de la aplicación
+  - `app-data/templates.json` - Plantillas de prompts y comandos personalizados
+  - `localStorage` para sesiones de interfaz de usuario
+* **Comunicación:** REST API en `http://localhost:5000` con endpoints dedicados para gestión de plantillas.
 
 ---
 

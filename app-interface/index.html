@@ -137,7 +137,6 @@
         if (typeof marked !== 'undefined') marked.use({ breaks: true, gfm: true });
 
         const API_URL = 'http://localhost:5000/api';
-        const DATA_FILE = path.join(__dirname, 'mfm_templates.json');
         
         let isProcessing = false;
 
@@ -150,16 +149,45 @@
 
         // --- CARGA DE DATOS ---
         let headerTemplates = [];
-        try {
-            if (fs.existsSync(DATA_FILE)) {
-                headerTemplates = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
-            } else {
-                headerTemplates = [...DEFAULT_TEMPLATES];
+        
+        // Función para cargar plantillas desde la API
+        async function loadTemplates() {
+            try {
+                const response = await fetch(`${API_URL}/get_templates`);
+                const data = await response.json();
+                
+                if (data.success && data.templates) {
+                    return data.templates;
+                } else {
+                    console.error("Error en respuesta de API:", data.message);
+                    return [...DEFAULT_TEMPLATES];
+                }
+            } catch (err) {
+                console.error("Error cargando templates desde API:", err);
+                return [...DEFAULT_TEMPLATES];
             }
-        } catch (err) {
-            console.error("Error cargando templates:", err);
-            headerTemplates = [...DEFAULT_TEMPLATES];
         }
+        
+        // Función para guardar plantillas en la API
+        async function saveTemplates(templates) {
+            try {
+                const response = await fetch(`${API_URL}/save_templates`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({templates})
+                });
+                const data = await response.json();
+                return data.success;
+            } catch (err) {
+                console.error("Error guardando templates:", err);
+                return false;
+            }
+        }
+        
+        // Cargar plantillas iniciales
+        (async () => {
+            headerTemplates = await loadTemplates();
+        })();
 
         let editingIndex = -1;
 
@@ -259,17 +287,25 @@
             ui.newLabel.focus();
         });
 
-        ui.deleteBtn.addEventListener('click', () => {
+        ui.deleteBtn.addEventListener('click', async () => {
             if (editingIndex === -1) return;
             if (confirm(`¿Eliminar la plantilla "${headerTemplates[editingIndex].label}"?`)) {
                 headerTemplates.splice(editingIndex, 1);
                 editingIndex = -1; 
+                
+                // Guardar en la API
+                const success = await saveTemplates(headerTemplates);
+                if (!success) {
+                    alert('Error al eliminar la plantilla. Intenta nuevamente.');
+                    return;
+                }
+                
                 renderTemplatesEditor();
             }
         });
 
         // Botón principal: Crea o Actualiza
-        ui.addTplBtn.addEventListener('click', () => {
+        ui.addTplBtn.addEventListener('click', async () => {
             const label = ui.newLabel.value.trim();
             const value = ui.newValue.value.trim();
 
@@ -281,17 +317,33 @@
                 headerTemplates.push({ label, value });
                 editingIndex = headerTemplates.length - 1; 
             }
+            
+            // Guardar en la API
+            const success = await saveTemplates(headerTemplates);
+            if (!success) {
+                alert('Error al guardar la plantilla. Intenta nuevamente.');
+                return;
+            }
+            
             renderTemplatesEditor();
         });
 
         // Botón Clonar: Guarda como nueva sin borrar la anterior
-        ui.cloneTplBtn.addEventListener('click', () => {
-             const label = ui.newLabel.value.trim();
+        ui.cloneTplBtn.addEventListener('click', async () => {
+            const label = ui.newLabel.value.trim();
             const value = ui.newValue.value.trim();
             if (!label || !value) return;
 
             headerTemplates.push({ label: label + " (Copia)", value });
             editingIndex = headerTemplates.length - 1;
+            
+            // Guardar en la API
+            const success = await saveTemplates(headerTemplates);
+            if (!success) {
+                alert('Error al guardar la plantilla clonada. Intenta nuevamente.');
+                return;
+            }
+            
             renderTemplatesEditor();
             alert("Guardado como copia nueva.");
         });
@@ -304,8 +356,12 @@
             ui.modal.classList.remove('hidden');
         });
 
-        const closeSettings = () => {
-            try { fs.writeFileSync(DATA_FILE, JSON.stringify(headerTemplates, null, 2)); } catch (e) {}
+        const closeSettings = async () => {
+            // Guardar plantillas antes de cerrar
+            const success = await saveTemplates(headerTemplates);
+            if (!success) {
+                console.error("Error al guardar plantillas al cerrar");
+            }
             ui.modal.classList.add('hidden');
         };
 

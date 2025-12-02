@@ -6,6 +6,14 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Unreleased]
 
+### **Añadido**
+
+* **Migración de Plantillas Centralizada:** Implementada migración completa de plantillas de prompts desde `app-interface/mfm_templates.json` hacia `app-data/templates.json` para centralizar persistencia de datos.
+    * **Backend Enhancement:** Agregados 4 nuevos endpoints API (`/api/get_templates`, `/api/save_templates`, `/api/add_template`, `/api/delete_template`) para gestión completa de plantillas.
+    * **Frontend Refactoring:** Modificado `app-interface/index.html` para usar llamadas API asíncronas en lugar de operaciones de archivos locales.
+    * **Data Persistence:** Unificada la gestión de datos en el directorio `app-data/` junto con `config.json`.
+    * **API Security:** Integrados nuevos endpoints en el sistema de autenticación sin requerir inicialización de API.
+
 ## **[3.0.1] - 2025-12-02**
 
 ### **Cambiado**

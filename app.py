@@ -24,6 +24,7 @@ app = Flask(__name__)
 # Directorios de configuración
 CONFIG_DIR = '/app/data'
 CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
+TEMPLATES_FILE = os.path.join(CONFIG_DIR, 'templates.json')
 
 # Variables globales para el estado de la API y el modelo
 GEMINI_KEY_ENCRYPTED = os.getenv('GEMINI_API_KEY_ENCRYPTED')
@@ -93,6 +94,46 @@ def save_config(data):
         logging.error(f"Error writing config.json: {e}")
         return False
 
+# --- Funciones de Gestión de Plantillas ---
+
+def load_templates():
+    """Cargar plantillas de prompts desde archivo JSON"""
+    if not os.path.exists(TEMPLATES_FILE):
+        # Plantillas por defecto si el archivo no existe
+        default_templates = [
+            {"label": "Mejora de Prompt", "value": "Mejora la redacción del siguiente PROMPT teniendo en cuenta que va dirigido a una IA experta:"},
+            {"label": "Generación de Código", "value": "Actúa como desarrollador Senior. Genera el código completo y funcional para:"},
+            {"label": "Refactorización", "value": "Analiza el siguiente código, busca errores y refactoriza aplicando mejores prácticas:"},
+            {"label": "Explicación Técnica", "value": "Explica detalladamente el funcionamiento lógico del siguiente fragmento:"}
+        ]
+        try:
+            with open(TEMPLATES_FILE, 'w') as f:
+                json.dump(default_templates, f, indent=4)
+            return default_templates
+        except Exception as e:
+            logging.error(f"Error creating default templates file: {e}")
+            return default_templates
+    
+    try:
+        with open(TEMPLATES_FILE, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        logging.error(f"Error reading templates.json: {e}")
+        return []
+
+def save_templates(templates_data):
+    """Guardar plantillas en archivo JSON"""
+    if not os.path.exists(CONFIG_DIR):
+        os.makedirs(CONFIG_DIR)
+
+    try:
+        with open(TEMPLATES_FILE, 'w') as f:
+            json.dump(templates_data, f, indent=4)
+        return True
+    except Exception as e:
+        logging.error(f"Error writing templates.json: {e}")
+        return False
+
 # --- Inicialización de la API ---
 
 def initialize_gemini(api_key: str):
@@ -147,7 +188,7 @@ def is_initialized_status():
 
 @app.before_request
 def check_initialization():
-    allowed_routes = ['/api/initialize', '/api/is_initialized', '/api/encrypt_key', '/api/status', '/api/get_config', '/api/save_config']
+    allowed_routes = ['/api/initialize', '/api/is_initialized', '/api/encrypt_key', '/api/status', '/api/get_config', '/api/save_config', '/api/get_templates', '/api/save_templates', '/api/add_template', '/api/delete_template']
     if request.path in allowed_routes:
         return
         
@@ -220,6 +261,79 @@ def save_config_endpoint():
         return jsonify({"success": True})
     else:
         return jsonify({"success": False, "message": "Error al guardar"}), 500
+
+# --- Endpoints de Gestión de Plantillas ---
+
+@app.route('/api/get_templates', methods=['GET'])
+def get_templates():
+    """Obtener todas las plantillas de prompts"""
+    try:
+        templates = load_templates()
+        return jsonify({"success": True, "templates": templates})
+    except Exception as e:
+        logging.error(f"Error getting templates: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/save_templates', methods=['POST'])
+def save_templates_endpoint():
+    """Guardar todas las plantillas"""
+    data = request.get_json()
+    if not data or 'templates' not in data:
+        return jsonify({"success": False, "message": "Missing templates"}), 400
+    
+    templates = data['templates']
+    if not isinstance(templates, list):
+        return jsonify({"success": False, "message": "Templates must be a list"}), 400
+    
+    if save_templates(templates):
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False, "message": "Error al guardar plantillas"}), 500
+
+@app.route('/api/add_template', methods=['POST'])
+def add_template_endpoint():
+    """Agregar nueva plantilla"""
+    data = request.get_json()
+    if not data or 'label' not in data or 'value' not in data:
+        return jsonify({"success": False, "message": "Missing label or value"}), 400
+    
+    label = data['label'].strip()
+    value = data['value'].strip()
+    
+    if not label or not value:
+        return jsonify({"success": False, "message": "Label and value cannot be empty"}), 400
+    
+    try:
+        templates = load_templates()
+        new_template = {"label": label, "value": value}
+        templates.append(new_template)
+        
+        if save_templates(templates):
+            return jsonify({"success": True, "message": "Plantilla agregada correctamente"})
+        else:
+            return jsonify({"success": False, "message": "Error al guardar plantilla"}), 500
+    except Exception as e:
+        logging.error(f"Error adding template: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/api/delete_template/<int:index>', methods=['DELETE'])
+def delete_template_endpoint(index):
+    """Eliminar plantilla por índice"""
+    try:
+        templates = load_templates()
+        
+        if index < 0 or index >= len(templates):
+            return jsonify({"success": False, "message": "Índice de plantilla inválido"}), 400
+        
+        deleted_template = templates.pop(index)
+        
+        if save_templates(templates):
+            return jsonify({"success": True, "message": f"Plantilla '{deleted_template['label']}' eliminada"})
+        else:
+            return jsonify({"success": False, "message": "Error al guardar cambios"}), 500
+    except Exception as e:
+        logging.error(f"Error deleting template: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
