@@ -1,7 +1,7 @@
 [
   {
     "label": "Mejora de Prompt",
-    "value": "Mejora la redacción del siguiente PROMPT teniendo en cuenta que va dirigido a una IA que genera código."
+    "value": "Mejora la redacción del siguiente PROMPT teniendo en cuenta que va dirigido a una IA que genera código.\n- Está dirigido a una IA que genera código.\n- Se espara 2 versiones, una el PROMPT EN ESPAÑOL y la otra el PROMPT EN INGLÉS dirigida a la IA, sin necesidad de tanta estética para este última.\n- Se le pide a la IA haga las acciones y no un plan."
   },
   {
     "label": "Generación de Código",
