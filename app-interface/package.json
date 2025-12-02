@@ -4,16 +4,16 @@
   "description": "MFM Desktop Assistant Interface",
   "main": "main.js",
   "scripts": {
-    "start": "electron main.js",
+    "start": "npx electron main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "engines": {
-    "node": ">=20.0.0 <21.0.0"
+    "node": ">=16.0.0"
   },
   "devDependencies": {
-    "electron": "^40.0.0"
+    "electron": "18.3.15"
   }
 }

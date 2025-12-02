@@ -1,6 +1,6 @@
 # **Asistente de Escritorio MFM (Modelo Funcional Mínimo)**
 
-![Version](https://img.shields.io/badge/version-v1.1.0-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Author](https://img.shields.io/badge/autor-Lic._Ricardo_MONLA-orange)
+![Version](https://img.shields.io/badge/version-v3.0.1-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Author](https://img.shields.io/badge/autor-Lic._Ricardo_MONLA-orange)
 
 **El MFM es un asistente de escritorio seguro, flotante y futurista diseñado específicamente para desarrolladores.** Integra consultas de programación potenciadas por IA (Gemini) y monitoreo del sistema en tiempo real, todo orquestado mediante contenedores Docker y una interfaz Electron "No-Clip".
 
@@ -38,7 +38,7 @@ El asistente ha evolucionado de un chat simple a una **Suite de Desarrollo**:
 
 ### **1. Iniciar**
 
-Asegúrate de estar en Linux, tener Docker instalado y **Node.js v20** (compatible con Electron).
+Asegúrate de estar en Linux, tener Docker instalado y **Node.js v16+** (compatible con Electron).
 
 ```bash
 chmod +x app-run.sh  

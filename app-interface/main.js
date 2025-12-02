@@ -1,10 +1,18 @@
 /*
- * -----------------------------------------------------------------------------
- * Autor: Lic. Ricardo MONLA
- * Versión: v3.0.0 (Layout Modular 3-Sectores)
- * Descripción: Alterna entre Hexágono (Mini) y Panel de Trabajo (Expanded).
- * -----------------------------------------------------------------------------
- */
+  -----------------------------------------------------------------------------
+  Project:     MFM Assistant - Sistema de Gestión de Interfaz
+  File:        main.js
+  Version:     v3.0.6 (2025-12-01 20:09)
+  Author:      Lic. Ricardo MONLA
+  Description: 
+  -----------------------------------------------------------------------------
+  Este archivo configura la ventana principal de la aplicación con:
+  - Posicionamiento en esquina inferior derecha
+  - Modos de visualización (mini/expanded)
+  - Integración con el backend Python
+  - Atajos globales para control de interfaz
+  -----------------------------------------------------------------------------
+*/
 
 const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
 const path = require('path');
@@ -13,7 +21,7 @@ let mainWindow;
 
 const WINDOW_SIZES = {
     mini: { width: 80, height: 80 },        
-    expanded: { width: 1100, height: 720 } // Ancho optimizado para el panel de 3 sectores
+    expanded: { width: 1100, height: 720 } 
 };
 
 let currentMode = 'expanded'; 
@@ -27,9 +35,11 @@ function getBottomRightPosition(size) {
 }
 
 function createWindow() {
-    // Iniciamos en Expanded para ver el login o la interfaz principal
     const initialSize = WINDOW_SIZES.expanded;
     const initialPos = getBottomRightPosition(initialSize);
+    
+    // Detectamos si estamos en modo debug gracias a tu script app-run.sh
+    const isDebug = process.env.MFM_DEBUG === 'true';
 
     mainWindow = new BrowserWindow({
         width: initialSize.width,
@@ -40,11 +50,15 @@ function createWindow() {
         transparent: true,      
         alwaysOnTop: true,      
         resizable: false,       
-        skipTaskbar: true,      
+        
+        // --- AQUÍ ESTÁ EL CAMBIO CLAVE ---
+        // Si es debug, NO lo ocultes (false). Si es producción, ocúltalo (true).
+        skipTaskbar: !isDebug,      
+        // ---------------------------------
+
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            // Habilitar si necesitas cargar imágenes locales fuera de la app
             webSecurity: false 
         }
     });
@@ -67,7 +81,7 @@ function updateWindowGeometry(mode) {
         y: Math.round(newPos.y),
         width: newSize.width,
         height: newSize.height
-    }, false); // 'false' para evitar animación nativa lenta en Windows
+    }, false);
 
     mainWindow.setIgnoreMouseEvents(false);
     mainWindow.show(); 
@@ -79,28 +93,26 @@ function updateWindowGeometry(mode) {
     currentMode = mode;
 }
 
-// IPC Events
-ipcMain.on('resize-window', (event, mode) => {
-    updateWindowGeometry(mode);
-});
-
-ipcMain.on('get-current-mode', (event) => event.reply('current-mode-reply', { mode: currentMode }));
-
-ipcMain.on('close-app', () => app.quit());
-
 // App Lifecycle
-app.whenReady().then(() => {
+app.on('ready', () => {
     createWindow();
-    
-    // Atajo Global para alternar visibilidad (Ctrl+Shift+G)
+
+    // IPC Events
+    ipcMain.on('resize-window', (event, mode) => {
+        updateWindowGeometry(mode);
+        event.sender.send('force-mode-update', mode);
+    });
+
+    ipcMain.on('get-current-mode', (event) => event.reply('current-mode-reply', { mode: currentMode }));
+
+    ipcMain.on('close-app', () => app.quit());
+
     globalShortcut.register('Ctrl+Shift+G', () => {
         if (mainWindow.isVisible()) {
-            // Toggle lógica: Si está visible, cambia de modo.
             const nextMode = currentMode === 'mini' ? 'expanded' : 'mini';
             mainWindow.webContents.send('force-mode-update', nextMode);
             updateWindowGeometry(nextMode);
         } else {
-            // Si estaba oculta (por alguna razón del SO), restaurar.
             updateWindowGeometry('expanded');
             mainWindow.show();
         }

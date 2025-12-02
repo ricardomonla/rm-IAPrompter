@@ -1,165 +1,30 @@
+<!--
+  -----------------------------------------------------------------------------
+  Project:     MFM Assistant - Sistema de Gestión de Interfaz
+  File:        index.html
+  Version:     v3.1.3 (2025-12-01 20:42)
+  Author:      Lic. Ricardo MONLA
+  Description: 
+  -----------------------------------------------------------------------------
+  Este archivo contiene la estructura HTML principal con:
+  - Integración de estilos y scripts externos
+  - Estructura modular para componentes de interfaz
+  - Protección contra vulnerabilidades XSS mediante CSP
+  - Marcado semántico para accesibilidad.
+  -----------------------------------------------------------------------------
+-->
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' http://localhost:5000; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com;">
     
-    <title>MFM Assistant v3.0 - Modular Layout</title>
+    <title>MFM Assistant v3.1</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-
-    <style>
-        /* --- ESTRUCTURA BASE --- */
-        :root { 
-            --chat-base-size: 13px; 
-            --accent: #00bcd4; 
-            --bg-dark: rgba(12, 14, 18, 0.98); 
-            --panel-bg: rgba(20, 20, 25, 0.6);
-            --border: #333; 
-            --input-bg: #08080a;
-        }
-
-        body { margin: 0; padding: 0; background: transparent; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100vh; width: 100%; }
-        
-        #app-container {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--bg-dark); 
-            border: 1px solid var(--border); border-radius: 12px; 
-            display: flex; flex-direction: column; overflow: hidden; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.7); backdrop-filter: blur(12px);
-        }
-        
-        body.mode-mini #app-container { background: transparent; border: none; box-shadow: none; backdrop-filter: none; }
-        body.mode-mini #content-wrapper { display: none; }
-        
-        /* --- HEADER & HEXAGONO --- */
-        #header-hex {
-            position: absolute; bottom: 10px; right: 10px;
-            width: 60px; height: 60px; z-index: 200; -webkit-app-region: no-drag; cursor: pointer; transition: transform 0.3s;
-        }
-        #header-hex:hover { transform: scale(1.1); }
-        #close-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; color: #666; cursor: pointer; font-size: 18px; z-index: 101; }
-        #close-btn:hover { color: #f44336; }
-
-        /* --- LAYOUT PRINCIPAL (2 COLUMNAS) --- */
-        #content-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; z-index: 50; }
-        #login-screen { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        
-        #main-interface { flex: 1; display: flex; flex-direction: row; overflow: hidden; height: 100%; }
-
-        /* --- SECTOR 1: VISUALIZACIÓN (IZQUIERDA) --- */
-        #left-panel {
-            flex: 65; /* 65% del ancho */
-            display: flex; flex-direction: column;
-            border-right: 1px solid var(--border);
-            position: relative; min-width: 0; background: rgba(0,0,0,0.2);
-        }
-
-        #active-response-area {
-            flex: 1; overflow-y: auto; padding: 40px 50px;
-            font-size: var(--chat-base-size); line-height: 1.6; color: #ccc;
-        }
-
-        /* --- SECTOR DERECHO (CONTENEDOR) --- */
-        #right-panel {
-            flex: 35; /* 35% del ancho */
-            min-width: 320px; max-width: 480px;
-            display: flex; flex-direction: column;
-            background: rgba(10, 10, 12, 0.3);
-        }
-
-        /* TÍTULOS DE SECCIÓN */
-        .section-label {
-            font-size: 10px; color: #666; font-weight: bold; 
-            text-transform: uppercase; letter-spacing: 1px;
-            margin-bottom: 8px; display: block;
-        }
-
-        /* --- SECTOR 2: CABECERAS (ARRIBA DERECHA) --- */
-        #headers-section {
-            flex: 0 0 auto; /* Altura automática basada en contenido, o fija si prefieres */
-            height: 35%; /* Aproximadamente 1/3 del panel derecho */
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            display: flex; flex-direction: column;
-            background: var(--panel-bg);
-            position: relative;
-        }
-
-        #header-input {
-            flex: 1; background: var(--input-bg); border: 1px solid #333;
-            color: var(--accent); padding: 12px; border-radius: 6px;
-            font-size: 12px; outline: none; font-family: 'JetBrains Mono';
-            resize: none;
-        }
-        #header-input::placeholder { color: #444; font-style: italic; }
-        #header-input:focus { border-color: var(--accent); box-shadow: 0 0 10px rgba(0, 188, 212, 0.1); }
-
-        /* --- SECTOR 3: EDITOR (ABAJO DERECHA) --- */
-        #composer-section {
-            flex: 1; /* Ocupa el resto del espacio */
-            padding: 20px;
-            display: flex; flex-direction: column;
-            background: rgba(15, 17, 22, 0.95);
-        }
-
-        #ai-input {
-            flex: 1; background: var(--input-bg); border: 1px solid #333;
-            color: #eee; padding: 12px; border-radius: 6px;
-            font-size: 12px; outline: none; font-family: 'JetBrains Mono';
-            resize: none; margin-bottom: 15px; line-height: 1.5;
-        }
-        #ai-input:focus { border-color: #555; background: #0e0e11; }
-
-        /* BOTÓN ENVIAR */
-        #send-btn {
-            background: #222; color: white; border: 1px solid #333; border-radius: 4px; 
-            cursor: pointer; padding: 12px 0; font-weight: bold; font-size: 11px;
-            transition: all 0.2s; width: 100%; text-transform: uppercase; letter-spacing: 1px;
-        }
-        #send-btn:hover { border-color: var(--accent); color: var(--accent); background: #151515; }
-
-        /* AUTOCOMPLETE MENU */
-        #autocomplete-menu {
-            position: absolute; top: 60px; left: 20px; right: 20px;
-            background: #1a1a1d; border: 1px solid var(--accent); border-radius: 4px;
-            z-index: 1000; display: none; max-height: 200px; overflow-y: auto;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-        }
-        .autocomplete-item {
-            padding: 10px 12px; cursor: pointer; color: #aaa; font-size: 11px; border-bottom: 1px solid #222;
-        }
-        .autocomplete-item strong { color: #fff; display: block; margin-bottom: 2px; }
-        .autocomplete-item:hover, .autocomplete-item.selected {
-            background: rgba(0, 188, 212, 0.1); color: #fff;
-        }
-
-        /* MARKDOWN RESPONSE STYLES */
-        .response-content { animation: fadeIn 0.3s ease-in; }
-        .response-content h1, .response-content h2 { color: #fff; margin-top: 25px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        .response-content p { margin-bottom: 12px; }
-        .response-content code { background: #222; padding: 2px 6px; border-radius: 4px; color: #e06c75; font-size: 0.9em; }
-        .response-content pre { background: #18181b; padding: 15px; border-radius: 6px; overflow-x: auto; border: 1px solid #2a2a2a; margin: 15px 0; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* HEXAGONO & ESTADOS */
-        svg { overflow: visible; width: 100%; height: 100%; }
-        .hex-outer { fill: none; stroke: #444; stroke-width: 2; transform-origin: 50px 50px; animation: spin 20s linear infinite; }
-        .hex-inner { fill: none; stroke: #333; stroke-width: 1; }
-        .hex-core { fill: #2a2a2a; transform-origin: 50px 50px; transition: fill 0.3s, filter 0.3s; }
-        #header-hex:hover .hex-outer { stroke: var(--accent); stroke-width: 2.5; }
-        .status-thinking .hex-core { fill: var(--accent); filter: drop-shadow(0 0 8px var(--accent)); animation: pulse 0.8s infinite alternate; }
-        .status-thinking .hex-outer { stroke: var(--accent); animation: spin 2s linear infinite; }
-        .status-success .hex-core { fill: #4caf50; }
-        .status-error .hex-core { fill: #f44336; }
-        
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes pulse { 0% { transform: scale(0.9); opacity: 0.7; } 100% { transform: scale(1.1); opacity: 1; } }
-
-        .hidden { display: none !important; }
-        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        #master-key-input { width: 200px; padding: 10px; margin-bottom: 10px; text-align: center; border: 1px solid #444; background: #000; color: #fff; border-radius: 4px; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -167,18 +32,57 @@
 <body class="mode-expanded"> 
 
     <div id="app-container">
+        <div id="settings-modal" class="hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>GESTIÓN DE PLANTILLAS</h3>
+                    <button id="close-settings-btn">×</button>
+                </div>
+                
+                <div class="modal-body" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 0;">
+                    
+                    <div style="background: #111; padding: 10px; border-radius: 6px; border: 1px solid #333; margin-bottom: 15px;">
+                        <div style="display: flex; gap: 10px;">
+                            <select id="tpl-selector" style="flex: 1; background: #08080a; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 4px; outline: none; font-family: 'JetBrains Mono'; font-size: 12px;">
+                                </select>
+                            <button id="delete-tpl-btn" title="Eliminar Actual" style="background: #1a0505; border: 1px solid #522; color: #f44336; padding: 0 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">🗑</button>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;">
+                        <span id="form-mode-label" style="font-size: 10px; font-weight: bold; color: #666; letter-spacing: 1px;">NUEVA PLANTILLA</span>
+                        <button id="cancel-edit-btn" class="hidden" style="background:none; border:none; color:#888; font-size:10px; cursor:pointer; text-decoration:underline;">CANCELAR EDICIÓN</button>
+                    </div>
+
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
+                        <input type="text" id="new-tpl-label" placeholder="Nombre de la Plantilla (Ej: SQL Fix)" style="background: #08080a; border: 1px solid #333; color: var(--accent); padding: 10px; border-radius: 4px; outline: none; font-family: inherit;">
+                        
+                        <textarea id="new-tpl-value" placeholder="Escribe el contenido del prompt aquí..." style="flex: 1; background: #08080a; border: 1px solid #333; color: #ccc; padding: 12px; border-radius: 4px; outline: none; font-family: inherit; resize: none; line-height: 1.5;"></textarea>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button id="add-tpl-btn" style="flex: 2; background: #222; color: #fff; border: 1px solid #444; padding: 10px; cursor: pointer; border-radius: 4px; font-weight: bold;">GUARDAR</button>
+                            <button id="clone-tpl-btn" class="hidden" style="flex: 1; background: #0d1a20; color: var(--accent); border: 1px solid #004d40; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 10px;">GUARDAR COMO NUEVA</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button id="save-settings-btn">CERRAR Y GUARDAR</button>
+                </div>
+            </div>
+        </div>
+
         <div id="content-wrapper">
             <button id="close-btn" onclick="minimizeApp()">×</button>
             
             <div id="login-screen" class="hidden">
                 <h3 style="color:#ff9800; letter-spacing:2px; font-size:12px;">SISTEMA PROTEGIDO</h3>
                 <input type="password" id="master-key-input" placeholder="CLAVE DE ACCESO">
-                <button id="unlock-btn" style="background:#222; color:#fff; border:1px solid #333; padding:5px 15px; margin-top:5px; cursor:pointer;">INICIAR</button>
+                <button id="unlock-btn">INICIAR</button>
             </div>
 
             <div id="main-interface" class="hidden">
                 
-                <!-- SECTOR 1: RESULTADO (IZQUIERDA) -->
                 <div id="left-panel">
                     <div id="active-response-area">
                         <div style="text-align:center; color:#444; margin-top:20vh;">
@@ -190,20 +94,21 @@
 
                 <div id="right-panel">
                     
-                    <!-- SECTOR 2: CABECERAS (ARRIBA DERECHA) -->
                     <div id="headers-section">
-                        <span class="section-label">Cabeceras (Contexto)</span>
+                        <div style="display:flex; justify-content:flex-start; align-items:center; gap: 10px;">
+                            <span class="section-label">Cabeceras (Contexto)</span>
+                            <button id="settings-trigger-btn" title="Editar Plantillas">⚙</button>
+                        </div>
                         <div style="position: relative; height: 100%; display: flex; flex-direction: column;">
                             <textarea id="header-input" placeholder="Escribe '//' para seleccionar plantilla..."></textarea>
                             <div id="autocomplete-menu"></div>
                         </div>
                     </div>
 
-                    <!-- SECTOR 3: EDITOR DE PROMPT (ABAJO DERECHA) -->
                     <div id="composer-section">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span class="section-label">Prompt Inicial</span>
-                            <button id="clear-btn" style="background:none; border:none; color:#555; cursor:pointer; font-size:10px;">LIMPIAR</button>
+                            <button id="clear-btn">LIMPIAR</button>
                         </div>
                         
                         <textarea id="ai-input" placeholder="Redacta el cuerpo de tu solicitud aquí..."></textarea>
@@ -226,20 +131,37 @@
 
     <script>
         const { ipcRenderer, clipboard } = require('electron');
+        const fs = require('fs');
+        const path = require('path');
+        
         if (typeof marked !== 'undefined') marked.use({ breaks: true, gfm: true });
 
-        // CONFIGURACIÓN Y ESTADO
         const API_URL = 'http://localhost:5000/api';
+        const DATA_FILE = path.join(__dirname, 'mfm_templates.json');
+        
         let isProcessing = false;
 
-        // PLANTILLAS DE CABECERA
-        const HEADER_TEMPLATES = [
+        const DEFAULT_TEMPLATES = [
             { label: 'Mejora de Prompt', value: 'Mejora la redacción del siguiente PROMPT teniendo en cuenta que va dirigido a una IA experta:' },
             { label: 'Generación de Código', value: 'Actúa como desarrollador Senior. Genera el código completo y funcional para:' },
             { label: 'Refactorización', value: 'Analiza el siguiente código, busca errores y refactoriza aplicando mejores prácticas:' },
-            { label: 'Explicación Técnica', value: 'Explica detalladamente el funcionamiento lógico del siguiente fragmento:' },
-            { label: 'Traducción Técnica', value: 'Traduce el siguiente texto técnico al Inglés preservando la terminología:' }
+            { label: 'Explicación Técnica', value: 'Explica detalladamente el funcionamiento lógico del siguiente fragmento:' }
         ];
+
+        // --- CARGA DE DATOS ---
+        let headerTemplates = [];
+        try {
+            if (fs.existsSync(DATA_FILE)) {
+                headerTemplates = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+            } else {
+                headerTemplates = [...DEFAULT_TEMPLATES];
+            }
+        } catch (err) {
+            console.error("Error cargando templates:", err);
+            headerTemplates = [...DEFAULT_TEMPLATES];
+        }
+
+        let editingIndex = -1;
 
         // UI REFERENCES
         const ui = {
@@ -250,29 +172,158 @@
             sendBtn: document.getElementById('send-btn'),
             hexContainer: document.getElementById('header-hex'),
             login: document.getElementById('login-screen'),
-            main: document.getElementById('main-interface')
+            main: document.getElementById('main-interface'),
+            
+            // Modal Elements (COMPLETOS)
+            modal: document.getElementById('settings-modal'),
+            tplSelector: document.getElementById('tpl-selector'),
+            deleteBtn: document.getElementById('delete-tpl-btn'),
+            
+            settingsBtn: document.getElementById('settings-trigger-btn'),
+            closeSettingsBtn: document.getElementById('close-settings-btn'),
+            saveSettingsBtn: document.getElementById('save-settings-btn'),
+            
+            addTplBtn: document.getElementById('add-tpl-btn'),
+            cloneTplBtn: document.getElementById('clone-tpl-btn'), // Nuevo
+            newLabel: document.getElementById('new-tpl-label'),
+            newValue: document.getElementById('new-tpl-value'),
+            
+            formModeLabel: document.getElementById('form-mode-label'), // Recuperado
+            cancelEditBtn: document.getElementById('cancel-edit-btn') // Recuperado
         };
 
-        // --- ESTADOS VISUALES ---
-        function setHexState(state) {
-            ui.hexContainer.className = state ? `status-${state}` : '';
+        // --- LÓGICA DEL MODAL DE EDICIÓN ---
+        function renderTemplatesEditor() {
+            const currentSelection = editingIndex;
+            
+            ui.tplSelector.innerHTML = '<option value="-1">-- ✨ NUEVA PLANTILLA --</option>';
+            
+            headerTemplates.forEach((tpl, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.text = `[${index + 1}] ${tpl.label}`;
+                ui.tplSelector.appendChild(option);
+            });
+
+            // Si el índice borrado ya no existe, volvemos a -1
+            if (currentSelection >= headerTemplates.length) {
+                ui.tplSelector.value = -1;
+            } else {
+                ui.tplSelector.value = currentSelection;
+            }
+            
+            updateFormState();
         }
 
-        // --- LÓGICA DE AUTOCOMPLETADO (Sector 2) ---
-        let selectedIndex = -1;
-
-        ui.headerInput.addEventListener('input', (e) => {
-            const val = e.target.value;
-            if (val.trim() === '//') {
-                showAutocomplete();
+        function updateFormState() {
+            editingIndex = parseInt(ui.tplSelector.value);
+            
+            if (editingIndex === -1) {
+                // MODO: NUEVA
+                ui.newLabel.value = '';
+                ui.newValue.value = '';
+                
+                ui.addTplBtn.textContent = 'CREAR NUEVA';
+                ui.addTplBtn.classList.remove('btn-update');
+                ui.cloneTplBtn.classList.add('hidden');
+                ui.deleteBtn.style.display = 'none';
+                ui.cancelEditBtn.classList.add('hidden');
+                
+                ui.formModeLabel.textContent = 'NUEVA PLANTILLA';
+                ui.formModeLabel.style.color = '#666';
             } else {
-                hideAutocomplete();
+                // MODO: EDICIÓN
+                const tpl = headerTemplates[editingIndex];
+                if (tpl) {
+                    ui.newLabel.value = tpl.label;
+                    ui.newValue.value = tpl.value;
+                    
+                    ui.addTplBtn.textContent = 'GUARDAR CAMBIOS';
+                    ui.addTplBtn.classList.add('btn-update');
+                    ui.cloneTplBtn.classList.remove('hidden');
+                    ui.deleteBtn.style.display = 'block';
+                    ui.cancelEditBtn.classList.remove('hidden');
+                    
+                    ui.formModeLabel.textContent = 'EDITANDO: ' + tpl.label.toUpperCase();
+                    ui.formModeLabel.style.color = '#ff9800';
+                }
             }
+        }
+
+        ui.tplSelector.addEventListener('change', updateFormState);
+
+        // Cancelar -> Resetea a modo Nuevo
+        ui.cancelEditBtn.addEventListener('click', () => {
+            ui.tplSelector.value = -1;
+            updateFormState();
+            ui.newLabel.focus();
+        });
+
+        ui.deleteBtn.addEventListener('click', () => {
+            if (editingIndex === -1) return;
+            if (confirm(`¿Eliminar la plantilla "${headerTemplates[editingIndex].label}"?`)) {
+                headerTemplates.splice(editingIndex, 1);
+                editingIndex = -1; 
+                renderTemplatesEditor();
+            }
+        });
+
+        // Botón principal: Crea o Actualiza
+        ui.addTplBtn.addEventListener('click', () => {
+            const label = ui.newLabel.value.trim();
+            const value = ui.newValue.value.trim();
+
+            if (!label || !value) { alert('Completa los campos.'); return; }
+
+            if (editingIndex >= 0) {
+                headerTemplates[editingIndex] = { label, value };
+            } else {
+                headerTemplates.push({ label, value });
+                editingIndex = headerTemplates.length - 1; 
+            }
+            renderTemplatesEditor();
+        });
+
+        // Botón Clonar: Guarda como nueva sin borrar la anterior
+        ui.cloneTplBtn.addEventListener('click', () => {
+             const label = ui.newLabel.value.trim();
+            const value = ui.newValue.value.trim();
+            if (!label || !value) return;
+
+            headerTemplates.push({ label: label + " (Copia)", value });
+            editingIndex = headerTemplates.length - 1;
+            renderTemplatesEditor();
+            alert("Guardado como copia nueva.");
+        });
+
+        ui.settingsBtn.addEventListener('click', () => {
+            // Al abrir, siempre sugerimos nueva o mantenemos estado anterior? 
+            // Mejor resetear para evitar confusiones.
+            editingIndex = -1;
+            renderTemplatesEditor();
+            ui.modal.classList.remove('hidden');
+        });
+
+        const closeSettings = () => {
+            try { fs.writeFileSync(DATA_FILE, JSON.stringify(headerTemplates, null, 2)); } catch (e) {}
+            ui.modal.classList.add('hidden');
+        };
+
+        ui.closeSettingsBtn.addEventListener('click', closeSettings);
+        ui.saveSettingsBtn.addEventListener('click', closeSettings);
+
+        // --- AUTOCOMPLETE & CORE ---
+        function setHexState(state) { ui.hexContainer.className = state ? `status-${state}` : ''; }
+
+        let selectedIndex = -1;
+        ui.headerInput.addEventListener('input', (e) => {
+            if (e.target.value.includes('//')) showAutocomplete();
+            else hideAutocomplete();
         });
 
         function showAutocomplete() {
             ui.autocompleteMenu.innerHTML = '';
-            HEADER_TEMPLATES.forEach((tpl, index) => {
+            headerTemplates.forEach((tpl) => {
                 const div = document.createElement('div');
                 div.className = 'autocomplete-item';
                 div.innerHTML = `<strong>${tpl.label}</strong><span style="opacity:0.6">${tpl.value.substring(0, 40)}...</span>`;
@@ -282,10 +333,7 @@
             ui.autocompleteMenu.style.display = 'block';
         }
 
-        function hideAutocomplete() {
-            ui.autocompleteMenu.style.display = 'none';
-            selectedIndex = -1;
-        }
+        function hideAutocomplete() { ui.autocompleteMenu.style.display = 'none'; selectedIndex = -1; }
 
         function selectTemplate(text) {
             ui.headerInput.value = text;
@@ -293,24 +341,13 @@
             ui.bodyInput.focus();
         }
 
-        // Navegación teclado en menú
         ui.headerInput.addEventListener('keydown', (e) => {
             if (ui.autocompleteMenu.style.display === 'block') {
                 const items = document.querySelectorAll('.autocomplete-item');
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    selectedIndex = (selectedIndex + 1) % items.length;
-                    highlightItem(items);
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    selectedIndex = (selectedIndex - 1 + items.length) % items.length;
-                    highlightItem(items);
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (selectedIndex >= 0) selectTemplate(HEADER_TEMPLATES[selectedIndex].value);
-                } else if (e.key === 'Escape') {
-                    hideAutocomplete();
-                }
+                if (e.key === 'ArrowDown') { e.preventDefault(); selectedIndex = (selectedIndex + 1) % items.length; highlightItem(items); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); selectedIndex = (selectedIndex - 1 + items.length) % items.length; highlightItem(items); }
+                else if (e.key === 'Enter') { e.preventDefault(); if (selectedIndex >= 0) selectTemplate(headerTemplates[selectedIndex].value); }
+                else if (e.key === 'Escape') hideAutocomplete();
             }
         });
 
@@ -319,154 +356,90 @@
             if(items[selectedIndex]) items[selectedIndex].classList.add('selected');
         }
 
-        // --- ENVÍO Y RENDERIZADO (Sector 1 & 3) ---
         async function sendAI() {
             if (isProcessing) return;
-            
-            const header = ui.headerInput.value.trim();
-            const body = ui.bodyInput.value.trim();
-            
-            if (!header && !body) return;
-
-            // Construir Prompt Final
-            const fullQuery = (header ? header + "\n\n" : "") + body;
+            const fullQuery = (ui.headerInput.value.trim() ? ui.headerInput.value.trim() + "\n\n" : "") + ui.bodyInput.value.trim();
+            if (!fullQuery.trim()) return;
 
             isProcessing = true;
             setHexState('thinking');
-            
-            // Render de estado "Pensando" (Sin mostrar el prompt del usuario)
-            ui.responseArea.innerHTML = `
-                <div style="display:flex; justify-content:center; align-items:center; height:100%; flex-direction:column; opacity:0.7;">
-                    <div style="margin-bottom:10px; color:var(--accent);">PROCESANDO SOLICITUD...</div>
-                    <div style="font-size:10px; color:#555;">La IA está generando tu respuesta</div>
-                </div>
-            `;
+            ui.responseArea.innerHTML = `<div style="text-align:center; opacity:0.7; margin-top:50px; color:var(--accent);">PROCESANDO...</div>`;
 
             try {
                 const res = await fetch(`${API_URL}/query_gemini`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({query: fullQuery})
+                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query: fullQuery})
                 });
                 const data = await res.json();
-                
-                if (data.response) {
-                    renderResponse(data.response);
-                    setHexState('success');
-                } else {
-                    renderError(data.error || "Respuesta vacía del servidor");
-                    setHexState('error');
-                }
-            } catch (e) {
-                renderError("Error de conexión con el backend local.");
-                setHexState('error');
-            }
+                if (data.response) { renderResponse(data.response); setHexState('success'); }
+                else { renderError(data.error); setHexState('error'); }
+            } catch (e) { renderError("Error de conexión."); setHexState('error'); }
 
             isProcessing = false;
             setTimeout(() => setHexState(''), 3000);
         }
 
-        function renderResponse(markdownText) {
-            // Renderizado Limpio: SOLO la respuesta de la IA
-            const htmlContent = marked.parse(markdownText);
-            
-            ui.responseArea.innerHTML = `
-                <div class="response-content">
-                    ${htmlContent}
-                </div>
-                <div style="margin-top:40px; border-top:1px solid #333; padding-top:10px; font-size:10px; color:#444; text-align:right;">
-                    FINALIZADO A LAS ${new Date().toLocaleTimeString()}
-                </div>
-            `;
-
-            // Syntax Highlighting y Botones de Copiar
+        function renderResponse(txt) {
+            ui.responseArea.innerHTML = `<div class="response-content">${marked.parse(txt)}</div>`;
             ui.responseArea.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
+            addCopyButtons();
+        }
+
+        function addCopyButtons() {
             ui.responseArea.querySelectorAll('pre').forEach((preBlock) => {
                 if(preBlock.querySelector('button')) return;
                 const btn = document.createElement('button');
                 btn.textContent = 'COPIAR';
-                btn.style.cssText = "position:absolute; top:10px; right:10px; background:#222; color:#var(--accent); border:1px solid #444; padding:4px 8px; font-size:9px; cursor:pointer; border-radius:3px; opacity:0.8;";
-                
-                // Asegurar posición relativa para el botón absoluto
+                btn.style.cssText = "position:absolute; top:10px; right:10px; background:#222; color:var(--accent); border:1px solid #444; padding:4px 8px; font-size:9px; cursor:pointer; border-radius:3px; opacity:0.8;";
                 preBlock.style.position = 'relative';
-                
                 btn.addEventListener('click', () => {
                     clipboard.writeText(preBlock.querySelector('code').innerText);
-                    btn.textContent = 'COPIADO';
-                    btn.style.color = '#4caf50';
-                    setTimeout(()=> { btn.textContent='COPIAR'; btn.style.color=''; }, 2000);
+                    btn.textContent = 'COPIADO'; setTimeout(()=> btn.textContent='COPIAR', 2000);
                 });
                 preBlock.appendChild(btn);
             });
         }
 
-        function renderError(msg) {
-            ui.responseArea.innerHTML = `<div style="color:#f44336; padding:20px; border:1px solid #f44336; border-radius:8px;">ERROR DEL SISTEMA: ${msg}</div>`;
-        }
+        function renderError(msg) { ui.responseArea.innerHTML = `<div style="color:#f44336; padding:20px;">ERROR: ${msg}</div>`; }
 
-        // --- EVENTOS GLOBALES ---
         ui.sendBtn.addEventListener('click', sendAI);
-        
-        // Enviar con Ctrl+Enter desde el editor de cuerpo
-        ui.bodyInput.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') sendAI();
-        });
+        ui.bodyInput.addEventListener('keydown', (e) => { if (e.ctrlKey && e.key === 'Enter') sendAI(); });
+        document.getElementById('clear-btn').addEventListener('click', () => { ui.headerInput.value = ''; ui.bodyInput.value = ''; });
 
-        document.getElementById('clear-btn').addEventListener('click', () => {
-            ui.headerInput.value = '';
-            ui.bodyInput.value = '';
-            ui.responseArea.innerHTML = '<div style="text-align:center; color:#444; margin-top:20vh;"><div style="font-size:11px;">Esperando instrucciones...</div></div>';
-        });
-
-        // Minimizador / Toggle
-        let isMini = false;
         window.minimizeApp = function() { ipcRenderer.send('resize-window', 'mini'); }
         
         ui.hexContainer.addEventListener('click', () => {
-            const targetMode = isMini ? 'expanded' : 'mini';
-            ipcRenderer.send('resize-window', targetMode);
-            isMini = !isMini;
+            const isMini = document.body.classList.contains('mode-mini');
+            // FIX CRÍTICO: Asegura que el estado se envíe correctamente al Main
+            ipcRenderer.send('resize-window', isMini ? 'expanded' : 'mini');
         });
         
         ipcRenderer.on('force-mode-update', (e, mode) => {
             document.body.className = `mode-${mode}`;
-            isMini = (mode === 'mini');
         });
 
-        // Seguridad (Mock o Real según Backend)
+        // LOCK SYSTEM
         const attemptUnlock = async () => {
             const key = document.getElementById('master-key-input').value;
             setHexState('thinking');
             try {
                 const res = await fetch(`${API_URL}/initialize`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({master_key: key}) });
                 const d = await res.json();
-                if(d.success) unlockUI(); else { setHexState('error'); setTimeout(() => setHexState('locked'), 1000); }
+                if(d.success) { ui.login.classList.add('hidden'); ui.main.classList.remove('hidden'); setHexState('success'); }
+                else { setHexState('error'); }
             } catch(e) { setHexState('error'); }
         };
 
-        function unlockUI() {
-            ui.login.classList.add('hidden');
-            ui.main.classList.remove('hidden');
-            setHexState('success');
-        }
-
-        async function checkInit() {
+        (async () => {
             try {
                 const res = await fetch(`${API_URL}/is_initialized`);
                 const data = await res.json();
-                if(data.initialized) unlockUI(); else { ui.login.classList.remove('hidden'); setHexState('locked'); }
-            } catch(e) { 
-                // Fallback para desarrollo offline si no hay backend
-                console.warn("Backend no detectado. Modo Offline UI.");
-                // unlockUI(); // Descomentar para debug visual sin backend
-                setHexState('error'); 
-            }
-        }
-
+                if(data.initialized) { ui.login.classList.add('hidden'); ui.main.classList.remove('hidden'); }
+                else ui.login.classList.remove('hidden');
+            } catch(e) {}
+        })();
+        
         document.getElementById('unlock-btn').addEventListener('click', attemptUnlock);
         document.getElementById('master-key-input').addEventListener('keypress', (e) => e.key === 'Enter' && attemptUnlock());
-
-        checkInit();
     </script>
 </body>
 </html>

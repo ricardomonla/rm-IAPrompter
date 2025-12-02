@@ -6,6 +6,21 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Unreleased]
 
+## **[3.0.1] - 2025-12-02**
+
+### **Cambiado**
+
+* **Actualización de Dependencias:** Cambiada la versión de Electron a 18.3.15 para compatibilidad con Node 18, y ajustados los engines en package.json.
+* **Script de Inicio:** Modificaciones en `app-run.sh` para mejorar el manejo de logs y procesos en background.
+* **Configuración Docker:** Ajustes en `docker-compose.yml` para optimización del contenedor backend.
+* **Interfaz de Usuario:** Actualizaciones en `main.js` para usar destructuring de módulos Electron y cambio a `app.on('ready')` en lugar de `app.whenReady().then()`.
+* **Archivos de Interfaz:** Modificaciones en `index.html`, adición de `mfm_templates.json` y `styles.css` para nuevas funcionalidades.
+* **Control de Versiones:** Actualizado `.gitignore` para excluir archivos temporales adicionales.
+
+### **Corregido**
+
+* **Compatibilidad Electron:** Intentos de corrección para problemas de carga de APIs en el entorno actual (pendiente de verificación en otros sistemas).
+
 ## **[3.0.0] - 2025-12-01**
 
 ### **Añadido**
