@@ -8,11 +8,29 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ### **Añadido**
 
-* **Migración de Plantillas Centralizada:** Implementada migración completa de plantillas de prompts desde `app-interface/mfm_templates.json` hacia `app-data/templates.json` para centralizar persistencia de datos.
+* **Refactorización Completa del Sistema de Plantillas:** Implementada migración completa del sistema modal a navegación directa tipo carrusel con barra de herramientas.
+    * **Nueva Interfaz:** Eliminación del botón de configuración (⚙) y reemplazo por barra de herramientas horizontal con 6 botones funcionales.
+    * **Navegación Directa:** Sistema de carrusel para navegar entre plantillas con botones `//`, `<`, `>`, `✎`, `❐`.
+    * **Edición In-Place:** Modo de edición implementado directamente en el textarea sin necesidad de modales.
+    * **Toggle de Edición:** Un solo botón funciona como editar/guardar (`✎` ↔ `💾`) con deshabilitación automática de otros controles durante edición.
     * **Backend Enhancement:** Agregados 4 nuevos endpoints API (`/api/get_templates`, `/api/save_templates`, `/api/add_template`, `/api/delete_template`) para gestión completa de plantillas.
     * **Frontend Refactoring:** Modificado `app-interface/index.html` para usar llamadas API asíncronas en lugar de operaciones de archivos locales.
     * **Data Persistence:** Unificada la gestión de datos en el directorio `app-data/` junto con `config.json`.
     * **API Security:** Integrados nuevos endpoints en el sistema de autenticación sin requerir inicialización de API.
+
+### **Corregido**
+
+* **Bug Crítico del Toggle de Edición:** Solucionado problema donde el botón de editar/guardado no regresaba correctamente al modo lectura.
+    * **Lógica de Estado:** Corregida la función `toggleEditMode()` para eliminar conflictos de estado y referencias obsoletas.
+    * **Referencias Obsoletas:** Eliminadas todas las referencias a `ui.saveTemplateBtn` (botón eliminado) que causaban errores.
+    * **Validación de Guardado:** Mejorado el manejo de errores en la función `saveCurrentTemplate()`.
+    * **Feedback Visual:** Implementados logs de debug para monitoreo del estado de edición.
+
+### **Cambiado**
+
+* **Optimización de Interfaz:** Eliminación del botón redundante de guardado para interfaz más limpia.
+* **Estados de Botones:** Implementado sistema de deshabilitación visual y funcional durante el modo edición.
+* **Persistencia de Datos:** Migración completa de plantillas de prompts desde `app-interface/mfm_templates.json` hacia `app-data/templates.json` para centralizar persistencia de datos.
 
 ## **[3.0.1] - 2025-12-02**
 

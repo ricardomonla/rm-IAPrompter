@@ -2,7 +2,7 @@
   -----------------------------------------------------------------------------
   Project:     MFM Assistant - Sistema de Gestión de Interfaz
   File:        main.js
-  Version:     v3.0.6 (2025-12-01 20:09)
+  Version:     v3.1.0 (2025-12-03 00:02)
   Author:      Lic. Ricardo MONLA
   Description: 
   -----------------------------------------------------------------------------

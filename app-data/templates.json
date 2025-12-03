@@ -1,7 +1,7 @@
 [
     {
         "label": "Mejora de Prompt",
-        "value": "Mejora la redacci\u00f3n del siguiente PROMPT teniendo en cuenta que va dirigido a una IA que genera c\u00f3digo.\n- Est\u00e1 dirigido a una IA que genera c\u00f3digo.\n- Se espara 2 versiones, una el PROMPT EN ESPA\u00d1OL y la otra el PROMPT EN INGL\u00c9S dirigida a la IA, sin necesidad de tanta est\u00e9tica para este \u00faltima.\n- Se le pide a la IA haga las acciones y no un plan."
+        "value": "Mejora la redacci\u00f3n del siguiente PROMPT teniendo en cuenta que va dirigido a una IA que genera c\u00f3digo.\n- Est\u00e1 dirigido a una IA que genera c\u00f3digo.\n- Se espara 2 versiones, una el PROMPT EN ESPA\u00d1OL y la otra el PROMPT EN INGL\u00c9S dirigida a la IA, sin necesidad de tanta est\u00e9tica para este \u00faltima.\n- Se le pide a la IA que haga las acciones y no un plan o una descripci\u00f3n.\n- Debe quedar tambi\u00e9n claro que si bien lo solicitado puede estar en ingles pero la IA si debe responder e interactuar lo debe hacer en espa\u00f1ol."
     },
     {
         "label": "Generaci\u00f3n de C\u00f3digo",

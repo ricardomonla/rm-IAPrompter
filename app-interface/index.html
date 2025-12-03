@@ -95,12 +95,19 @@
                 <div id="right-panel">
                     
                     <div id="headers-section">
-                        <div style="display:flex; justify-content:flex-start; align-items:center; gap: 10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                             <span class="section-label">Cabeceras (Contexto)</span>
-                            <button id="settings-trigger-btn" title="Editar Plantillas">⚙</button>
+                            <div id="toolbar-container">
+                                <button id="templates-list-btn" title="Lista de Plantillas">//</button>
+                                <button id="prev-template-btn" title="Plantilla Anterior"><</button>
+                                <button id="next-template-btn" title="Siguiente Plantilla">></button>
+                                <button id="edit-template-btn" title="Editar Plantilla">✎</button>
+                                <button id="duplicate-template-btn" title="Duplicar Plantilla">❐</button>
+                            </div>
                         </div>
                         <div style="position: relative; height: 100%; display: flex; flex-direction: column;">
-                            <textarea id="header-input" placeholder="Escribe '//' para seleccionar plantilla..."></textarea>
+                            <textarea id="header-input" readonly placeholder="Navega usando los botones para seleccionar una plantilla..."></textarea>
+                            <div id="template-selector-menu" class="hidden"></div>
                             <div id="autocomplete-menu"></div>
                         </div>
                     </div>
@@ -184,12 +191,14 @@
             }
         }
         
-        // Cargar plantillas iniciales
-        (async () => {
-            headerTemplates = await loadTemplates();
-        })();
+        // Las plantillas se cargarán después del login exitoso
 
         let editingIndex = -1;
+        
+        // Sistema de navegación de plantillas (Nuevo)
+        let currentTemplateIndex = -1;
+        let isEditing = false;
+        let hasUnsavedChanges = false;
 
         // UI REFERENCES
         const ui = {
@@ -202,7 +211,15 @@
             login: document.getElementById('login-screen'),
             main: document.getElementById('main-interface'),
             
-            // Modal Elements (COMPLETOS)
+            // Nueva barra de herramientas
+            templatesListBtn: document.getElementById('templates-list-btn'),
+            prevTemplateBtn: document.getElementById('prev-template-btn'),
+            nextTemplateBtn: document.getElementById('next-template-btn'),
+            editTemplateBtn: document.getElementById('edit-template-btn'),
+            duplicateTemplateBtn: document.getElementById('duplicate-template-btn'),
+            templateSelectorMenu: document.getElementById('template-selector-menu'),
+            
+            // Modal Elements (Para compatibilidad temporal)
             modal: document.getElementById('settings-modal'),
             tplSelector: document.getElementById('tpl-selector'),
             deleteBtn: document.getElementById('delete-tpl-btn'),
@@ -212,178 +229,290 @@
             saveSettingsBtn: document.getElementById('save-settings-btn'),
             
             addTplBtn: document.getElementById('add-tpl-btn'),
-            cloneTplBtn: document.getElementById('clone-tpl-btn'), // Nuevo
+            cloneTplBtn: document.getElementById('clone-tpl-btn'),
             newLabel: document.getElementById('new-tpl-label'),
             newValue: document.getElementById('new-tpl-value'),
             
-            formModeLabel: document.getElementById('form-mode-label'), // Recuperado
-            cancelEditBtn: document.getElementById('cancel-edit-btn') // Recuperado
+            formModeLabel: document.getElementById('form-mode-label'),
+            cancelEditBtn: document.getElementById('cancel-edit-btn')
         };
 
-        // --- LÓGICA DEL MODAL DE EDICIÓN ---
-        function renderTemplatesEditor() {
-            const currentSelection = editingIndex;
-            
-            ui.tplSelector.innerHTML = '<option value="-1">-- ✨ NUEVA PLANTILLA --</option>';
+        // --- NUEVO SISTEMA DE NAVEGACIÓN DE PLANTILLAS ---
+        
+        // Inicializar con la primera plantilla al cargar
+        async function initializeTemplates() {
+            headerTemplates = await loadTemplates();
+            console.log('Plantillas cargadas:', headerTemplates.length);
+            if (headerTemplates.length > 0) {
+                currentTemplateIndex = 0;
+                loadCurrentTemplate();
+                console.log('Plantilla inicial cargada:', headerTemplates[0].label);
+            }
+        }
+        
+        function loadCurrentTemplate() {
+            if (currentTemplateIndex >= 0 && currentTemplateIndex < headerTemplates.length) {
+                const template = headerTemplates[currentTemplateIndex];
+                ui.headerInput.value = template.value;
+                updateTemplateSelectorMenu();
+            }
+        }
+        
+        function updateTemplateSelectorMenu() {
+            ui.templateSelectorMenu.innerHTML = '';
             
             headerTemplates.forEach((tpl, index) => {
-                const option = document.createElement('option');
-                option.value = index;
-                option.text = `[${index + 1}] ${tpl.label}`;
-                ui.tplSelector.appendChild(option);
+                const div = document.createElement('div');
+                div.className = 'template-menu-item';
+                if (index === currentTemplateIndex) {
+                    div.classList.add('current');
+                }
+                div.innerHTML = `
+                    <strong>${tpl.label}</strong>
+                    <div class="template-preview">${tpl.value.substring(0, 50)}...</div>
+                `;
+                div.onclick = () => selectTemplateByIndex(index);
+                ui.templateSelectorMenu.appendChild(div);
             });
-
-            // Si el índice borrado ya no existe, volvemos a -1
-            if (currentSelection >= headerTemplates.length) {
-                ui.tplSelector.value = -1;
-            } else {
-                ui.tplSelector.value = currentSelection;
-            }
-            
-            updateFormState();
         }
-
-        function updateFormState() {
-            editingIndex = parseInt(ui.tplSelector.value);
+        
+        function showTemplateSelector() {
+            updateTemplateSelectorMenu();
+            ui.templateSelectorMenu.classList.remove('hidden');
+        }
+        
+        function hideTemplateSelector() {
+            ui.templateSelectorMenu.classList.add('hidden');
+        }
+        
+        function selectTemplateByIndex(index) {
+            if (index >= 0 && index < headerTemplates.length) {
+                currentTemplateIndex = index;
+                loadCurrentTemplate();
+                ui.headerInput.readOnly = !isEditing;
+                hideTemplateSelector();
+                console.log('Plantilla seleccionada por índice:', index);
+            }
+        }
+        
+        function navigateTemplate(direction) {
+            if (headerTemplates.length === 0) return;
             
-            if (editingIndex === -1) {
-                // MODO: NUEVA
-                ui.newLabel.value = '';
-                ui.newValue.value = '';
-                
-                ui.addTplBtn.textContent = 'CREAR NUEVA';
-                ui.addTplBtn.classList.remove('btn-update');
-                ui.cloneTplBtn.classList.add('hidden');
-                ui.deleteBtn.style.display = 'none';
-                ui.cancelEditBtn.classList.add('hidden');
-                
-                ui.formModeLabel.textContent = 'NUEVA PLANTILLA';
-                ui.formModeLabel.style.color = '#666';
+            // En el nuevo sistema, no verificamos cambios sin guardar antes de navegar
+            // ya que el guardado es inmediato al salir del modo edición
+            
+            currentTemplateIndex += direction;
+            if (currentTemplateIndex < 0) currentTemplateIndex = headerTemplates.length - 1;
+            if (currentTemplateIndex >= headerTemplates.length) currentTemplateIndex = 0;
+            
+            loadCurrentTemplate();
+            ui.headerInput.readOnly = !isEditing;
+            console.log('Navegando plantilla:', direction > 0 ? 'siguiente' : 'anterior');
+        }
+        
+        function toggleEditMode() {
+            if (isEditing) {
+                // ESTAMOS EN MODO EDICIÓN - GUARDAR Y SALIR
+                console.log('Click en modo edición - Guardando...');
+                saveCurrentTemplate().then(success => {
+                    if (success) {
+                        deactivateEditMode();
+                        console.log('Guardado exitoso - Modo edición desactivado');
+                    } else {
+                        console.log('Error al guardar - Manteniendo modo edición');
+                        // Mantener modo edición si falla el guardado
+                    }
+                });
             } else {
-                // MODO: EDICIÓN
-                const tpl = headerTemplates[editingIndex];
-                if (tpl) {
-                    ui.newLabel.value = tpl.label;
-                    ui.newValue.value = tpl.value;
-                    
-                    ui.addTplBtn.textContent = 'GUARDAR CAMBIOS';
-                    ui.addTplBtn.classList.add('btn-update');
-                    ui.cloneTplBtn.classList.remove('hidden');
-                    ui.deleteBtn.style.display = 'block';
-                    ui.cancelEditBtn.classList.remove('hidden');
-                    
-                    ui.formModeLabel.textContent = 'EDITANDO: ' + tpl.label.toUpperCase();
-                    ui.formModeLabel.style.color = '#ff9800';
+                // ESTAMOS EN MODO LECTURA - ACTIVAR EDICIÓN
+                console.log('Click en modo lectura - Activando edición...');
+                activateEditMode();
+                console.log('Modo edición activado');
+            }
+        }
+        
+        function activateEditMode() {
+            isEditing = true;
+            
+            // Configurar textarea para edición
+            ui.headerInput.readOnly = false;
+            ui.headerInput.classList.add('editing-mode');
+            
+            // Cambiar botón de edición a guardado
+            ui.editTemplateBtn.textContent = '💾';
+            ui.editTemplateBtn.title = 'Guardar Cambios';
+            
+            // DESHABILITAR ELEMENTOS QUE CAMBIAN CONTEXTO/PLANTILLA
+            const contextChangeButtons = [
+                ui.templatesListBtn,      // Lista de plantillas
+                ui.prevTemplateBtn,        // Navegación anterior
+                ui.nextTemplateBtn,        // Navegación siguiente
+                ui.duplicateTemplateBtn    // Duplicar plantilla
+            ];
+            
+            // Deshabilitar todos los botones de cambio de contexto
+            contextChangeButtons.forEach(btn => {
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
                 }
+            });
+            
+            // Enfocar y seleccionar contenido
+            ui.headerInput.focus();
+            ui.headerInput.select();
+            
+            console.log('Modo edición activado - Cambios de contexto deshabilitados');
+        }
+        
+        function deactivateEditMode() {
+            isEditing = false;
+            
+            // Restaurar textarea a solo lectura
+            ui.headerInput.readOnly = true;
+            ui.headerInput.classList.remove('editing-mode');
+            
+            // Cambiar botón de guardado a edición
+            ui.editTemplateBtn.textContent = '✎';
+            ui.editTemplateBtn.title = 'Editar Plantilla';
+            
+            // REACTIVAR TODOS LOS ELEMENTOS PREVIAMENTE DESHABILITADOS
+            const contextChangeButtons = [
+                ui.templatesListBtn,      
+                ui.prevTemplateBtn,        
+                ui.nextTemplateBtn,        
+                ui.duplicateTemplateBtn    
+            ];
+            
+            contextChangeButtons.forEach(btn => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                }
+            });
+            
+
+            
+            console.log('Modo edición desactivado - Todos los controles reactivados');
+        }
+        
+        function duplicateCurrentTemplate() {
+            if (currentTemplateIndex >= 0 && currentTemplateIndex < headerTemplates.length) {
+                const currentTemplate = headerTemplates[currentTemplateIndex];
+                const newTemplate = {
+                    label: currentTemplate.label + ' (Copia)',
+                    value: currentTemplate.value
+                };
+                headerTemplates.push(newTemplate);
+                currentTemplateIndex = headerTemplates.length - 1;
+                loadCurrentTemplate();
+                console.log('Plantilla duplicada creada');
             }
         }
-
-        ui.tplSelector.addEventListener('change', updateFormState);
-
-        // Cancelar -> Resetea a modo Nuevo
-        ui.cancelEditBtn.addEventListener('click', () => {
-            ui.tplSelector.value = -1;
-            updateFormState();
-            ui.newLabel.focus();
-        });
-
-        ui.deleteBtn.addEventListener('click', async () => {
-            if (editingIndex === -1) return;
-            if (confirm(`¿Eliminar la plantilla "${headerTemplates[editingIndex].label}"?`)) {
-                headerTemplates.splice(editingIndex, 1);
-                editingIndex = -1; 
+        
+        function updateUnsavedState(changed) {
+            hasUnsavedChanges = changed;
+            // Ya no hay botón de save separado, el estado se maneja por el toggle button
+            console.log('Estado de cambios sin guardar:', changed);
+        }
+        
+        async function saveCurrentTemplate() {
+            if (currentTemplateIndex >= 0 && currentTemplateIndex < headerTemplates.length) {
+                const newValue = ui.headerInput.value.trim();
+                if (!newValue) {
+                    alert('El contenido de la plantilla no puede estar vacío.');
+                    return false;
+                }
                 
-                // Guardar en la API
+                headerTemplates[currentTemplateIndex].value = newValue;
+                
                 const success = await saveTemplates(headerTemplates);
-                if (!success) {
-                    alert('Error al eliminar la plantilla. Intenta nuevamente.');
-                    return;
+                if (success) {
+                    console.log('Plantilla guardada exitosamente');
+                    return true;
+                } else {
+                    alert('Error al guardar la plantilla. Intenta nuevamente.');
+                    return false;
                 }
-                
-                renderTemplatesEditor();
+            }
+            return false;
+        }
+        
+        // Event listeners para la nueva barra de herramientas
+        ui.templatesListBtn.addEventListener('click', () => {
+            if (!isEditing && ui.templateSelectorMenu.classList.contains('hidden')) {
+                showTemplateSelector();
+            } else if (!isEditing) {
+                hideTemplateSelector();
+            }
+        });
+        
+        ui.prevTemplateBtn.addEventListener('click', () => {
+            if (!isEditing) {
+                navigateTemplate(-1);
+            }
+        });
+        
+        ui.nextTemplateBtn.addEventListener('click', () => {
+            if (!isEditing) {
+                navigateTemplate(1);
+            }
+        });
+        
+        // EL MISMO BOTÓN FUNCIONA COMO EDIT/SAVE (TOGGLE)
+        ui.editTemplateBtn.addEventListener('click', toggleEditMode);
+        
+        ui.duplicateTemplateBtn.addEventListener('click', () => {
+            if (!isEditing) {
+                duplicateCurrentTemplate();
+            }
+        });
+        
+
+        
+        // Detectar cambios en el textarea (solo para feedback visual durante edición)
+        ui.headerInput.addEventListener('input', () => {
+            if (isEditing) {
+                // Feedback visual de cambios (sin estado separate de "unsaved")
+                console.log('Cambios detectados en modo edición');
+            }
+        });
+        
+        // Permitir salir del modo edición con Escape
+        ui.headerInput.addEventListener('keydown', (e) => {
+            if (isEditing && e.key === 'Escape') {
+                toggleEditMode();
+            }
+        });
+        
+        // Cerrar menús al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#headers-section')) {
+                hideTemplateSelector();
             }
         });
 
-        // Botón principal: Crea o Actualiza
-        ui.addTplBtn.addEventListener('click', async () => {
-            const label = ui.newLabel.value.trim();
-            const value = ui.newValue.value.trim();
-
-            if (!label || !value) { alert('Completa los campos.'); return; }
-
-            if (editingIndex >= 0) {
-                headerTemplates[editingIndex] = { label, value };
-            } else {
-                headerTemplates.push({ label, value });
-                editingIndex = headerTemplates.length - 1; 
-            }
-            
-            // Guardar en la API
-            const success = await saveTemplates(headerTemplates);
-            if (!success) {
-                alert('Error al guardar la plantilla. Intenta nuevamente.');
-                return;
-            }
-            
-            renderTemplatesEditor();
-        });
-
-        // Botón Clonar: Guarda como nueva sin borrar la anterior
-        ui.cloneTplBtn.addEventListener('click', async () => {
-            const label = ui.newLabel.value.trim();
-            const value = ui.newValue.value.trim();
-            if (!label || !value) return;
-
-            headerTemplates.push({ label: label + " (Copia)", value });
-            editingIndex = headerTemplates.length - 1;
-            
-            // Guardar en la API
-            const success = await saveTemplates(headerTemplates);
-            if (!success) {
-                alert('Error al guardar la plantilla clonada. Intenta nuevamente.');
-                return;
-            }
-            
-            renderTemplatesEditor();
-            alert("Guardado como copia nueva.");
-        });
-
-        ui.settingsBtn.addEventListener('click', () => {
-            // Al abrir, siempre sugerimos nueva o mantenemos estado anterior? 
-            // Mejor resetear para evitar confusiones.
-            editingIndex = -1;
-            renderTemplatesEditor();
-            ui.modal.classList.remove('hidden');
-        });
-
-        const closeSettings = async () => {
-            // Guardar plantillas antes de cerrar
-            const success = await saveTemplates(headerTemplates);
-            if (!success) {
-                console.error("Error al guardar plantillas al cerrar");
-            }
-            ui.modal.classList.add('hidden');
-        };
-
-        ui.closeSettingsBtn.addEventListener('click', closeSettings);
-        ui.saveSettingsBtn.addEventListener('click', closeSettings);
-
-        // --- AUTOCOMPLETE & CORE ---
+        // --- AUTOCOMPLETE & CORE (Actualizado) ---
         function setHexState(state) { ui.hexContainer.className = state ? `status-${state}` : ''; }
 
         let selectedIndex = -1;
         ui.headerInput.addEventListener('input', (e) => {
-            if (e.target.value.includes('//')) showAutocomplete();
-            else hideAutocomplete();
+            if (e.target.value.includes('//') && !isEditing) {
+                showAutocomplete();
+            } else {
+                hideAutocomplete();
+            }
         });
 
         function showAutocomplete() {
             ui.autocompleteMenu.innerHTML = '';
-            headerTemplates.forEach((tpl) => {
+            headerTemplates.forEach((tpl, index) => {
                 const div = document.createElement('div');
                 div.className = 'autocomplete-item';
                 div.innerHTML = `<strong>${tpl.label}</strong><span style="opacity:0.6">${tpl.value.substring(0, 40)}...</span>`;
-                div.onclick = () => selectTemplate(tpl.value);
+                div.onclick = () => selectTemplateFromAutocomplete(index);
                 ui.autocompleteMenu.appendChild(div);
             });
             ui.autocompleteMenu.style.display = 'block';
@@ -391,8 +520,9 @@
 
         function hideAutocomplete() { ui.autocompleteMenu.style.display = 'none'; selectedIndex = -1; }
 
-        function selectTemplate(text) {
-            ui.headerInput.value = text;
+        function selectTemplateFromAutocomplete(templateIndex) {
+            currentTemplateIndex = templateIndex;
+            loadCurrentTemplate();
             hideAutocomplete();
             ui.bodyInput.focus();
         }
@@ -402,7 +532,7 @@
                 const items = document.querySelectorAll('.autocomplete-item');
                 if (e.key === 'ArrowDown') { e.preventDefault(); selectedIndex = (selectedIndex + 1) % items.length; highlightItem(items); }
                 else if (e.key === 'ArrowUp') { e.preventDefault(); selectedIndex = (selectedIndex - 1 + items.length) % items.length; highlightItem(items); }
-                else if (e.key === 'Enter') { e.preventDefault(); if (selectedIndex >= 0) selectTemplate(headerTemplates[selectedIndex].value); }
+                else if (e.key === 'Enter') { e.preventDefault(); if (selectedIndex >= 0) selectTemplateFromAutocomplete(selectedIndex); }
                 else if (e.key === 'Escape') hideAutocomplete();
             }
         });
@@ -480,7 +610,13 @@
             try {
                 const res = await fetch(`${API_URL}/initialize`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({master_key: key}) });
                 const d = await res.json();
-                if(d.success) { ui.login.classList.add('hidden'); ui.main.classList.remove('hidden'); setHexState('success'); }
+                if(d.success) { 
+                    ui.login.classList.add('hidden'); 
+                    ui.main.classList.remove('hidden'); 
+                    setHexState('success');
+                    // Inicializar plantillas después del login exitoso
+                    await initializeTemplates();
+                }
                 else { setHexState('error'); }
             } catch(e) { setHexState('error'); }
         };
@@ -489,7 +625,12 @@
             try {
                 const res = await fetch(`${API_URL}/is_initialized`);
                 const data = await res.json();
-                if(data.initialized) { ui.login.classList.add('hidden'); ui.main.classList.remove('hidden'); }
+                if(data.initialized) { 
+                    ui.login.classList.add('hidden'); 
+                    ui.main.classList.remove('hidden');
+                    // Inicializar plantillas si ya está autenticado
+                    await initializeTemplates();
+                }
                 else ui.login.classList.remove('hidden');
             } catch(e) {}
         })();
