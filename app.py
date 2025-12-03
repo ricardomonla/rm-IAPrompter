@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
 # Autor: Lic. Ricardo MONLA
-# Versión: v0.8.6
-# Descripción: Backend Flask con cifrado Fernet, integración Gemini e inspección de procesos.
+# Versión: v0.9.0
+# Descripción: rm-IAPromper - Backend Flask para generación de prompts estructurados con IA.
 # -----------------------------------------------------------------------------
 
 from flask import Flask, jsonify, request
@@ -101,10 +101,10 @@ def load_templates():
     if not os.path.exists(TEMPLATES_FILE):
         # Plantillas por defecto si el archivo no existe
         default_templates = [
-            {"label": "Mejora de Prompt", "value": "Mejora la redacción del siguiente PROMPT teniendo en cuenta que va dirigido a una IA experta:"},
-            {"label": "Generación de Código", "value": "Actúa como desarrollador Senior. Genera el código completo y funcional para:"},
-            {"label": "Refactorización", "value": "Analiza el siguiente código, busca errores y refactoriza aplicando mejores prácticas:"},
-            {"label": "Explicación Técnica", "value": "Explica detalladamente el funcionamiento lógico del siguiente fragmento:"}
+            {"label": "Mejora de Prompt", "value": "Actúa como experto en ingeniería de prompts. Mejora y optimiza el siguiente prompt para obtener mejores resultados de una IA:"},
+            {"label": "Generación Estructurada", "value": "Genera un prompt estructurado y detallado para que una IA complete la siguiente tarea de manera óptima:"},
+            {"label": "Prompt para Código", "value": "Crea un prompt especializado para generar código de alta calidad. Incluye especificaciones técnicas, mejores prácticas y ejemplos:"},
+            {"label": "Análisis y Explicación", "value": "Diseña un prompt para análisis técnico detallado que incluya contexto, metodología y formato de respuesta esperado:"}
         ]
         try:
             with open(TEMPLATES_FILE, 'w') as f:
@@ -141,7 +141,7 @@ def initialize_gemini(api_key: str):
     try:
         genai.configure(api_key=api_key)
         gemini_model = genai.GenerativeModel('gemini-2.5-flash',
-                                             system_instruction="You are a direct and technical AI assistant, ideal for answering programming queries. Respond in a straightforward, technical manner without unnecessary fluff.")
+                                             system_instruction="You are an expert prompt engineer specializing in creating structured, optimized prompts for AI models. Focus on clarity, specificity, and effectiveness. Generate prompts that maximize AI performance and deliver precise results.")
         is_api_initialized.set() 
         logging.info("Gemini API initialized successfully.")
         return True

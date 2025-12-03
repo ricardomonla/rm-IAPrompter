@@ -1,6 +1,6 @@
 /*
   -----------------------------------------------------------------------------
-  Project:     MFM Assistant - Sistema de Gestión de Interfaz
+  Project:     rm-IAPromper - AI Prompt Generator Interface
   File:        styles.css
   Version:     v3.1.2 (2025-12-01 20:20)
   Author:      Lic. Ricardo MONLA
@@ -70,7 +70,66 @@ body.mode-mini #content-wrapper { display: none; }
 
 /* PANEL IZQUIERDO */
 #left-panel { flex: 65; display: flex; flex-direction: column; border-right: 1px solid var(--border); position: relative; min-width: 0; background: rgba(0,0,0,0.2); }
-#active-response-area { flex: 1; overflow-y: auto; padding: 40px 50px; font-size: 13px; line-height: 1.6; color: #ccc; }
+
+/* BARRA DE HERRAMIENTAS DEL PANEL IZQUIERDO */
+#left-panel-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    z-index: 10;
+}
+
+#export-buttons-container {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+#export-buttons-container button {
+    background: rgba(0, 188, 212, 0.1); 
+    border: 1px solid rgba(0, 188, 212, 0.3); 
+    color: var(--accent); 
+    cursor: pointer; 
+    font-size: 11px; 
+    padding: 6px 8px; 
+    border-radius: 4px; 
+    transition: all 0.2s;
+    font-family: var(--font-main);
+    min-width: 32px;
+    text-align: center;
+    font-weight: 500;
+}
+
+#export-buttons-container button:hover {
+    background: rgba(0, 188, 212, 0.2);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+
+#export-buttons-container button:active {
+    transform: translateY(0);
+}
+
+#export-status {
+    font-size: 9px;
+    color: #666;
+    margin-left: 8px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+#active-response-area { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 40px 50px; 
+    font-size: 13px; 
+    line-height: 1.6; 
+    color: #ccc; 
+}
 
 /* PANEL DERECHO */
 #right-panel { flex: 35; min-width: 320px; max-width: 480px; display: flex; flex-direction: column; background: var(--panel-bg); }

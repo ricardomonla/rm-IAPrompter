@@ -1,6 +1,6 @@
 <!--
   -----------------------------------------------------------------------------
-  Project:     MFM Assistant - Sistema de Gestión de Interfaz
+  Project:     rm-IAPromper - AI Prompt Generator Interface
   File:        index.html
   Version:     v3.1.3 (2025-12-01 20:42)
   Author:      Lic. Ricardo MONLA
@@ -20,7 +20,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; connect-src 'self' http://localhost:5000; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com;">
     
-    <title>MFM Assistant v3.1</title>
+    <title>rm-IAPromper - AI Prompt Generator</title>
     
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
@@ -84,10 +84,18 @@
             <div id="main-interface" class="hidden">
                 
                 <div id="left-panel">
+                    <div id="left-panel-toolbar">
+                        <div style="flex:1"></div>
+                        <div id="export-buttons-container">
+                            <button id="export-md-btn" title="Exportar a Markdown">📄 MD</button>
+                            <button id="export-txt-btn" title="Exportar a Texto">📝 TXT</button>
+                        </div>
+                        <div id="export-status" style="font-size:9px; color:#666; margin-left:8px;"></div>
+                    </div>
                     <div id="active-response-area">
                         <div style="text-align:center; color:#444; margin-top:20vh;">
-                            <div style="font-size:14px; margin-bottom:5px; color:var(--accent);">❖ MFM CORE ONLINE</div>
-                            <div style="font-size:11px;">Esperando instrucciones...</div>
+                            <div style="font-size:14px; margin-bottom:5px; color:var(--accent);">❖ rm-IAPromper ONLINE</div>
+                            <div style="font-size:11px;">Listo para generar prompts estructurados...</div>
                         </div>
                     </div>
                 </div>
@@ -96,7 +104,7 @@
                     
                     <div id="headers-section">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-                            <span class="section-label">Cabeceras (Contexto)</span>
+                            <span class="section-label">Contexto del Prompt</span>
                             <div id="toolbar-container">
                                 <button id="templates-list-btn" title="Lista de Plantillas">//</button>
                                 <button id="prev-template-btn" title="Plantilla Anterior"><</button>
@@ -106,7 +114,7 @@
                             </div>
                         </div>
                         <div style="position: relative; height: 100%; display: flex; flex-direction: column;">
-                            <textarea id="header-input" readonly placeholder="Navega usando los botones para seleccionar una plantilla..."></textarea>
+                            <textarea id="header-input" readonly placeholder="Selecciona una plantilla de contexto para tu prompt..."></textarea>
                             <div id="template-selector-menu" class="hidden"></div>
                             <div id="autocomplete-menu"></div>
                         </div>
@@ -114,13 +122,13 @@
 
                     <div id="composer-section">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span class="section-label">Prompt Inicial</span>
+                            <span class="section-label">Contenido del Prompt</span>
                             <button id="clear-btn">LIMPIAR</button>
                         </div>
                         
-                        <textarea id="ai-input" placeholder="Redacta el cuerpo de tu solicitud aquí..."></textarea>
+                        <textarea id="ai-input" placeholder="Describe tu solicitud específica que quieres que la IA ejecute..."></textarea>
                         
-                        <button id="send-btn">GENERAR CÓDIGO</button>
+                        <button id="send-btn">GENERAR PROMPT</button>
                     </div>
 
                 </div>
@@ -148,10 +156,10 @@
         let isProcessing = false;
 
         const DEFAULT_TEMPLATES = [
-            { label: 'Mejora de Prompt', value: 'Mejora la redacción del siguiente PROMPT teniendo en cuenta que va dirigido a una IA experta:' },
-            { label: 'Generación de Código', value: 'Actúa como desarrollador Senior. Genera el código completo y funcional para:' },
-            { label: 'Refactorización', value: 'Analiza el siguiente código, busca errores y refactoriza aplicando mejores prácticas:' },
-            { label: 'Explicación Técnica', value: 'Explica detalladamente el funcionamiento lógico del siguiente fragmento:' }
+            { label: 'Mejora de Prompt', value: 'Actúa como experto en ingeniería de prompts. Mejora y optimiza el siguiente prompt para obtener mejores resultados de una IA:' },
+            { label: 'Generación Estructurada', value: 'Genera un prompt estructurado y detallado para que una IA complete la siguiente tarea de manera óptima:' },
+            { label: 'Prompt para Código', value: 'Crea un prompt especializado para generar código de alta calidad. Incluye especificaciones técnicas, mejores prácticas y ejemplos:' },
+            { label: 'Análisis y Explicación', value: 'Diseña un prompt para análisis técnico detallado que incluya contexto, metodología y formato de respuesta esperado:' }
         ];
 
         // --- CARGA DE DATOS ---
@@ -210,6 +218,11 @@
             hexContainer: document.getElementById('header-hex'),
             login: document.getElementById('login-screen'),
             main: document.getElementById('main-interface'),
+            
+            // Export buttons
+            exportMdBtn: document.getElementById('export-md-btn'),
+            exportTxtBtn: document.getElementById('export-txt-btn'),
+            exportStatus: document.getElementById('export-status'),
             
             // Nueva barra de herramientas
             templatesListBtn: document.getElementById('templates-list-btn'),
@@ -549,7 +562,7 @@
 
             isProcessing = true;
             setHexState('thinking');
-            ui.responseArea.innerHTML = `<div style="text-align:center; opacity:0.7; margin-top:50px; color:var(--accent);">PROCESANDO...</div>`;
+            ui.responseArea.innerHTML = `<div style="text-align:center; opacity:0.7; margin-top:50px; color:var(--accent);">GENERANDO PROMPT OPTIMIZADO...</div>`;
 
             try {
                 const res = await fetch(`${API_URL}/query_gemini`, {
@@ -637,6 +650,166 @@
         
         document.getElementById('unlock-btn').addEventListener('click', attemptUnlock);
         document.getElementById('master-key-input').addEventListener('keypress', (e) => e.key === 'Enter' && attemptUnlock());
+        
+        // --- FUNCIONES DE EXPORTACIÓN ---
+        
+        // Función para mostrar estado de exportación
+        function mostrarEstadoExportacion(mensaje, esExito = true) {
+            ui.exportStatus.textContent = mensaje;
+            ui.exportStatus.style.color = esExito ? '#27ae60' : '#e74c3c';
+            
+            setTimeout(() => {
+                ui.exportStatus.textContent = '';
+                ui.exportStatus.style.color = '#666';
+            }, 3000);
+        }
+        
+        // Función para extraer contenido del panel de resultados
+        function extraerContenidoPanel() {
+            const responseContent = ui.responseArea.querySelector('.response-content');
+            if (!responseContent) {
+                return null;
+            }
+            
+            // Convertir HTML a texto plano manteniendo estructura Markdown
+            let contenido = responseContent.innerHTML;
+            
+            // Procesar código con sintaxis highlight
+            const codeBlocks = responseContent.querySelectorAll('pre code');
+            codeBlocks.forEach((codeBlock, index) => {
+                const language = codeBlock.className.match(/language-(\w+)/)?.[1] || '';
+                const code = codeBlock.textContent;
+                contenido = contenido.replace(codeBlock.outerHTML, `\n\`\`\`${language}\n${code}\n\`\`\`\n`);
+            });
+            
+            // Procesar títulos y texto
+            contenido = contenido
+                .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n')
+                .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n')
+                .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n')
+                .replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1\n')
+                .replace(/<h5[^>]*>(.*?)<\/h5>/gi, '##### $1\n')
+                .replace(/<h6[^>]*>(.*?)<\/h6>/gi, '###### $1\n')
+                .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
+                .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
+                .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
+                .replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
+                .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n')
+                .replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<[^>]*>/g, '') // Eliminar etiquetas HTML restantes
+                .replace(/\n{3,}/g, '\n\n') // Normalizar líneas múltiples
+                .trim();
+            
+            return contenido;
+        }
+        
+        // Función para generar nombre de archivo con timestamp
+        function generarNombreArchivo(extension) {
+            const ahora = new Date();
+            const timestamp = ahora.toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '-');
+            return `prompt-export-${timestamp}.${extension}`;
+        }
+        
+        // Función para verificar si hay contenido para exportar
+        function tieneContenidoExportable() {
+            const responseContent = ui.responseArea.querySelector('.response-content');
+            if (!responseContent) return false;
+            
+            const texto = responseContent.textContent.trim();
+            return texto.length > 0 && !texto.includes('❖ rm-IAPromper ONLINE');
+        }
+        
+        // Función para exportar a Markdown
+        async function exportarAMarkdown() {
+            try {
+                if (!tieneContenidoExportable()) {
+                    mostrarEstadoExportacion('⚠️ Genera un prompt primero', false);
+                    return;
+                }
+                
+                const contenido = extraerContenidoPanel();
+                if (!contenido) {
+                    mostrarEstadoExportacion('❌ No se pudo extraer contenido', false);
+                    return;
+                }
+                
+                const nombreArchivo = generarNombreArchivo('md');
+                
+                // Solicitar al proceso principal que guarde el archivo
+                ipcRenderer.invoke('save-file', {
+                    nombreArchivo: nombreArchivo,
+                    contenido: contenido,
+                    tipoArchivo: 'markdown'
+                }).then(resultado => {
+                    if (resultado.exito) {
+                        mostrarEstadoExportacion(`✅ ${nombreArchivo}`);
+                    } else {
+                        mostrarEstadoExportacion(`❌ ${resultado.error}`, false);
+                    }
+                }).catch(error => {
+                    console.error('Error al exportar:', error);
+                    mostrarEstadoExportacion('❌ Error de exportación', false);
+                });
+                
+            } catch (error) {
+                console.error('Error en exportación MD:', error);
+                mostrarEstadoExportacion('❌ Error inesperado', false);
+            }
+        }
+        
+        // Función para exportar a Texto Plano
+        async function exportarATexto() {
+            try {
+                if (!tieneContenidoExportable()) {
+                    mostrarEstadoExportacion('⚠️ Genera un prompt primero', false);
+                    return;
+                }
+                
+                const contenido = extraerContenidoPanel();
+                if (!contenido) {
+                    mostrarEstadoExportacion('❌ No se pudo extraer contenido', false);
+                    return;
+                }
+                
+                const nombreArchivo = generarNombreArchivo('txt');
+                
+                // Convertir Markdown a texto plano
+                const contenidoTexto = contenido
+                    .replace(/#{1,6}\s+/g, '') // Quitar encabezados
+                    .replace(/\*\*(.*?)\*\*/g, '$1') // Quitar negrita
+                    .replace(/\*(.*?)\*/g, '$1') // Quitar cursiva
+                    .replace(/```[\w]*\n?/g, '') // Quitar bloques de código
+                    .replace(/`([^`]+)`/g, '$1') // Quitar código inline
+                    .replace(/^\s*[-*+]\s+/gm, '• ') // Convertir listas a viñetas
+                    .replace(/\n{3,}/g, '\n\n') // Normalizar líneas
+                    .trim();
+                
+                ipcRenderer.invoke('save-file', {
+                    nombreArchivo: nombreArchivo,
+                    contenido: contenidoTexto,
+                    tipoArchivo: 'texto'
+                }).then(resultado => {
+                    if (resultado.exito) {
+                        mostrarEstadoExportacion(`✅ ${nombreArchivo}`);
+                    } else {
+                        mostrarEstadoExportacion(`❌ ${resultado.error}`, false);
+                    }
+                }).catch(error => {
+                    console.error('Error al exportar:', error);
+                    mostrarEstadoExportacion('❌ Error de exportación', false);
+                });
+                
+            } catch (error) {
+                console.error('Error en exportación TXT:', error);
+                mostrarEstadoExportacion('❌ Error inesperado', false);
+            }
+        }
+        
+        // Event listeners para botones de exportación
+        ui.exportMdBtn.addEventListener('click', exportarAMarkdown);
+        ui.exportTxtBtn.addEventListener('click', exportarATexto);
+        
     </script>
 </body>
 </html>

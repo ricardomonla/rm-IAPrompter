@@ -1,7 +1,7 @@
 {
-  "name": "app-interface",
-  "version": "3.1.0",
-  "description": "MFM Desktop Assistant Interface",
+  "name": "rm-IAPromper",
+  "version": "1.0.0",
+  "description": "rm-IAPromper - AI Prompt Generator Interface",
   "main": "main.js",
   "scripts": {
     "start": "npx electron main.js",

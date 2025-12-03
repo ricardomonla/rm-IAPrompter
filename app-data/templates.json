@@ -1,7 +1,7 @@
 [
     {
         "label": "Mejora de Prompt",
-        "value": "Mejora la redacci\u00f3n del siguiente PROMPT teniendo en cuenta que va dirigido a una IA que genera c\u00f3digo.\n- Est\u00e1 dirigido a una IA que genera c\u00f3digo.\n- Se espara 2 versiones, una el PROMPT EN ESPA\u00d1OL y la otra el PROMPT EN INGL\u00c9S dirigida a la IA, sin necesidad de tanta est\u00e9tica para este \u00faltima.\n- Se le pide a la IA que haga las acciones y no un plan o una descripci\u00f3n.\n- Debe quedar tambi\u00e9n claro que si bien lo solicitado puede estar en ingles pero la IA si debe responder e interactuar lo debe hacer en espa\u00f1ol."
+        "value": "Prompt para IA de Desarrollo de C\u00f3digo\nObjetivo: En funsi\u00f3n del contenido de la  solicitud se debe dise\u00f1ar un prompt altamente efectivo y espec\u00edfico para una Inteligencia Artificial especializada en desarrollo de aplicaciones y edici\u00f3n de c\u00f3digo. Este prompt debe instruir a la IA para que cumpla rigurosamente con los siguientes criterios:\n\nCriterios de Comportamiento de la IA Target:\n\nAcci\u00f3n Directa y Ejecuci\u00f3n: La IA debe ejecutar directamente las tareas de codificaci\u00f3n o desarrollo solicitadas. Se proh\u00edbe generar planes, descripciones conceptuales, propuestas de c\u00f3mo abordar\u00eda la tarea o cualquier pre\u00e1mbulo. El resultado debe ser el entregable final solicitado (c\u00f3digo funcional, modificaciones espec\u00edficas, configuraciones, scripts, etc.).\nComunicaci\u00f3n Exclusiva en Espa\u00f1ol: Todas las interacciones, respuestas, explicaciones y cualquier texto generado por la IA deben estar \u00edntegramente en espa\u00f1ol, independientemente del idioma del prompt original o de las referencias de c\u00f3digo proporcionadas.\nPrecisi\u00f3n y Concisi\u00f3n: La IA debe ser directa y eficiente, entregando solo la informaci\u00f3n y el c\u00f3digo necesario para la tarea, sin divagaciones ni contenido superfluo.\nFormato de Salida Requerido:\n\nSe esperan dos textos distintos como resultado de esta optimizaci\u00f3n:\n\nInterpretaci\u00f3n de la solicitud (Espa\u00f1ol): Una explicaci\u00f3n clara y concisa en espa\u00f1ol que resuma el objetivo y los criterios de la solicitados.\nPrompt Optimizado (Ingl\u00e9s): El prompt final, redactado en ingl\u00e9s, dise\u00f1ado para ser utilizado directamente con la IA de desarrollo de aplicaciones y edici\u00f3n de c\u00f3digo, asegurando el cumplimiento de los \"Criterios de Comportamiento de la IA Target\" descritos anteriormente.\n[SOLICITUD]"
     },
     {
         "label": "Generaci\u00f3n de C\u00f3digo",
@@ -21,6 +21,18 @@
     },
     {
         "label": "Plantilla de Prueba",
-        "value": "Esta es una plantilla de prueba para testing"
+        "value": "Prompt para IA"
+    },
+    {
+        "label": "Plantilla de Prueba (Copia)",
+        "value": "**Nuevo Proyecto**\nVamos a iniciar un nuevo proyecto de desarrollo.\nGenera el prompt para solicitar a la IA que haga los siguiente:"
+    },
+    {
+        "label": "Mejora de Prompt (Copia)",
+        "value": "**Mejora el prompt v2**\nEl objetivo es crear un prompt altamente efectivo para una Inteligencia Artificial especializada en desarrollo de aplicaciones y edici\u00f3n de c\u00f3digo. Este prompt debe asegurar que la IA:\n1 - Act\u00fae directamente: Realice las tareas de codificaci\u00f3n o desarrollo solicitadas sin generar planes, descripciones de c\u00f3mo lo har\u00eda o propuestas conceptuales. La IA debe ejecutar la acci\u00f3n y entregar el resultado final (c\u00f3digo, modificaciones, etc.).\n2 - Interact\u00fae y Responda en Espa\u00f1ol: Aunque el prompt original y las referencias de c\u00f3digo puedan estar en ingl\u00e9s, todas las respuestas, interacciones y el texto explicativo de la IA deben ser en espa\u00f1ol.\n3 - Sea Precisa y Concisa: La IA debe entregar el resultado esperado de forma directa, sin divagaciones, proporcionando solo lo necesario para la tarea."
+    },
+    {
+        "label": "Explicaci\u00f3n T\u00e9cnica (Copia)",
+        "value": "Corrige, si es necesario, la redacci\u00f3n y coherencia del siguiente texto.\nNo debes hacer lo que dice el prompt solo optimizarlo o redactarlo mejor."
     }
 ]

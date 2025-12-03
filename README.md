@@ -1,8 +1,8 @@
-# **Asistente de Escritorio MFM (Modelo Funcional Mínimo)**
+# **rm-IAPromper - AI Prompt Generator**
 
-![Version](https://img.shields.io/badge/version-v3.0.2-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Author](https://img.shields.io/badge/autor-Lic._Ricardo_MONLA-orange)
+![Version](https://img.shields.io/badge/version-v3.1.4-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Author](https://img.shields.io/badge/autor-Lic._Ricardo_MONLA-orange)
 
-**El MFM es un asistente de escritorio seguro, flotante y futurista diseñado específicamente para desarrolladores.** Integra consultas de programación potenciadas por IA (Gemini) y monitoreo del sistema en tiempo real, todo orquestado mediante contenedores Docker y una interfaz Electron "No-Clip".
+**rm-IAPromper es una aplicación especializada en generar prompts estructurados y efectivos para otros modelos de IA.** Con una interfaz de dos paneles verticales, permite crear, optimizar y gestionar plantillas de prompts con el poder de Gemini AI, todo orquestado mediante contenedores Docker y una interfaz Electron moderna.
 
 ---
 
@@ -16,25 +16,29 @@ Este software es propiedad intelectual exclusiva del **Lic. Ricardo MONLA**.
 
 ---
 
-## **🚀 Nuevas Características (v3.0.2)**
+## **🚀 Características Principales (v3.1.4)**
 
-El asistente ha evolucionado de un chat simple a una **Suite de Desarrollo** con arquitectura centralizada:
+rm-IAPromper está diseñado específicamente para la ingeniería de prompts con las siguientes capacidades:
 
-* **📋 Gestión Avanzada de Plantillas:** Sistema completo para crear, editar y organizar plantillas de prompts con interfaz visual moderna.
-* **🔄 Persistencia Centralizada:** Migración completa de datos hacia `app-data/` para gestión unificada junto con configuración global.
-* **🧠 Autocompletado de Comandos:** Escribe `//` para desplegar un menú flotante con plantillas y acciones rápidas.
-* **💾 Persistencia de Sesión:** Tu conversación y plantillas se guardan automáticamente. Si cierras la app, al volver todo estará ahí.
-* **🎨 Renderizado Rico:** Respuestas con **Markdown** completo y **Syntax Highlighting** (Tema Atom One Dark) para lectura fácil de código.
-* **📋 Smart Copy:** Cada bloque de código generado tiene un botón flotante de "Copiar" para extracción rápida sin errores.
-* **📤 Exportación:** Descarga tu sesión completa como un archivo Markdown (`.md`) con un solo clic.
-* **🔍 Zoom Dinámico:** Ajusta el tamaño de la fuente en tiempo real usando `Ctrl + Scroll`.
+* **🎯 Generación Especializada de Prompts:** Sistema enfocado en crear prompts estructurados y optimizados para obtener mejores resultados de modelos de IA.
+* **📋 Gestión Avanzada de Plantillas:** Sistema de navegación tipo carrusel con barra de herramientas para crear, editar y organizar plantillas.
+* **🔄 Persistencia Centralizada:** Todas las plantillas y configuraciones se almacenan en `app-data/` para gestión unificada.
+* **🧠 Navegación Inteligente:** Sistema de carrusel con botones `//`, `<`, `>`, `✎`, `❐` y autocompletado por `//`.
+* **💾 Edición In-Place:** Modo de edición directa en el textarea con toggle edit/guardar (`✎` ↔ `💾`).
+* **📤 Exportación de Archivos:** Funcionalidad completa de exportación a Markdown (.md) y Texto (.txt) con timestamps.
+* **💾 Guardado Automático:** Las modificaciones a las plantillas se guardan instantáneamente en el backend.
+* **🎨 Visualización Optimizada:** Interfaz de dos paneles diseñada específicamente para el flujo de trabajo de creación de prompts.
+* **📋 Copia Fácil:** Funcionalidad de copia rápida para prompts generados y bloques de código.
+* **🔐 Seguridad Integrada:** Sistema de cifrado Fernet (AES) para proteger las claves de API y configuraciones sensibles.
+* **⚡ API Backend:** 4 endpoints dedicados para gestión completa de plantillas (`get_templates`, `save_templates`, `add_template`, `delete_template`).
 
 ## **💎 Características Core**
 
 * **🔒 Seguridad Fernet (AES):** Las API Keys se cifran y solo se desbloquean en memoria con tu "Clave Maestra".
 * **⚛️ Núcleo Hexagonal Reactivo:** Indicador de estado animado (Pensando, Éxito, Error, Bloqueado).
 * **⚡ Arranque Instantáneo:** Backend Python Flask optimizado en Docker.
-* **🛠️ Herramientas Integradas:** Análisis inteligente del portapapeles e historial de comandos tipo terminal (Flechas Arriba/Abajo).
+* **🎯 Interfaz de Dos Paneles:** Diseño optimizado para la creación de prompts con panel izquierdo para resultados y panel derecho para entrada.
+* **🧠 IA Especializada:** Motor de IA configurado específicamente para ingeniería de prompts y optimización.
 
 ## **🛠️ Instalación y Ejecución**
 
@@ -57,27 +61,40 @@ La primera vez que lo ejecutes:
 
 ## **🎮 Guía de Interacción**
 
-### **Atajos y Comandos**
+### **Interfaz de Dos Paneles**
 
-| Acción | Comando / Atajo | Descripción |
+**Panel Izquierdo - Resultados:**
+- Muestra los prompts generados y optimizados
+- Incluye funcionalidad de copia rápida para cada bloque
+
+**Panel Derecho - Entrada:**
+- **Sección Superior - Contexto del Prompt:** Selecciona y edita plantillas de contexto
+- **Sección Inferior - Contenido del Prompt:** Describe tu solicitud específica
+
+### **Navegación de Plantillas (Barra de Herramientas)**
+
+| Acción | Control | Descripción |
 | :--- | :--- | :--- |
-| **Autocompletar** | Escribe `//` | Despliega menú de comandos (`/clear`, `/reset`). |
-| **Historial** | `Flecha Arriba/Abajo` | Navega por tus consultas anteriores. |
-| **Zoom** | `Ctrl + Scroll` | Aumenta o reduce el tamaño del texto. |
-| **Pegar + Analizar** | Botón `📋` | Pega tu portapapeles y pide a la IA que lo explique. |
-| **Exportar** | Botón `💾` | Guarda la charla actual como archivo `.md`. |
+| **Lista de Plantillas** | Botón `//` | Muestra menú desplegable con todas las plantillas disponibles |
+| **Plantilla Anterior** | Botón `<` | Navega a la plantilla anterior en el carrusel |
+| **Siguiente Plantilla** | Botón `>` | Navega a la siguiente plantilla en el carrusel |
+| **Editar/Guardar** | Botón `✎` / `💾` | Toggle entre modo edición y guardado (deshabilita otros controles durante edición) |
+| **Duplicar Plantilla** | Botón `❐` | Crea una copia de la plantilla actual y la agrega al carrusel |
 
-### **Comandos de Sistema (Slash Commands)**
+### **Exportación de Prompts (Panel Izquierdo)**
 
-  * `/clear`: Limpia la pantalla visualmente (mantiene la memoria de la sesión).
-  * `/reset`: **Reinicio total**. Borra historial visual, memoria de la IA y almacenamiento local.
+| Acción | Control | Descripción |
+| :--- | :--- | :--- |
+| **Exportar a Markdown** | Botón 📄 MD | Descarga el prompt generado como archivo .md con formato completo |
+| **Exportar a Texto** | Botón 📝 TXT | Descarga el prompt como archivo .txt plano sin formato |
+| **Estado de Exportación** | Indicador visual | Muestra el estado de la exportación con colores y mensajes |
 
 ### **Estados del Núcleo (Hexágono)**
 
   * 🟠 **Naranja (Pulsante):** Sistema Bloqueado. Requiere contraseña.
-  * 🔵 **Azul (Giro Rápido):** Pensando / Procesando consulta.
-  * 🟢 **Verde:** Tarea completada con éxito.
-  * 🔴 **Rojo:** Error de conexión o proceso no encontrado.
+  * 🔵 **Azul (Giro Rápido):** Generando prompt optimizado.
+  * 🟢 **Verde:** Prompt generado exitosamente.
+  * 🔴 **Rojo:** Error en la generación del prompt.
 
 ## **🔧 Arquitectura Técnica**
 

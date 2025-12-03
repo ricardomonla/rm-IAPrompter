@@ -6,7 +6,47 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Unreleased]
 
+## **[3.1.4] - 2025-12-03**
+
 ### **Añadido**
+
+* **Sistema de Exportación de Archivos:** Implementada funcionalidad completa de exportación de prompts generados.
+    * **Export a Markdown:** Botón 📄 MD para exportar prompts como archivo .md con formato completo
+    * **Export a Texto:** Botón 📝 TXT para exportar prompts como archivo .txt plano
+    * **Nombres Automáticos:** Genera nombres de archivo con timestamp (`prompt-export-YYYY-MM-DD-HHMMSS`)
+    * **Gestión de Duplicados:** Diálogo de confirmación cuando el archivo ya existe
+    * **Feedback Visual:** Indicadores de estado de exportación con colores y animaciones
+    * **IPC Integration:** Comunicación completa entre renderer y main process para guardar archivos
+
+### **Corregido**
+
+* **Bug Crítico de Modalidad de Edición:** Solucionado problema donde el botón de toggle de edición no regresaba correctamente al modo lectura.
+    * **Lógica de Estado:** Corregida la función `toggleEditMode()` para eliminar conflictos de estado
+    * **Referencias Obsoletas:** Eliminadas todas las referencias a `ui.saveTemplateBtn` que causaban errores
+    * **Deshabilitación Inteligente:** Implementado sistema de deshabilitación automática de botones durante edición
+    * **Validación Mejorada:** Mejorado el manejo de errores en `saveCurrentTemplate()`
+
+### **Cambiado**
+
+* **Navegación de Plantillas Mejorada:** Optimizado el sistema de carrusel con mejor manejo de estado
+* **Barra de Herramientas:** Refinamiento de la interfaz con estados visuales mejorados
+* **API de Plantillas:** Optimización de los 4 endpoints para mejor rendimiento y manejo de errores
+* **Persistencia de Datos:** Migración completa de plantillas desde `app-interface/mfm_templates.json` hacia `app-data/templates.json`
+* **Feedback Visual:** Implementación de animaciones y estados hover mejorados en toda la interfaz
+
+## **[3.1.3] - 2025-12-01**
+
+### **Añadido**
+
+* **Refactorización Completa del Sistema de Plantillas:** Implementada migración completa del sistema modal a navegación directa tipo carrusel con barra de herramientas.
+    * **Nueva Interfaz:** Eliminación del botón de configuración (⚙) y reemplazo por barra de herramientas horizontal con 6 botones funcionales.
+    * **Navegación Directa:** Sistema de carrusel para navegar entre plantillas con botones `//`, `<`, `>`, `✎`, `❐`.
+    * **Edición In-Place:** Modo de edición implementado directamente en el textarea sin necesidad de modales.
+    * **Toggle de Edición:** Un solo botón funciona como editar/guardar (`✎` ↔ `💾`) con deshabilitación automática de otros controles durante edición.
+    * **Backend Enhancement:** Agregados 4 nuevos endpoints API (`/api/get_templates`, `/api/save_templates`, `/api/add_template`, `/api/delete_template`) para gestión completa de plantillas.
+    * **Frontend Refactoring:** Modificado `app-interface/index.html` para usar llamadas API asíncronas en lugar de operaciones de archivos locales.
+    * **Data Persistence:** Unificada la gestión de datos en el directorio `app-data/` junto con `config.json`.
+    * **API Security:** Integrados nuevos endpoints en el sistema de autenticación sin requerir inicialización de API.
 
 * **Refactorización Completa del Sistema de Plantillas:** Implementada migración completa del sistema modal a navegación directa tipo carrusel con barra de herramientas.
     * **Nueva Interfaz:** Eliminación del botón de configuración (⚙) y reemplazo por barra de herramientas horizontal con 6 botones funcionales.
