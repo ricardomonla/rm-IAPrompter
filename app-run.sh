@@ -17,6 +17,9 @@ LOG_DIR="./app-logs"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Leer versión desde archivo centralizado
+VERSION=$(node -e "const v=require('./app-version.js'); console.log(v.APP_VERSION);")
+
 # Colores
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -106,14 +109,8 @@ function start_app() {
 
     # 2. Backend
     echo -e "${BLUE}>> Iniciando Backend...${NC}"
-    
-    if [ "$RESTART_MODE" = true ]; then
-        $DOCKER_COMPOSE_CMD down --remove-orphans > /dev/null 2>&1
-    fi
 
-    if [ "$(docker ps -a -q -f name=^/${CONTAINER_NAME}$)" ]; then
-        docker rm -f "$CONTAINER_NAME" > /dev/null 2>&1
-    fi
+    $DOCKER_COMPOSE_CMD down --remove-orphans > /dev/null 2>&1
 
     $DOCKER_COMPOSE_CMD up -d --build
 
@@ -175,7 +172,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # --- Ejecución Principal ---
-echo -e "${BLUE}===== MFM Assistant Launcher v1.0.2 =====${NC}"
+echo -e "${BLUE}===== MFM Assistant Launcher v${VERSION} =====${NC}"
 
 check_docker_compose
 
