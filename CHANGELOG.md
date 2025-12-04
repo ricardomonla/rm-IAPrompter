@@ -6,6 +6,19 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Unreleased]
 
+### **Añadido**
+
+* **Reestructuración Completa del Layout:** Implementado diseño de dos paneles principales con armonía visual.
+    * **Panel Izquierdo:** Área completa dedicada a "Prompt Resultante" con título de aplicación centrado y botón de exportación.
+    * **Panel Derecho:** Dos secciones de igual altura: "Contexto y Esperado" y "Solicitud".
+    * **Armonía Visual:** Todas las secciones siguen el mismo patrón estético con etiquetas, barras de herramientas y áreas de contenido.
+    * **Nombre de Aplicación:** Actualizado a "❖ rm-IAPromper v3.1.3" en el centro del panel izquierdo.
+
+### **Cambiado**
+
+* **Interfaz de Usuario:** Modificado `app-interface/index.html` y `app-interface/styles.css` para nuevo layout equilibrado.
+* **Botones de Exportación:** Simplificado a un solo botón ">>MD" en el panel izquierdo.
+
 ## **[3.1.4] - 2025-12-03**
 
 ### **Añadido**

@@ -82,20 +82,20 @@
             </div>
 
             <div id="main-interface" class="hidden">
-                
+
                 <div id="left-panel">
-                    <div id="left-panel-toolbar">
-                        <div style="flex:1"></div>
-                        <div id="export-buttons-container">
-                            <button id="export-md-btn" title="Exportar a Markdown">📄 MD</button>
-                            <button id="export-txt-btn" title="Exportar a Texto">📝 TXT</button>
+                    <div id="result-section">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                            <span class="section-label">Prompt Resultante</span>
+                            <div id="toolbar-container">
+                                <button id="export-md-btn">>>MD</button>
+                            </div>
                         </div>
-                        <div id="export-status" style="font-size:9px; color:#666; margin-left:8px;"></div>
-                    </div>
-                    <div id="active-response-area">
-                        <div style="text-align:center; color:#444; margin-top:20vh;">
-                            <div style="font-size:14px; margin-bottom:5px; color:var(--accent);">❖ rm-IAPromper ONLINE</div>
-                            <div style="font-size:11px;">Listo para generar prompts estructurados...</div>
+                        <div id="active-response-area">
+                            <div style="text-align:center; color:#444; margin-top:20vh;">
+                                <div style="font-size:14px; margin-bottom:5px; color:var(--accent);">❖ rm-IAPromper v3.1.3</div>
+                                <div style="font-size:11px;">Listo para generar prompts estructurados...</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                     
                     <div id="headers-section">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
-                            <span class="section-label">Contexto del Prompt</span>
+                            <span class="section-label">Contexto y Esperado</span>
                             <div id="toolbar-container">
                                 <button id="templates-list-btn" title="Lista de Plantillas">//</button>
                                 <button id="prev-template-btn" title="Plantilla Anterior"><</button>
@@ -121,13 +121,15 @@
                     </div>
 
                     <div id="composer-section">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span class="section-label">Contenido del Prompt</span>
-                            <button id="clear-btn">LIMPIAR</button>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                            <span class="section-label">Solicitud</span>
+                            <div id="toolbar-container">
+                                <button id="clear-btn">LIMPIAR</button>
+                            </div>
                         </div>
-                        
+
                         <textarea id="ai-input" placeholder="Describe tu solicitud específica que quieres que la IA ejecute..."></textarea>
-                        
+
                         <button id="send-btn">GENERAR PROMPT</button>
                     </div>
 
