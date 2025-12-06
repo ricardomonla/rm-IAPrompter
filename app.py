@@ -1,11 +1,11 @@
 #  -----------------------------------------------------------------------------
-#  Project:     rm-Prompter
+#  Project:     rm-IAPrompter
 #  File:        app.py
 #  Version:     v0.9.0
 #  Date:        2025-12-06
 #  Author:      Lic. Ricardo MONLA
 #  Email:       rmonla@gmail.com
-#  Description: rm-IAPromper - Backend Flask para generación de prompts estructurados con IA.
+#  Description: rm-IAPrompter - Backend Flask para generación de prompts estructurados con IA.
 #  -----------------------------------------------------------------------------
 
 from flask import Flask, jsonify, request

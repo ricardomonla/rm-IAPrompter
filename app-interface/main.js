@@ -1,5 +1,5 @@
 //  -----------------------------------------------------------------------------
-//  Project:     rm-Prompter
+//  Project:     rm-IAPrompter
 //  File:        app-interface/main.js
 //  Version:     v1.0.0
 //  Date:        2025-12-03 20:45

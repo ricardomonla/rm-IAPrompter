@@ -1,10 +1,10 @@
 # **Changelog**
 
-Todos los cambios notables en el proyecto **Asistente de Escritorio MFM** se documentarán en este archivo.
+Todos los cambios notables en el proyecto **rm-IAPrompter** se documentarán en este archivo.
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## **[3.1.5] - 2025-12-06**
+## [Unreleased]
 
 ### **Añadido**
 
@@ -33,6 +33,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 * **Botones de Exportación:** Simplificado a un solo botón ">>MD" en el panel izquierdo.
 * **Sistema de Versionado:** Optimizado `app-version.js` con proceso de actualización más detallado y formato de commit estandarizado.
 * **Prompt de Commit:** Mejorado `app-prompts/251206-1840_Actu+Commit.md` para coherencia con el sistema de versionado y referencia a `app-version.js`.
+* **Nombre de la Aplicación:** Estandarizado el nombre de "rm-IAPromper" a "rm-IAPrompter" en todos los archivos, encabezados, títulos y documentación.
 
 ## **[3.1.4] - 2025-12-03**
 

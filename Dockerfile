@@ -1,5 +1,5 @@
 #  -----------------------------------------------------------------------------
-#  Project:     rm-Prompter
+#  Project:     rm-IAPrompter
 #  File:        Dockerfile
 #  Version:     1.0.0
 #  Date:        2025-12-06

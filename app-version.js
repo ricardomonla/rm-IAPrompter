@@ -8,7 +8,7 @@
 //  Description: Sistema de versionado centralizado para la aplicación.
 //  -----------------------------------------------------------------------------
 /**
- * SISTEMA DE VERSIONADO CENTRALIZADO - rm-IAPromper
+ * SISTEMA DE VERSIONADO CENTRALIZADO - rm-IAPrompter
  *
  * Este archivo centraliza toda la información de versionado de la aplicación.
  * Al actualizar la versión, modifica únicamente los valores aquí y ejecuta
@@ -16,7 +16,7 @@
  */
 
 // ========== CONFIGURACIÓN DE VERSIÓN ==========
-const APP_VERSION = "3.1.5";
+const APP_VERSION = "3.1.4";
 const APP_NAME = "rm-IAPromper";
 const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
 
@@ -26,15 +26,6 @@ const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
  * Se mantiene para referencia y documentación.
  */
 const VERSION_HISTORY = {
-    "3.1.5": {
-        date: "2025-12-06",
-        changes: [
-            "Estandarización de encabezados en todos los archivos principales",
-            "Clarificación de versionado independiente vs. aplicación general",
-            "Optimización de documentación en app-version.js y prompts de commit"
-        ],
-        type: "Mejora"
-    },
     "3.1.4": {
         date: "2025-12-04",
         changes: [

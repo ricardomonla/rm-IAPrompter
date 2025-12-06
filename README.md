@@ -1,6 +1,6 @@
 <!--
   -----------------------------------------------------------------------------
-  Project:     rm-Prompter
+  Project:     rm-IAPrompter
   File:        README.md
   Version:     v3.1.4
   Date:        2025-12-06
@@ -9,11 +9,11 @@
   Description: Documentación principal del proyecto.
   -----------------------------------------------------------------------------
  -->
-# **rm-IAPromper - AI Prompt Generator**
+# **rm-IAPrompter - AI Prompt Generator**
 
 ![Version](https://img.shields.io/badge/version-v3.1.4-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Author](https://img.shields.io/badge/autor-Lic._Ricardo_MONLA-orange)
 
-**rm-IAPromper es una aplicación especializada en generar prompts estructurados y efectivos para otros modelos de IA.** Con una interfaz de dos paneles verticales, permite crear, optimizar y gestionar plantillas de prompts con el poder de Gemini AI, todo orquestado mediante contenedores Docker y una interfaz Electron moderna.
+**rm-IAPrompter es una aplicación especializada en generar prompts estructurados y efectivos para otros modelos de IA.** Con una interfaz de dos paneles verticales, permite crear, optimizar y gestionar plantillas de prompts con el poder de Gemini AI, todo orquestado mediante contenedores Docker y una interfaz Electron moderna.
 
 ---
 

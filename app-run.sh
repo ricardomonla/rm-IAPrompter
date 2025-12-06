@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #  -----------------------------------------------------------------------------
-#  Project:     rm-Prompter
+#  Project:     rm-IAPrompter
 #  File:        app-run.sh
 #  Version:     v1.0.2
 #  Date:        2025-12-01 19:49
