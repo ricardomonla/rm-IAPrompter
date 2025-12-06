@@ -16,7 +16,7 @@
  */
 
 // ========== CONFIGURACIÓN DE VERSIÓN ==========
-const APP_VERSION = "3.1.6";
+const APP_VERSION = "3.1.7";
 const APP_NAME = "rm-IAPromper";
 const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
 
@@ -26,6 +26,16 @@ const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
  * Se mantiene para referencia y documentación.
  */
 const VERSION_HISTORY = {
+    "3.1.7": {
+        date: "2025-12-06",
+        changes: [
+            "Corrección crítica de lógica de cambio de modos: solucionado conflicto de variable 'app' redeclarada",
+            "Eliminada redeclaración de 'app' en handler IPC que causaba fallo de inicio",
+            "Aplicación ahora inicia correctamente sin errores de Electron",
+            "Mantenida funcionalidad de cambio automático entre modo mini y expandido"
+        ],
+        type: "Corregido"
+    },
     "3.1.6": {
         date: "2025-12-06",
         changes: [

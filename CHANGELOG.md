@@ -21,6 +21,15 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
     * **Actualización de Referencias:** Modificados `docker-compose.yml`, `Dockerfile`, `app-version.js` y `CHANGELOG.md` para reflejar el nuevo nombre.
     * **Versionado Individual:** Incrementadas versiones en encabezados de archivos modificados (`app-flask.py` v0.9.1, `app-version.js` 3.1.5, `docker-compose.yml` 1.0.1, `Dockerfile` 1.0.1).
 
+## [3.1.7] - 2025-12-06
+
+### **Corregido**
+
+* **Lógica de Cambio de Modos:** Solucionado problema crítico de variable `app` redeclarada que causaba fallo de inicio de la aplicación.
+    * **Conflicto de Variables:** Eliminada redeclaración de `app` en el handler IPC `save-file` que causaba `TypeError: Cannot read properties of undefined (reading 'on')`.
+    * **Estabilidad Mejorada:** Aplicación ahora inicia correctamente sin errores de Electron.
+    * **Funcionalidad de Modos:** Mantenida la lógica de cambio automático entre modo mini y expandido al perder/ganar foco.
+
 ## [Unreleased]
 
 ### **Añadido**
