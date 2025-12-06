@@ -1,3 +1,14 @@
+<!--
+  -----------------------------------------------------------------------------
+  Project:     rm-Prompter
+  File:        README.md
+  Version:     v3.1.4
+  Date:        2025-12-06
+  Author:      Lic. Ricardo MONLA
+  Email:       rmonla@gmail.com
+  Description: Documentación principal del proyecto.
+  -----------------------------------------------------------------------------
+ -->
 # **rm-IAPromper - AI Prompt Generator**
 
 ![Version](https://img.shields.io/badge/version-v3.1.4-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Author](https://img.shields.io/badge/autor-Lic._Ricardo_MONLA-orange)

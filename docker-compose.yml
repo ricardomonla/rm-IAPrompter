@@ -1,3 +1,12 @@
+#  -----------------------------------------------------------------------------
+#  Project:     rm-Prompter
+#  File:        docker-compose.yml
+#  Version:     1.0.0
+#  Date:        2025-12-06
+#  Author:      Lic. Ricardo MONLA
+#  Email:       rmonla@gmail.com
+#  Description: Configuración de Docker Compose para el backend.
+#  -----------------------------------------------------------------------------
 services:
   backend:
     container_name: mfm-backend

@@ -1,3 +1,12 @@
+//  -----------------------------------------------------------------------------
+//  Project:     rm-Prompter
+//  File:        app-version.js
+//  Version:     3.1.4
+//  Date:        2025-12-04
+//  Author:      Lic. Ricardo MONLA
+//  Email:       rmonla@gmail.com
+//  Description: Sistema de versionado centralizado para la aplicación.
+//  -----------------------------------------------------------------------------
 /**
  * SISTEMA DE VERSIONADO CENTRALIZADO - rm-IAPromper
  *
@@ -97,18 +106,28 @@ function validateVersion(version = APP_VERSION) {
     return semverRegex.test(version);
 }
 
-// ========== PSEUDO-CÓDIGO PARA ACTUALIZACIÓN ==========
+// ========== PROCESO DE ACTUALIZACIÓN DE VERSIÓN ==========
 /**
- * PROCESO DE ACTUALIZACIÓN DE VERSIÓN:
+ * IMPORTANTE: CLARIFICACIÓN SOBRE VERSIONADO
  *
- * 1. Modificar APP_VERSION en este archivo
- * 2. Agregar entrada en VERSION_HISTORY
- * 3. Actualizar CHANGELOG.md:
+ * Este archivo gestiona la versión de la aplicación en general (APP_VERSION).
+ * Cada archivo individual del proyecto mantiene su propia versión independiente,
+ * que no necesariamente coincide con la versión global de la aplicación.
+ * Estos dos esquemas de versionado (individual vs. aplicación general) son
+ * distintos y separados.
+ *
+ * PROCESO COMPLETO DE ACTUALIZACIÓN DE VERSIÓN:
+ *
+ * 1. **Modificar APP_VERSION** en este archivo (incrementar según semver: major.minor.patch)
+ * 2. **Agregar entrada en VERSION_HISTORY** con fecha, cambios y tipo
+ * 3. **Actualizar CHANGELOG.md**:
  *    - Crear nueva sección [X.Y.Z] - YYYY-MM-DD
- *    - Documentar cambios bajo Añadido/Cambiado/Corregido
- * 4. Actualizar README.md si afecta documentación principal
- * 5. Verificar package.json si es necesario
- * 6. Probar aplicación y ejecutar commit
+ *    - Documentar cambios bajo categorías: Añadido, Cambiado, Corregido
+ * 4. **Actualizar README.md** si las modificaciones afectan la documentación principal
+ * 5. **Verificar package.json** si es necesario (para dependencias)
+ * 6. **Actualizar encabezados de archivos** individuales si corresponde (versión independiente)
+ * 7. **Probar aplicación** completamente y verificar estabilidad
+ * 8. **Ejecutar commit** con mensaje descriptivo siguiendo el formato: "vX.Y.Z: Descripción de cambios"
  *
  * EJEMPLO DE NUEVA VERSIÓN:
  *
@@ -118,9 +137,15 @@ function validateVersion(version = APP_VERSION) {
  * // Agregar al historial
  * "3.1.5": {
  *     date: "2025-12-04",
- *     changes: ["Descripción de cambios"],
- *     type: "Añadido|Cambiado|Corregido"
+ *     changes: [
+ *         "Nueva funcionalidad implementada",
+ *         "Corrección de bug en módulo X"
+ *     ],
+ *     type: "Añadido"
  * }
+ *
+ * NOTA: Los commits deben reflejar cambios significativos en la aplicación general.
+ * Cambios menores en archivos individuales no requieren actualización de APP_VERSION.
  */
 
 // ========== EXPORTACIONES ==========

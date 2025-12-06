@@ -1,3 +1,12 @@
+#  -----------------------------------------------------------------------------
+#  Project:     rm-Prompter
+#  File:        Dockerfile
+#  Version:     1.0.0
+#  Date:        2025-12-06
+#  Author:      Lic. Ricardo MONLA
+#  Email:       rmonla@gmail.com
+#  Description: Dockerfile para el contenedor del backend Flask.
+#  -----------------------------------------------------------------------------
 FROM python:3.11-slim
 
 WORKDIR /app

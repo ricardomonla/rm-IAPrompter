@@ -1,12 +1,14 @@
 /*
   -----------------------------------------------------------------------------
-  Project:     rm-IAPromper - AI Prompt Generator Interface
-  File:        styles.css
-  Version:     v3.1.2 (2025-12-01 20:20)
+  Project:     rm-Prompter
+  File:        app-interface/styles.css
+  Version:     v3.1.2
+  Date:        2025-12-01 20:20
   Author:      Lic. Ricardo MONLA
+  Email:       rmonla@gmail.com
   Description: Estilos UI con soporte para feedback de edición.
   -----------------------------------------------------------------------------
-*/
+ */
 
 /* --- 1. VARIABLES GLOBALES --- */
 :root { 

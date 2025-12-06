@@ -1,11 +1,13 @@
 #!/bin/bash
 
 #  -----------------------------------------------------------------------------
-#  Project:     MFM Assistant - Launcher (Debug Desatendido)
+#  Project:     rm-Prompter
 #  File:        app-run.sh
-#  Version:     v1.0.2 (2025-12-01 19:49)
+#  Version:     v1.0.2
+#  Date:        2025-12-01 19:49
 #  Author:      Lic. Ricardo MONLA
-#  Description: Script de inicio. Modo Debug genera logs pero libera la terminal.
+#  Email:       rmonla@gmail.com
+#  Description: Script para ejecutar la aplicación en un contenedor Docker.
 #  -----------------------------------------------------------------------------
 
 # --- Definiciones ---

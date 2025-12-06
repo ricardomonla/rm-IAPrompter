@@ -1,18 +1,12 @@
-/*
-  -----------------------------------------------------------------------------
-  Project:     rm-IAPromper - AI Prompt Generator Interface
-  File:        main.js
-  Version:     v1.0.0 (2025-12-03 20:45)
-  Author:      Lic. Ricardo MONLA
-  Description: 
-  -----------------------------------------------------------------------------
-  Este archivo configura la ventana principal de la aplicación con:
-  - Posicionamiento en esquina inferior derecha
-  - Modos de visualización (mini/expanded)
-  - Integración con el backend Python
-  - Atajos globales para control de interfaz
-  -----------------------------------------------------------------------------
-*/
+//  -----------------------------------------------------------------------------
+//  Project:     rm-Prompter
+//  File:        app-interface/main.js
+//  Version:     v1.0.0
+//  Date:        2025-12-03 20:45
+//  Author:      Lic. Ricardo MONLA
+//  Email:       rmonla@gmail.com
+//  Description: Configura la ventana principal de la aplicación Electron.
+//  -----------------------------------------------------------------------------
 
 const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
 const path = require('path');

@@ -13,6 +13,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
     * **Archivos de Referencia:** Lista de archivos que requieren actualización manual vs automática.
     * **Funciones Utilitarias:** Validación de versiones, obtención de información de versión.
     * **Pseudo-código Documentado:** Instrucciones claras para futuras actualizaciones de versión.
+    * **Clarificación de Versionado:** Documentación explícita sobre la distinción entre versionado individual de archivos y versionado general de la aplicación.
 
 * **Reestructuración Completa del Layout:** Implementado diseño de dos paneles principales con armonía visual.
     * **Panel Izquierdo:** Área completa dedicada a "Prompt Resultante" con título de aplicación centrado y botón de exportación.
@@ -20,11 +21,18 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
     * **Armonía Visual:** Todas las secciones siguen el mismo patrón estético con etiquetas, barras de herramientas y áreas de contenido.
     * **Nombre de Aplicación:** Actualizado dinámicamente desde sistema de versionado centralizado.
 
+* **Estandarización de Encabezados:** Implementados encabezados uniformes en todos los archivos principales de la aplicación.
+    * **Archivos Actualizados:** `app-run.sh`, `app.py`, `app-version.js`, `app-interface/main.js`, `app-interface/index.html`, `app-interface/styles.css`, `docker-compose.yml`, `Dockerfile`, `README.md`.
+    * **Formato Consistente:** Estructura estandarizada con proyecto, archivo, versión, fecha, autor, email y descripción.
+    * **Comentarios Adecuados:** Uso de # para scripts, // para JavaScript, /* */ para CSS, <!-- --> para HTML/Markdown.
+
 ### **Cambiado**
 
 * **Interfaz de Usuario:** Modificado `app-interface/index.html` y `app-interface/styles.css` para nuevo layout equilibrado.
 * **Script de Inicio:** Actualizado `app-run.sh` para leer versión desde `app-version.js` usando Node.js.
 * **Botones de Exportación:** Simplificado a un solo botón ">>MD" en el panel izquierdo.
+* **Sistema de Versionado:** Optimizado `app-version.js` con proceso de actualización más detallado y formato de commit estandarizado.
+* **Prompt de Commit:** Mejorado `app-prompts/251206-1840_Actu+Commit.md` para coherencia con el sistema de versionado y referencia a `app-version.js`.
 
 ## **[3.1.4] - 2025-12-03**
 
