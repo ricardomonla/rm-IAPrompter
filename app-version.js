@@ -1,8 +1,8 @@
 //  -----------------------------------------------------------------------------
 //  Project:     rm-Prompter
 //  File:        app-version.js
-//  Version:     3.1.4
-//  Date:        2025-12-04
+//  Version:     3.1.5
+//  Date:        2025-12-06
 //  Author:      Lic. Ricardo MONLA
 //  Email:       rmonla@gmail.com
 //  Description: Sistema de versionado centralizado para la aplicación.
@@ -16,7 +16,7 @@
  */
 
 // ========== CONFIGURACIÓN DE VERSIÓN ==========
-const APP_VERSION = "3.1.4";
+const APP_VERSION = "3.1.5";
 const APP_NAME = "rm-IAPromper";
 const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
 
@@ -26,6 +26,15 @@ const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
  * Se mantiene para referencia y documentación.
  */
 const VERSION_HISTORY = {
+    "3.1.5": {
+        date: "2025-12-06",
+        changes: [
+            "Renombrado del archivo backend de app.py a app-flask.py para seguir estándar de nomenclatura",
+            "Actualización de todas las referencias al archivo renombrado en configuración Docker y documentación",
+            "Incremento de versiones individuales en archivos modificados"
+        ],
+        type: "Cambiado"
+    },
     "3.1.4": {
         date: "2025-12-04",
         changes: [
@@ -72,7 +81,7 @@ const VERSION_UPDATE_FILES = {
         "CHANGELOG.md",             // Agregar nueva entrada
         "README.md",                // Actualizar versión en documentación
         "app-interface/package.json", // Si aplica
-        "app.py"                    // Comentarios de versión
+        "app-flask.py"              // Comentarios de versión
     ]
 };
 

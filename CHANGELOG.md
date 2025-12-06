@@ -4,6 +4,14 @@ Todos los cambios notables en el proyecto **rm-IAPrompter** se documentarán en 
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.5] - 2025-12-06
+
+### **Cambiado**
+
+* **Renombrado de Archivo Backend:** Archivo `app.py` renombrado a `app-flask.py` para seguir el estándar de nomenclatura `app-*`.
+    * **Actualización de Referencias:** Modificados `docker-compose.yml`, `Dockerfile`, `app-version.js` y `CHANGELOG.md` para reflejar el nuevo nombre.
+    * **Versionado Individual:** Incrementadas versiones en encabezados de archivos modificados (`app-flask.py` v0.9.1, `app-version.js` 3.1.5, `docker-compose.yml` 1.0.1, `Dockerfile` 1.0.1).
+
 ## [Unreleased]
 
 ### **Añadido**
@@ -22,7 +30,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
     * **Nombre de Aplicación:** Actualizado dinámicamente desde sistema de versionado centralizado.
 
 * **Estandarización de Encabezados:** Implementados encabezados uniformes en todos los archivos principales de la aplicación.
-    * **Archivos Actualizados:** `app-run.sh`, `app.py`, `app-version.js`, `app-interface/main.js`, `app-interface/index.html`, `app-interface/styles.css`, `docker-compose.yml`, `Dockerfile`, `README.md`.
+    * **Archivos Actualizados:** `app-run.sh`, `app-flask.py`, `app-version.js`, `app-interface/main.js`, `app-interface/index.html`, `app-interface/styles.css`, `docker-compose.yml`, `Dockerfile`, `README.md`.
     * **Formato Consistente:** Estructura estandarizada con proyecto, archivo, versión, fecha, autor, email y descripción.
     * **Comentarios Adecuados:** Uso de # para scripts, // para JavaScript, /* */ para CSS, <!-- --> para HTML/Markdown.
 
