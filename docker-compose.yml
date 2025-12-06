@@ -1,7 +1,7 @@
 #  -----------------------------------------------------------------------------
 #  Project:     rm-IAPrompter
 #  File:        docker-compose.yml
-#  Version:     1.0.1
+#  Version:     1.0.2
 #  Date:        2025-12-06
 #  Author:      Lic. Ricardo MONLA
 #  Email:       rmonla@gmail.com
@@ -9,7 +9,7 @@
 #  -----------------------------------------------------------------------------
 services:
   backend:
-    container_name: mfm-backend
+    container_name: rm-iaprompter-backend
     build: .  # <--- CAMBIO IMPORTANTE: Construir desde el directorio actual
     working_dir: /app
     ports:

@@ -16,7 +16,7 @@
  */
 
 // ========== CONFIGURACIÓN DE VERSIÓN ==========
-const APP_VERSION = "3.1.5";
+const APP_VERSION = "3.1.6";
 const APP_NAME = "rm-IAPromper";
 const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
 
@@ -26,6 +26,16 @@ const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
  * Se mantiene para referencia y documentación.
  */
 const VERSION_HISTORY = {
+    "3.1.6": {
+        date: "2025-12-06",
+        changes: [
+            "Rebranding de la aplicación: actualización del nombre del launcher de 'MFM Assistant' a 'rm-IAPrompter'",
+            "Renombrado del contenedor Docker de 'mfm-backend' a 'rm-iaprompter-backend'",
+            "Actualización de referencias en app-run.sh y docker-compose.yml",
+            "Incremento de versiones individuales en archivos modificados"
+        ],
+        type: "Cambiado"
+    },
     "3.1.5": {
         date: "2025-12-06",
         changes: [

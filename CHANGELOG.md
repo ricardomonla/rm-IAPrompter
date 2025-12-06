@@ -4,6 +4,15 @@ Todos los cambios notables en el proyecto **rm-IAPrompter** se documentarán en 
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.6] - 2025-12-06
+
+### **Cambiado**
+
+* **Rebranding de la Aplicación:** Actualización del nombre del launcher de "MFM Assistant" a "rm-IAPrompter" para consistencia con el nombre del proyecto.
+    * **Renombrado del Contenedor:** Cambiado el nombre del contenedor Docker de "mfm-backend" a "rm-iaprompter-backend".
+    * **Actualización de Referencias:** Modificados `app-run.sh` y `docker-compose.yml` para reflejar los nuevos nombres.
+    * **Versionado Individual:** Incrementadas versiones en encabezados de archivos modificados (`app-run.sh` v1.0.3, `docker-compose.yml` 1.0.2).
+
 ## [3.1.5] - 2025-12-06
 
 ### **Cambiado**

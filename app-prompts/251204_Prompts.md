@@ -1,3 +1,5 @@
+No veo que actualizaste versiones individuales de los archivos que modificaste como se indica en app-version.js
+
 NO seguimos sin enetender la que pido, voy a enfocarlo de otra forma.
 La intrface general debe separarce en 2 paneles uno izquierdo y uno derecho.
 

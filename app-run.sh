@@ -3,8 +3,8 @@
 #  -----------------------------------------------------------------------------
 #  Project:     rm-IAPrompter
 #  File:        app-run.sh
-#  Version:     v1.0.2
-#  Date:        2025-12-01 19:49
+#  Version:     v1.0.3
+#  Date:        2025-12-06
 #  Author:      Lic. Ricardo MONLA
 #  Email:       rmonla@gmail.com
 #  Description: Script para ejecutar la aplicación en un contenedor Docker.
@@ -14,7 +14,7 @@
 ELECTRON_DIR="app-interface"
 ENV_FILE=".env"
 DATA_DIR="./app-data"
-CONTAINER_NAME="mfm-backend" 
+CONTAINER_NAME="rm-iaprompter-backend"
 LOG_DIR="./app-logs"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -174,7 +174,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # --- Ejecución Principal ---
-echo -e "${BLUE}===== MFM Assistant Launcher v${VERSION} =====${NC}"
+echo -e "${BLUE}===== rm-IAPrompter Launcher v${VERSION} =====${NC}"
 
 check_docker_compose
 
