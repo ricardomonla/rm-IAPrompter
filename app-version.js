@@ -29,11 +29,12 @@ const VERSION_HISTORY = {
     "3.1.9": {
         date: "2025-12-07",
         changes: [
-            "Corrección crítica en posicionamiento de ventana: ajustado cálculo de posición Y para asegurar que la parte superior de la aplicación sea siempre visible",
-            "Prevención de ocultamiento de interfaz en pantallas pequeñas o resoluciones bajas",
-            "Mejorada experiencia de usuario al evitar que la ventana se posicione fuera de la pantalla"
+            "Generación Estructurada de Prompts: Implementada generación de prompts con formato estandarizado de 4 secciones obligatorias ([ROLE], [INSTRUCTIONS], [OUTPUT FORMAT], [USER REQUEST])",
+            "Scrollbar Vertical en Panel de Resultados: Implementada regla CSS overflow-y: scroll para mostrar scrollbar vertical de manera consistente",
+            "Arquitectura de Prompts: Modificada función sendAI() en index.html para inyectar meta-instrucciones invisibles al usuario",
+            "Consistencia Mejorada: Todos los prompts generados siguen un formato técnico optimizado para mejores resultados de IA"
         ],
-        type: "Corregido"
+        type: "Mejorado"
     },
     "3.1.8": {
         date: "2025-12-07",

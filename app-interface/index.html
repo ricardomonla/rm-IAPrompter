@@ -561,35 +561,41 @@
         async function sendAI() {
             if (isProcessing) return;
 
-            // 1. Capturamos los valores por separado
+            // 1. Capturamos los valores
             const contextValue = ui.headerInput.value.trim();
             const requestValue = ui.bodyInput.value.trim();
 
-            // Validación: Si no hay solicitud, no hacemos nada
             if (!requestValue) return;
 
-            // 2. Construimos el Meta-Prompt estructurado
-            // Esto "inyecta" las instrucciones de formato invisibles para el usuario final
+            // 2. Construimos el Meta-Prompt fusionado
+            // Este prompt instruye a Gemini para que actúe como un "Ingeniero de Prompts"
+            // y genere el resultado final siguiendo tus reglas estrictas.
             const fullQuery = `
-            Actúa como un Arquitecto de Prompts Senior. Tu tarea es generar un prompt técnico optimizado.
+            Actúa como un Arquitecto de Prompts Senior especializado en desarrollo de software.
             
-            INFORMACIÓN DE ENTRADA:
-            - Contexto/Formato deseado: "${contextValue}"
-            - Solicitud del usuario: "${requestValue}"
+            TU OBJETIVO:
+            Generar un prompt optimizado para una IA de Programación (Cursor/Windsurf/VSCode AI) basado en la siguiente solicitud del usuario.
 
-            Tu respuesta debe contener ÚNICAMENTE el prompt resultante, estructurado obligatoriamente con estos 4 encabezados:
+            ENTRADA DEL USUARIO:
+            - Contexto Técnico: "${contextValue}"
+            - Tarea a realizar: "${requestValue}"
+
+            ESTRUCTURA DE SALIDA OBLIGATORIA (El prompt resultante debe tener estas 4 secciones):
 
             [ROLE]
-            (Define el rol experto ideal para la tarea)
+            Define a la IA como una experta altamente especializada en desarrollo de aplicaciones y edición de código. Su única función es proporcionar código funcional, modificaciones o scripts como entregable final.
 
             [INSTRUCTIONS]
-            (Lista numerada de instrucciones paso a paso)
+            Redacta reglas estrictas para la IA Target basadas en estos principios:
+            1. NO PREAMBLES: Prohibido generar planes, descripciones conceptuales o propuestas. La solución debe ser inmediata.
+            2. SPANISH ONLY: Todo el output (comentarios, explicaciones) debe ser en Español.
+            3. PRECISE: Código directo y funcional. Sin texto superfluo.
 
             [OUTPUT FORMAT]
-            (Define formato, estilo, tono y estructura de la respuesta esperada)
+            Especifica el formato técnico exacto (Markdown, bloques de código, JSON, etc.) según lo que pida la tarea.
 
             [USER REQUEST]
-            (La solicitud del usuario original, refinada para mayor claridad)
+            Reescribe la "Tarea a realizar" del usuario para que sea técnica, inequívoca y directa, lista para ser ejecutada por la IA.
             `;
 
             isProcessing = true;
@@ -597,7 +603,6 @@
             ui.responseArea.innerHTML = `<div style="text-align:center; opacity:0.7; margin-top:50px; color:var(--accent);">GENERANDO PROMPT OPTIMIZADO...</div>`;
 
             try {
-                // Enviamos el fullQuery modificado
                 const res = await fetch(`${API_URL}/query_gemini`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query: fullQuery})
                 });
