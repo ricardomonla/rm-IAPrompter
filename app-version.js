@@ -16,7 +16,7 @@
  */
 
 // ========== CONFIGURACIÓN DE VERSIÓN ==========
-const APP_VERSION = "3.1.8";
+const APP_VERSION = "3.1.9";
 const APP_NAME = "rm-IAPrompter";
 const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
 
@@ -26,6 +26,15 @@ const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
  * Se mantiene para referencia y documentación.
  */
 const VERSION_HISTORY = {
+    "3.1.9": {
+        date: "2025-12-07",
+        changes: [
+            "Corrección crítica en posicionamiento de ventana: ajustado cálculo de posición Y para asegurar que la parte superior de la aplicación sea siempre visible",
+            "Prevención de ocultamiento de interfaz en pantallas pequeñas o resoluciones bajas",
+            "Mejorada experiencia de usuario al evitar que la ventana se posicione fuera de la pantalla"
+        ],
+        type: "Corregido"
+    },
     "3.1.8": {
         date: "2025-12-07",
         changes: [

@@ -1,7 +1,8 @@
 //  -----------------------------------------------------------------------------
 //  Project:     rm-IAPrompter
 //  File:        app-interface/main.js
-//  Version:     v1.0.3 (Fix Scope & Startup)
+//  Version:
+//      v1.0.3 (Fix Scope & Startup)
 //  Date:        2025-12-06
 //  Author:      Lic. Ricardo MONLA
 //  Email:       rmonla@gmail.com
@@ -25,9 +26,11 @@ const WINDOW_SIZES = {
 };
 
 function getBottomRightPosition(size) {
-    const workArea = screen.getPrimaryDisplay().workArea; 
+    const workArea = screen.getPrimaryDisplay().workArea;
     const x = workArea.x + workArea.width - size.width - MARGIN;
-    const y = workArea.y + workArea.height - size.height - MARGIN;
+    let y = workArea.y + workArea.height - size.height - MARGIN;
+    // Asegurar que la parte superior de la ventana sea visible
+    y = Math.max(workArea.y, y);
     return { x, y };
 }
 

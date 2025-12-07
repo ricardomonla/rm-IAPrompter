@@ -4,22 +4,14 @@ Todos los cambios notables en el proyecto **rm-IAPrompter** se documentarán en 
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.1.6] - 2025-12-06
+## [3.1.9] - 2025-12-07
 
-### **Cambiado**
+### **Corregido**
 
-* **Rebranding de la Aplicación:** Actualización del nombre del launcher de "MFM Assistant" a "rm-IAPrompter" para consistencia con el nombre del proyecto.
-    * **Renombrado del Contenedor:** Cambiado el nombre del contenedor Docker de "mfm-backend" a "rm-iaprompter-backend".
-    * **Actualización de Referencias:** Modificados `app-run.sh` y `docker-compose.yml` para reflejar los nuevos nombres.
-    * **Versionado Individual:** Incrementadas versiones en encabezados de archivos modificados (`app-run.sh` v1.0.3, `docker-compose.yml` 1.0.2).
-
-## [3.1.5] - 2025-12-06
-
-### **Cambiado**
-
-* **Renombrado de Archivo Backend:** Archivo `app.py` renombrado a `app-flask.py` para seguir el estándar de nomenclatura `app-*`.
-    * **Actualización de Referencias:** Modificados `docker-compose.yml`, `Dockerfile`, `app-version.js` y `CHANGELOG.md` para reflejar el nuevo nombre.
-    * **Versionado Individual:** Incrementadas versiones en encabezados de archivos modificados (`app-flask.py` v0.9.1, `app-version.js` 3.1.5, `docker-compose.yml` 1.0.1, `Dockerfile` 1.0.1).
+* **Posicionamiento de Ventana:** Solucionado problema crítico donde la parte superior de la aplicación quedaba oculta en pantallas pequeñas o resoluciones bajas.
+    * **Cálculo de Posición Y:** Modificada función `getBottomRightPosition()` en `main.js` para asegurar que la coordenada Y nunca sea negativa.
+    * **Visibilidad Garantizada:** La ventana ahora se posiciona correctamente dentro de los límites de la pantalla, previniendo la ocultación de la interfaz.
+    * **Experiencia de Usuario:** Mejorada la accesibilidad al eliminar la posibilidad de que la aplicación aparezca parcialmente fuera de la vista.
 
 ## [3.1.8] - 2025-12-07
 
@@ -39,6 +31,23 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
     * **Conflicto de Variables:** Eliminada redeclaración de `app` en el handler IPC `save-file` que causaba `TypeError: Cannot read properties of undefined (reading 'on')`.
     * **Estabilidad Mejorada:** Aplicación ahora inicia correctamente sin errores de Electron.
     * **Funcionalidad de Modos:** Mantenida la lógica de cambio automático entre modo mini y expandido al perder/ganar foco.
+
+## [3.1.6] - 2025-12-06
+
+### **Cambiado**
+
+* **Rebranding de la Aplicación:** Actualización del nombre del launcher de "MFM Assistant" a "rm-IAPrompter" para consistencia con el nombre del proyecto.
+    * **Renombrado del Contenedor:** Cambiado el nombre del contenedor Docker de "mfm-backend" a "rm-iaprompter-backend".
+    * **Actualización de Referencias:** Modificados `app-run.sh` y `docker-compose.yml` para reflejar los nuevos nombres.
+    * **Versionado Individual:** Incrementadas versiones en encabezados de archivos modificados (`app-run.sh` v1.0.3, `docker-compose.yml` 1.0.2).
+
+## [3.1.5] - 2025-12-06
+
+### **Cambiado**
+
+* **Renombrado de Archivo Backend:** Archivo `app.py` renombrado a `app-flask.py` para seguir el estándar de nomenclatura `app-*`.
+    * **Actualización de Referencias:** Modificados `docker-compose.yml`, `Dockerfile`, `app-version.js` y `CHANGELOG.md` para reflejar el nuevo nombre.
+    * **Versionado Individual:** Incrementadas versiones en encabezados de archivos modificados (`app-flask.py` v0.9.1, `app-version.js` 3.1.5, `docker-compose.yml` 1.0.1, `Dockerfile` 1.0.1).
 
 ## [Unreleased]
 
