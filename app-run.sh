@@ -3,7 +3,7 @@
 #  -----------------------------------------------------------------------------
 #  Project:     rm-IAPrompter
 #  File:        app-run.sh
-#  Version:     v1.0.4
+#  Version:     v1.0.5
 #  Date:        2025-12-07
 #  Author:      Lic. Ricardo MONLA
 #  Email:       rmonla@gmail.com
@@ -34,8 +34,25 @@ NC='\033[0m'
 DEBUG_MODE=false
 STOP_MODE=false
 RESTART_MODE=false
+RESTART_FRONTEND_MODE=false
+RESTART_BACKEND_MODE=false
 
 # --- Funciones ---
+
+function show_usage() {
+    echo "Uso: $0 [opciones]"
+    echo "Opciones:"
+    echo "  -d, --debug                 Ejecuta en modo debug con logging activo."
+    echo "  -s, --stop                  Detiene todos los servicios."
+    echo "  -r, --restart               Reinicia todos los servicios."
+    echo "  -rf, --restart-frontend     Reinicia solo el frontend."
+    echo "  -rb, --restart-backend      Reinicia solo el backend."
+    echo "  -h, --help                  Muestra esta ayuda."
+    echo ""
+    echo "Ejemplos:"
+    echo "  $0                          Inicia la aplicación normalmente."
+    echo "  $0 --restart-frontend --debug  Reinicia el frontend en modo debug."
+}
 
 function check_docker_compose() {
     if command -v docker-compose &> /dev/null; then
@@ -99,6 +116,70 @@ function stop_services() {
     $DOCKER_COMPOSE_CMD down --remove-orphans
     pkill -f "electron" || true
     echo -e "${GREEN}✅ Servicios detenidos.${NC}"
+}
+
+function stop_frontend() {
+    echo -e "${YELLOW}>> Deteniendo interfaz...${NC}"
+    pkill -f "electron" || true
+    echo -e "${GREEN}✅ Interfaz detenida.${NC}"
+}
+
+function stop_backend() {
+    echo -e "${YELLOW}>> Deteniendo backend...${NC}"
+    $DOCKER_COMPOSE_CMD down --remove-orphans
+    echo -e "${GREEN}✅ Backend detenido.${NC}"
+}
+
+function start_frontend() {
+    echo -e "${BLUE}>> Iniciando Interfaz Electron ($ELECTRON_DIR)...${NC}"
+    cd "$ELECTRON_DIR" || exit
+    
+    if [ ! -d "node_modules" ]; then
+         echo "Instalando dependencias npm..."
+         npm install > /dev/null 2>&1
+    fi
+
+    if [ "$DEBUG_MODE" = true ]; then
+        TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+        FRONTEND_LOG="../$LOG_DIR/frontend_$TIMESTAMP.log"
+        echo -e "${CYAN}🐛 MODO DEBUG (LOGGING ACTIVO): La terminal se liberará.${NC}"
+        
+        export MFM_DEBUG=true
+        export ELECTRON_ENABLE_LOGGING=true
+        
+        npm start -- --disable-gpu --enable-logging --v=1 > "$FRONTEND_LOG" 2>&1 &
+        
+        echo -e "${GREEN}✨ Interfaz iniciada.${NC}"
+        echo -e "   📄 Log Frontend: ${YELLOW}$FRONTEND_LOG${NC}"
+        echo -e "   Usa ${YELLOW}tail -f $FRONTEND_LOG${NC} para monitorear manualmente."
+        
+    else
+        npm start -- --disable-gpu > /dev/null 2>&1 &
+        echo -e "${GREEN}✨ Interfaz iniciada en segundo plano.${NC}"
+    fi
+    cd ..
+}
+
+function start_backend() {
+    echo -e "${BLUE}>> Iniciando Backend...${NC}"
+    $DOCKER_COMPOSE_CMD up -d --build
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Error al iniciar Docker Compose.${NC}"
+        exit 1
+    fi
+    if [ "$DEBUG_MODE" = true ]; then
+        TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+        BACKEND_LOG="$LOG_DIR/backend_$TIMESTAMP.log"
+        echo -e "${CYAN}🐛 MODO DEBUG (LOGGING ACTIVO): La terminal se liberará.${NC}"
+        
+        docker logs -f "$CONTAINER_NAME" > "$BACKEND_LOG" 2>&1 &
+        
+        echo -e "${GREEN}✨ Backend iniciado.${NC}"
+        echo -e "   📄 Log Backend:  ${YELLOW}$BACKEND_LOG${NC}"
+        echo -e "   Usa ${YELLOW}tail -f $BACKEND_LOG${NC} para monitorear manualmente."
+    else
+        echo -e "${GREEN}✨ Backend iniciado en segundo plano.${NC}"
+    fi
 }
 
 function start_app() {
@@ -168,7 +249,10 @@ while [[ "$#" -gt 0 ]]; do
         -d|--debug) DEBUG_MODE=true ;;
         -s|--stop) STOP_MODE=true ;;
         -r|--restart) RESTART_MODE=true ;;
-        *) echo "Opción desconocida: $1"; exit 1 ;;
+        -rf|--restart-frontend) RESTART_FRONTEND_MODE=true ;;
+        -rb|--restart-backend) RESTART_BACKEND_MODE=true ;;
+        -h|--help) show_usage; exit 0 ;;
+        *) echo "Opción desconocida: $1"; show_usage; exit 1 ;;
     esac
     shift
 done
@@ -179,6 +263,13 @@ echo -e "${BLUE}===== rm-IAPrompter Launcher v${VERSION} =====${NC}"
 check_docker_compose
 if [ "$RESTART_MODE" = true ]; then
     stop_services
+elif [ "$RESTART_FRONTEND_MODE" = true ] || [ "$RESTART_BACKEND_MODE" = true ]; then
+    if [ "$RESTART_FRONTEND_MODE" = true ]; then
+        stop_frontend
+    fi
+    if [ "$RESTART_BACKEND_MODE" = true ]; then
+        stop_backend
+    fi
 fi
 
 if [ "$STOP_MODE" = true ]; then
@@ -187,4 +278,14 @@ if [ "$STOP_MODE" = true ]; then
 fi
 
 setup_security
-start_app
+
+if [ "$RESTART_MODE" = true ] || ( [ "$RESTART_FRONTEND_MODE" = false ] && [ "$RESTART_BACKEND_MODE" = false ] ); then
+    start_app
+else
+    if [ "$RESTART_FRONTEND_MODE" = true ]; then
+        start_frontend
+    fi
+    if [ "$RESTART_BACKEND_MODE" = true ]; then
+        start_backend
+    fi
+fi

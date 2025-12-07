@@ -4,6 +4,16 @@ Todos los cambios notables en el proyecto **rm-IAPrompter** se documentarán en 
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.11] - 2025-12-07
+
+### **Mejorado**
+
+* **Script de Lanzamiento Mejorado:** Implementadas nuevas opciones de reinicio selectivo para componentes individuales.
+    * **Reinicio de Frontend:** Opción `--restart-frontend` para detener e iniciar únicamente la interfaz Electron.
+    * **Reinicio de Backend:** Opción `--restart-backend` para detener e iniciar únicamente el contenedor Docker del backend.
+    * **Modo Debug Combinable:** El flag `--debug` puede combinarse con cualquier opción de reinicio para ejecutar en modo debug con logging activo.
+    * **Ayuda Integrada:** Añadida función `show_usage()` con opciones `-h` y `--help` para mostrar ayuda detallada y ejemplos de uso.
+
 ## [3.1.10] - 2025-12-07
 
 ### **Corregido**

@@ -16,7 +16,7 @@
  */
 
 // ========== CONFIGURACIÓN DE VERSIÓN ==========
-const APP_VERSION = "3.1.10";
+const APP_VERSION = "3.1.11";
 const APP_NAME = "rm-IAPrompter";
 const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
 
@@ -26,6 +26,13 @@ const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
  * Se mantiene para referencia y documentación.
  */
 const VERSION_HISTORY = {
+    "3.1.11": {
+        date: "2025-12-07",
+        changes: [
+            "Mejora en script de lanzamiento: Añadidas opciones --restart-frontend y --restart-backend para reinicio selectivo de componentes, con soporte para modo debug combinable"
+        ],
+        type: "Mejorado"
+    },
     "3.1.10": {
         date: "2025-12-07",
         changes: [
