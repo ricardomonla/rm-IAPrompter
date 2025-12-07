@@ -221,12 +221,12 @@
             hexContainer: document.getElementById('header-hex'),
             login: document.getElementById('login-screen'),
             main: document.getElementById('main-interface'),
-            
+
             // Export buttons
             exportMdBtn: document.getElementById('export-md-btn'),
             exportTxtBtn: document.getElementById('export-txt-btn'),
             exportStatus: document.getElementById('export-status'),
-            
+
             // Nueva barra de herramientas
             templatesListBtn: document.getElementById('templates-list-btn'),
             prevTemplateBtn: document.getElementById('prev-template-btn'),
@@ -234,24 +234,66 @@
             editTemplateBtn: document.getElementById('edit-template-btn'),
             duplicateTemplateBtn: document.getElementById('duplicate-template-btn'),
             templateSelectorMenu: document.getElementById('template-selector-menu'),
-            
+
             // Modal Elements (Para compatibilidad temporal)
             modal: document.getElementById('settings-modal'),
             tplSelector: document.getElementById('tpl-selector'),
             deleteBtn: document.getElementById('delete-tpl-btn'),
-            
+
             settingsBtn: document.getElementById('settings-trigger-btn'),
             closeSettingsBtn: document.getElementById('close-settings-btn'),
             saveSettingsBtn: document.getElementById('save-settings-btn'),
-            
+
             addTplBtn: document.getElementById('add-tpl-btn'),
             cloneTplBtn: document.getElementById('clone-tpl-btn'),
             newLabel: document.getElementById('new-tpl-label'),
             newValue: document.getElementById('new-tpl-value'),
-            
+
             formModeLabel: document.getElementById('form-mode-label'),
             cancelEditBtn: document.getElementById('cancel-edit-btn')
         };
+
+        // --- PERSISTENCIA DE TEXTO ---
+        // Función para guardar texto en localStorage
+        function saveTextToStorage(key, value) {
+            localStorage.setItem(key, value);
+        }
+
+        // Función para cargar texto desde localStorage
+        function loadTextFromStorage(key, defaultValue = '') {
+            return localStorage.getItem(key) || defaultValue;
+        }
+
+        // Cargar textos al inicializar
+        ui.bodyInput.value = loadTextFromStorage('ai-input');
+        ui.headerInput.value = loadTextFromStorage('header-input', ui.headerInput.value);
+
+        // Guardar textos al cambiar (ejemplo para sección genérica de texto editable)
+        ui.bodyInput.addEventListener('input', () => {
+            saveTextToStorage('ai-input', ui.bodyInput.value);
+        });
+
+        ui.headerInput.addEventListener('input', () => {
+            if (!ui.headerInput.readOnly) {
+                saveTextToStorage('header-input', ui.headerInput.value);
+            }
+        });
+
+        // Persistencia para modal de plantillas
+        ui.newLabel.addEventListener('input', () => {
+            saveTextToStorage('new-tpl-label', ui.newLabel.value);
+        });
+
+        ui.newValue.addEventListener('input', () => {
+            saveTextToStorage('new-tpl-value', ui.newValue.value);
+        });
+
+        // Cargar textos del modal
+        ui.newLabel.value = loadTextFromStorage('new-tpl-label');
+        ui.newValue.value = loadTextFromStorage('new-tpl-value');
+
+        // Persistencia para Prompt Resultante
+        ui.responseArea.innerHTML = loadTextFromStorage('response-content', ui.responseArea.innerHTML);
 
         // --- NUEVO SISTEMA DE NAVEGACIÓN DE PLANTILLAS ---
         
@@ -558,6 +600,34 @@
             if(items[selectedIndex]) items[selectedIndex].classList.add('selected');
         }
 
+// Función auxiliar para manejar reintentos en caso de error 429 (Cuota Excedida)
+        async function fetchWithRetry(url, options, retries = 3, backoff = 12000) {
+            try {
+                const response = await fetch(url, options);
+                
+                if (response.status === 429) {
+                    if (retries > 0) {
+                        console.warn(`Error 429 detectado. Reintentando en ${backoff/1000} segundos... (Intentos restantes: ${retries})`);
+                        
+                        // Feedback visual al usuario
+                        ui.responseArea.innerHTML = `
+                            <div style="text-align:center; opacity:0.7; margin-top:50px; color:var(--accent);">
+                                ⚠️ LÍMITE DE API ALCANZADO<br>
+                                <span style="font-size:11px; color:#e67e22;">Esperando ${backoff/1000}s para reintentar automáticamente...</span>
+                            </div>`;
+                        
+                        await new Promise(resolve => setTimeout(resolve, backoff));
+                        return fetchWithRetry(url, options, retries - 1, backoff); // Reintento recursivo
+                    } else {
+                        throw new Error("Se excedió el límite de cuota de la API y se agotaron los reintentos automáticos.");
+                    }
+                }
+                return response;
+            } catch (error) {
+                throw error;
+            }
+        }
+
         async function sendAI() {
             if (isProcessing) return;
 
@@ -568,8 +638,6 @@
             if (!requestValue) return;
 
             // 2. Construimos el Meta-Prompt fusionado
-            // Este prompt instruye a Gemini para que actúe como un "Ingeniero de Prompts"
-            // y genere el resultado final siguiendo tus reglas estrictas.
             const fullQuery = `
             Actúa como un Arquitecto de Prompts Senior especializado en desarrollo de software.
             
@@ -603,22 +671,37 @@
             ui.responseArea.innerHTML = `<div style="text-align:center; opacity:0.7; margin-top:50px; color:var(--accent);">GENERANDO PROMPT OPTIMIZADO...</div>`;
 
             try {
-                const res = await fetch(`${API_URL}/query_gemini`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query: fullQuery})
+                // Usamos la nueva función con reintento en lugar de fetch directo
+                const res = await fetchWithRetry(`${API_URL}/query_gemini`, {
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({query: fullQuery})
                 });
+                
                 const data = await res.json();
-                if (data.response) { renderResponse(data.response); setHexState('success'); }
-                else { renderError(data.error); setHexState('error'); }
-            } catch (e) { renderError("Error de conexión."); setHexState('error'); }
+                
+                if (data.response) { 
+                    renderResponse(data.response); 
+                    setHexState('success'); 
+                } else { 
+                    renderError(data.error); 
+                    setHexState('error'); 
+                }
+            } catch (e) { 
+                renderError(e.message || "Error de conexión."); 
+                setHexState('error'); 
+            }
 
             isProcessing = false;
             setTimeout(() => setHexState(''), 3000);
         }
-
+        
         function renderResponse(txt) {
             ui.responseArea.innerHTML = `<div class="response-content">${marked.parse(txt)}</div>`;
             ui.responseArea.querySelectorAll('pre code').forEach((block) => hljs.highlightElement(block));
             addCopyButtons();
+            // Persistencia del Prompt Resultante
+            saveTextToStorage('response-content', ui.responseArea.innerHTML);
         }
 
         function addCopyButtons() {

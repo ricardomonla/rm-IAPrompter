@@ -1,8 +1,8 @@
 //  -----------------------------------------------------------------------------
-//  Project:     rm-Prompter
+//  Project:     rm-IAPrompter
 //  File:        app-version.js
-//  Version:     3.1.7
-//  Date:        2025-12-06
+//  Version:     3.1.10
+//  Date:        2025-12-07
 //  Author:      Lic. Ricardo MONLA
 //  Email:       rmonla@gmail.com
 //  Description: Sistema de versionado centralizado para la aplicación.
@@ -16,7 +16,7 @@
  */
 
 // ========== CONFIGURACIÓN DE VERSIÓN ==========
-const APP_VERSION = "3.1.9";
+const APP_VERSION = "3.1.10";
 const APP_NAME = "rm-IAPrompter";
 const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
 
@@ -26,6 +26,13 @@ const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
  * Se mantiene para referencia y documentación.
  */
 const VERSION_HISTORY = {
+    "3.1.10": {
+        date: "2025-12-07",
+        changes: [
+            "Corrección en script de lanzamiento: Implementada lógica para flag --restart que detiene instancias previas antes de iniciar nuevas, previniendo elementos visuales superpuestos"
+        ],
+        type: "Corregido"
+    },
     "3.1.9": {
         date: "2025-12-07",
         changes: [

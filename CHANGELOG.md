@@ -4,6 +4,14 @@ Todos los cambios notables en el proyecto **rm-IAPrompter** se documentarán en 
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.10] - 2025-12-07
+
+### **Corregido**
+
+* **Lógica de Reinicio en Script de Lanzamiento:** Implementada funcionalidad para el flag `--restart` que detiene instancias previas de la aplicación antes de iniciar nuevas.
+    * **Terminación Graceful:** Añadida llamada a `stop_services()` cuando se usa `--restart`, previniendo elementos visuales superpuestos como hexágonos múltiples.
+    * **Estabilidad Mejorada:** La aplicación ahora reinicia correctamente sin instancias residuales ejecutándose en segundo plano.
+
 ## [3.1.9] - 2025-12-07
 
 ### **Mejorado**

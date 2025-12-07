@@ -3,8 +3,8 @@
 #  -----------------------------------------------------------------------------
 #  Project:     rm-IAPrompter
 #  File:        app-run.sh
-#  Version:     v1.0.3
-#  Date:        2025-12-06
+#  Version:     v1.0.4
+#  Date:        2025-12-07
 #  Author:      Lic. Ricardo MONLA
 #  Email:       rmonla@gmail.com
 #  Description: Script para ejecutar la aplicación en un contenedor Docker.
@@ -177,6 +177,9 @@ done
 echo -e "${BLUE}===== rm-IAPrompter Launcher v${VERSION} =====${NC}"
 
 check_docker_compose
+if [ "$RESTART_MODE" = true ]; then
+    stop_services
+fi
 
 if [ "$STOP_MODE" = true ]; then
     stop_services
