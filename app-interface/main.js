@@ -137,44 +137,71 @@ app.on('ready', () => {
     // IPC Handler para exportación de archivos
     ipcMain.handle('save-file', async (event, { nombreArchivo, contenido, tipoArchivo }) => {
         try {
-            // Obtener directorio de descargas del usuario
-            const downloadsPath = app.getPath('downloads');
-            const rutaCompleta = path.join(downloadsPath, nombreArchivo);
-            
-            // Verificar si el archivo ya existe
-            try {
-                await fs.access(rutaCompleta);
-                // El archivo existe, mostrar diálogo de confirmación
-                const { response } = await dialog.showMessageBox(mainWindow, {
-                    type: 'question',
-                    buttons: ['Sobrescribir', 'Cancelar'],
-                    title: 'Archivo Existente',
-                    message: `El archivo "${nombreArchivo}" ya existe en Descargas.`,
-                    detail: '¿Deseas sobrescribirlo?'
+            if (tipoArchivo === 'markdown') {
+                // Usar diálogo de guardar para archivos Markdown
+                const result = await dialog.showSaveDialog(mainWindow, {
+                    title: 'Guardar archivo Markdown',
+                    defaultPath: nombreArchivo,
+                    filters: [
+                        { name: 'Archivos Markdown', extensions: ['md'] }
+                    ]
                 });
-                
-                if (response === 1) {
+    
+                if (result.canceled) {
                     return { exito: false, error: 'Operación cancelada por el usuario' };
                 }
-            } catch (accessError) {
-                // El archivo no existe, continuar normalmente
+    
+                const rutaCompleta = result.filePath;
+    
+                // Guardar el archivo
+                await fs.writeFile(rutaCompleta, contenido, 'utf8');
+    
+                console.log(`✅ Archivo exportado exitosamente: ${rutaCompleta}`);
+                return {
+                    exito: true,
+                    ruta: rutaCompleta,
+                    mensaje: `Archivo guardado: ${path.basename(rutaCompleta)}`
+                };
+            } else {
+                // Mantener el comportamiento original para otros tipos de archivo
+                const downloadsPath = app.getPath('downloads');
+                const rutaCompleta = path.join(downloadsPath, nombreArchivo);
+    
+                // Verificar si el archivo ya existe
+                try {
+                    await fs.access(rutaCompleta);
+                    // El archivo existe, mostrar diálogo de confirmación
+                    const { response } = await dialog.showMessageBox(mainWindow, {
+                        type: 'question',
+                        buttons: ['Sobrescribir', 'Cancelar'],
+                        title: 'Archivo Existente',
+                        message: `El archivo "${nombreArchivo}" ya existe en Descargas.`,
+                        detail: '¿Deseas sobrescribirlo?'
+                    });
+    
+                    if (response === 1) {
+                        return { exito: false, error: 'Operación cancelada por el usuario' };
+                    }
+                } catch (accessError) {
+                    // El archivo no existe, continuar normalmente
+                }
+    
+                // Guardar el archivo
+                await fs.writeFile(rutaCompleta, contenido, 'utf8');
+    
+                console.log(`✅ Archivo exportado exitosamente: ${rutaCompleta}`);
+                return {
+                    exito: true,
+                    ruta: rutaCompleta,
+                    mensaje: `Archivo guardado en Descargas: ${nombreArchivo}`
+                };
             }
-            
-            // Guardar el archivo
-            await fs.writeFile(rutaCompleta, contenido, 'utf8');
-            
-            console.log(`✅ Archivo exportado exitosamente: ${rutaCompleta}`);
-            return { 
-                exito: true, 
-                ruta: rutaCompleta,
-                mensaje: `Archivo guardado en Descargas: ${nombreArchivo}`
-            };
-            
+    
         } catch (error) {
             console.error('❌ Error al guardar archivo:', error);
-            return { 
-                exito: false, 
-                error: `Error al guardar: ${error.message}` 
+            return {
+                exito: false,
+                error: `Error al guardar: ${error.message}`
             };
         }
     });

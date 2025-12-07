@@ -2,8 +2,8 @@
   -----------------------------------------------------------------------------
   Project:     rm-IAPrompter
   File:        README.md
-  Version:     v3.1.7
-  Date:        2025-12-06
+  Version:     v3.1.8
+  Date:        2025-12-07
   Author:      Lic. Ricardo MONLA
   Email:       rmonla@gmail.com
   Description: Documentación principal del proyecto.
@@ -11,7 +11,7 @@
  -->
 # **rm-IAPrompter - AI Prompt Generator**
 
-![Version](https://img.shields.io/badge/version-v3.1.7-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Author](https://img.shields.io/badge/autor-Lic._Ricardo_MONLA-orange)
+![Version](https://img.shields.io/badge/version-v3.1.8-blue) ![Status](https://img.shields.io/badge/status-stable-green) ![Author](https://img.shields.io/badge/autor-Lic._Ricardo_MONLA-orange)
 
 **rm-IAPrompter es una aplicación especializada en generar prompts estructurados y efectivos para otros modelos de IA.** Con una interfaz de dos paneles verticales, permite crear, optimizar y gestionar plantillas de prompts con el poder de Gemini AI, todo orquestado mediante contenedores Docker y una interfaz Electron moderna.
 
@@ -27,7 +27,7 @@ Este software es propiedad intelectual exclusiva del **Lic. Ricardo MONLA**.
 
 ---
 
-## **🚀 Características Principales (v3.1.7)**
+## **🚀 Características Principales (v3.1.8)**
 
 rm-IAPromper está diseñado específicamente para la ingeniería de prompts con las siguientes capacidades:
 
@@ -36,7 +36,7 @@ rm-IAPromper está diseñado específicamente para la ingeniería de prompts con
 * **🔄 Persistencia Centralizada:** Todas las plantillas y configuraciones se almacenan en `app-data/` para gestión unificada.
 * **🧠 Navegación Inteligente:** Sistema de carrusel con botones `//`, `<`, `>`, `✎`, `❐` y autocompletado por `//`.
 * **💾 Edición In-Place:** Modo de edición directa en el textarea con toggle edit/guardar (`✎` ↔ `💾`).
-* **📤 Exportación de Archivos:** Funcionalidad completa de exportación a Markdown (.md) y Texto (.txt) con timestamps.
+* **📤 Exportación de Archivos:** Funcionalidad completa de exportación a Markdown (.md) con diálogo de guardado y nombre sugerido, y Texto (.txt) con timestamps.
 * **💾 Guardado Automático:** Las modificaciones a las plantillas se guardan instantáneamente en el backend.
 * **🎨 Visualización Optimizada:** Interfaz de dos paneles diseñada específicamente para el flujo de trabajo de creación de prompts.
 * **📋 Copia Fácil:** Funcionalidad de copia rápida para prompts generados y bloques de código.
@@ -96,7 +96,7 @@ La primera vez que lo ejecutes:
 
 | Acción | Control | Descripción |
 | :--- | :--- | :--- |
-| **Exportar a Markdown** | Botón 📄 MD | Descarga el prompt generado como archivo .md con formato completo |
+| **Exportar a Markdown** | Botón 📄 MD | Abre diálogo para guardar el prompt generado como archivo .md con formato completo y nombre sugerido |
 | **Exportar a Texto** | Botón 📝 TXT | Descarga el prompt como archivo .txt plano sin formato |
 | **Estado de Exportación** | Indicador visual | Muestra el estado de la exportación con colores y mensajes |
 

@@ -2,8 +2,12 @@
   -----------------------------------------------------------------------------
   Project:     rm-IAPrompter
   File:        app-interface/index.html
-  Version:     
+  Version:
+    v3.1.7 Agrega funcionalidad de seleccionar donde guardar el archivo de exportación.
+    v3.1.5 Agrega botones de exportación
+     
     v3.1.6 Arregla botones fantasmas
+
   Date:        2025-12-04 20:55
   Author:      Lic. Ricardo MONLA
   Email:       rmonla@gmail.com
@@ -656,6 +660,14 @@
         
         // --- FUNCIONES DE EXPORTACIÓN ---
         
+        // Función para obtener el título del documento actual
+        function getCurrentDocumentTitle() {
+            if (currentTemplateIndex >= 0 && currentTemplateIndex < headerTemplates.length) {
+                return headerTemplates[currentTemplateIndex].label.replace(/[^a-zA-Z0-9]/g, '');
+            }
+            return 'SinTitulo';
+        }
+                
         // Función para mostrar estado de exportación
         function mostrarEstadoExportacion(mensaje, esExito = true) {
             ui.exportStatus.textContent = mensaje;
@@ -707,11 +719,17 @@
             return contenido;
         }
         
-        // Función para generar nombre de archivo con timestamp
-        function generarNombreArchivo(extension) {
+        // Función para generar nombre de archivo con timestamp y título
+        function generarNombreArchivo(extension, title = '') {
             const ahora = new Date();
-            const timestamp = ahora.toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '-');
-            return `prompt-export-${timestamp}.${extension}`;
+            const yyyy = ahora.getFullYear();
+            const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+            const dd = String(ahora.getDate()).padStart(2, '0');
+            const hh = String(ahora.getHours()).padStart(2, '0');
+            const min = String(ahora.getMinutes()).padStart(2, '0');
+            const timestamp = `${yyyy}${mm}${dd}-${hh}${min}`;
+            const titulo = title ? `_${title}` : '';
+            return `${timestamp}${titulo}.${extension}`;
         }
         
         // Función para verificar si hay contenido para exportar
@@ -737,7 +755,8 @@
                     return;
                 }
                 
-                const nombreArchivo = generarNombreArchivo('md');
+                const title = getCurrentDocumentTitle();
+                const nombreArchivo = generarNombreArchivo('md', title);
                 
                 // Solicitar al proceso principal que guarde el archivo
                 ipcRenderer.invoke('save-file', {

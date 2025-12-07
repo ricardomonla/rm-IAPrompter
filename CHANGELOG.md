@@ -21,6 +21,16 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
     * **Actualización de Referencias:** Modificados `docker-compose.yml`, `Dockerfile`, `app-version.js` y `CHANGELOG.md` para reflejar el nuevo nombre.
     * **Versionado Individual:** Incrementadas versiones en encabezados de archivos modificados (`app-flask.py` v0.9.1, `app-version.js` 3.1.5, `docker-compose.yml` 1.0.1, `Dockerfile` 1.0.1).
 
+## [3.1.8] - 2025-12-07
+
+### **Mejorado**
+
+* **Funcionalidad de Exportación Markdown:** Mejorada la exportación >>MD para solicitar ubicación de guardado al usuario y sugerir nombre de archivo personalizado.
+    * **Diálogo de Guardado:** Implementado diálogo nativo de selección de archivo en lugar de guardado automático en directorio Descargas.
+    * **Nombre de Archivo Sugerido:** Actualizado formato a `YYYYMMDD-HHMM_TítuloPrompt.md` utilizando el título de la plantilla actual.
+    * **Función getCurrentDocumentTitle():** Añadida función para obtener el título del documento actual basado en la etiqueta de la plantilla activa.
+    * **Compatibilidad:** Mantenida funcionalidad de exportación TXT sin modificaciones.
+
 ## [3.1.7] - 2025-12-06
 
 ### **Corregido**

@@ -16,7 +16,7 @@
  */
 
 // ========== CONFIGURACIÓN DE VERSIÓN ==========
-const APP_VERSION = "3.1.7";
+const APP_VERSION = "3.1.8";
 const APP_NAME = "rm-IAPrompter";
 const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
 
@@ -26,6 +26,16 @@ const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
  * Se mantiene para referencia y documentación.
  */
 const VERSION_HISTORY = {
+    "3.1.8": {
+        date: "2025-12-07",
+        changes: [
+            "Mejora en funcionalidad de exportación Markdown: implementación de diálogo de guardado y nombre de archivo sugerido con título",
+            "Añadida función getCurrentDocumentTitle() para obtener título del documento actual",
+            "Modificado formato de nombre de archivo a YYYYMMDD-HHMM_TítuloPrompt.md",
+            "Mantenida compatibilidad con exportación TXT"
+        ],
+        type: "Mejorado"
+    },
     "3.1.7": {
         date: "2025-12-06",
         changes: [
