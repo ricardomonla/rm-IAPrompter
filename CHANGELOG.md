@@ -51,6 +51,10 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Unreleased]
 
+### **Mejorado**
+
+* **Scrollbar Vertical para PromptResultante:** Implementada regla CSS `overflow-y: auto;` en la clase `.PromptResultante` para mostrar scrollbar vertical cuando el contenido exceda el área visible, solucionando problemas de desbordamiento de contenido.
+
 ### **Añadido**
 
 * **Sistema Centralizado de Versionado:** Implementado `app-version.js` como archivo maestro de versionado.

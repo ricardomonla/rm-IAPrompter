@@ -2,8 +2,8 @@
   -----------------------------------------------------------------------------
   Project:     rm-IAPrompter
   File:        app-interface/styles.css
-  Version:     v3.1.2
-  Date:        2025-12-01 20:20
+  Version:     v3.1.3
+  Date:        2025-12-07
   Author:      Lic. Ricardo MONLA
   Email:       rmonla@gmail.com
   Description: Estilos UI con soporte para feedback de edición.
@@ -353,6 +353,11 @@ body.mode-mini #content-wrapper { display: none; }
     padding: 8px 20px; border-radius: 4px; cursor: pointer; font-size: 11px;
 }
 #save-settings-btn:hover { opacity: 0.9; }
+
+/* PROMPT RESULTANTE */
+.PromptResultante {
+    overflow-y: auto;
+}
 
 /* MISC */
 .hidden { display: none !important; }
