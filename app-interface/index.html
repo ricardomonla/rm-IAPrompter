@@ -2,8 +2,8 @@
   -----------------------------------------------------------------------------
   Project:     rm-IAPrompter
   File:        app-interface/index.html
-  Version:     v3.1.8 
-    Solucionado problema crítico donde la parte superior de la aplicación quedaba oculta en pantallas pequeñas o resoluciones bajas.
+  Version:     v3.1.9 
+    Logra que la IA te devuelva estrictamente esas 4 secciones ([ROLE], [INSTRUCTIONS], [OUTPUT FORMAT], [USER REQUEST]) 
   Date:        2025-12-06 22:03
   Author:      Lic. Ricardo MONLA
   Email:       rmonla@gmail.com
@@ -560,14 +560,44 @@
 
         async function sendAI() {
             if (isProcessing) return;
-            const fullQuery = (ui.headerInput.value.trim() ? ui.headerInput.value.trim() + "\n\n" : "") + ui.bodyInput.value.trim();
-            if (!fullQuery.trim()) return;
+
+            // 1. Capturamos los valores por separado
+            const contextValue = ui.headerInput.value.trim();
+            const requestValue = ui.bodyInput.value.trim();
+
+            // Validación: Si no hay solicitud, no hacemos nada
+            if (!requestValue) return;
+
+            // 2. Construimos el Meta-Prompt estructurado
+            // Esto "inyecta" las instrucciones de formato invisibles para el usuario final
+            const fullQuery = `
+            Actúa como un Arquitecto de Prompts Senior. Tu tarea es generar un prompt técnico optimizado.
+            
+            INFORMACIÓN DE ENTRADA:
+            - Contexto/Formato deseado: "${contextValue}"
+            - Solicitud del usuario: "${requestValue}"
+
+            Tu respuesta debe contener ÚNICAMENTE el prompt resultante, estructurado obligatoriamente con estos 4 encabezados:
+
+            [ROLE]
+            (Define el rol experto ideal para la tarea)
+
+            [INSTRUCTIONS]
+            (Lista numerada de instrucciones paso a paso)
+
+            [OUTPUT FORMAT]
+            (Define formato, estilo, tono y estructura de la respuesta esperada)
+
+            [USER REQUEST]
+            (La solicitud del usuario original, refinada para mayor claridad)
+            `;
 
             isProcessing = true;
             setHexState('thinking');
             ui.responseArea.innerHTML = `<div style="text-align:center; opacity:0.7; margin-top:50px; color:var(--accent);">GENERANDO PROMPT OPTIMIZADO...</div>`;
 
             try {
+                // Enviamos el fullQuery modificado
                 const res = await fetch(`${API_URL}/query_gemini`, {
                     method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({query: fullQuery})
                 });

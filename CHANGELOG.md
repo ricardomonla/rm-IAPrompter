@@ -6,12 +6,18 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [3.1.9] - 2025-12-07
 
+### **Mejorado**
+
+* **Generación Estructurada de Prompts:** Implementada generación de prompts con formato estandarizado de 4 secciones obligatorias.
+    * **Secciones Estructuradas:** Los prompts generados ahora incluyen siempre [ROLE], [INSTRUCTIONS], [OUTPUT FORMAT], [USER REQUEST].
+    * **Arquitectura de Prompts:** Modificada función `sendAI()` en `index.html` para inyectar meta-instrucciones invisibles al usuario.
+    * **Consistencia Mejorada:** Todos los prompts generados siguen un formato técnico optimizado para mejores resultados de IA.
+
 ### **Corregido**
 
-* **Posicionamiento de Ventana:** Solucionado problema crítico donde la parte superior de la aplicación quedaba oculta en pantallas pequeñas o resoluciones bajas.
-    * **Cálculo de Posición Y:** Modificada función `getBottomRightPosition()` en `main.js` para asegurar que la coordenada Y nunca sea negativa.
-    * **Visibilidad Garantizada:** La ventana ahora se posiciona correctamente dentro de los límites de la pantalla, previniendo la ocultación de la interfaz.
-    * **Experiencia de Usuario:** Mejorada la accesibilidad al eliminar la posibilidad de que la aplicación aparezca parcialmente fuera de la vista.
+* **Scrollbar Vertical en Panel de Resultados:** Implementada regla CSS `overflow-y: scroll;` para mostrar scrollbar vertical de manera consistente.
+    * **Visibilidad Mejorada:** El scrollbar ahora es siempre visible, facilitando la navegación en contenido largo.
+    * **Experiencia de Usuario:** Eliminada la dependencia del contenido para mostrar el scrollbar.
 
 ## [3.1.8] - 2025-12-07
 
