@@ -1,25 +1,28 @@
 //  -----------------------------------------------------------------------------
 //  Project:     rm-IAPrompter
 //  File:        app-interface/main.js
-//  Version:     v1.0.2 (Critical Bugfix App Variable)
+//  Version:     v1.0.3 (Fix Scope & Startup)
 //  Date:        2025-12-06
 //  Author:      Lic. Ricardo MONLA
 //  Email:       rmonla@gmail.com
 //  Description: Configura la ventana principal de la aplicación Electron.
 //  -----------------------------------------------------------------------------
 
-const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, globalShortcut, dialog } = require('electron');
 const path = require('path');
+const fs = require('fs').promises;
 
 let mainWindow;
+
+// Variables Globales de Estado
+let preventFocusExpansion = false;
+let currentMode = 'expanded'; 
+const MARGIN = 20; 
 
 const WINDOW_SIZES = {
     mini: { width: 80, height: 80 },        
     expanded: { width: 1100, height: 720 } 
 };
-
-let currentMode = 'expanded'; 
-const MARGIN = 20; 
 
 function getBottomRightPosition(size) {
     const workArea = screen.getPrimaryDisplay().workArea; 
@@ -60,10 +63,34 @@ function createWindow() {
     if (process.env.MFM_DEBUG === 'true') {
         mainWindow.webContents.openDevTools({ mode: 'right' }); 
     }
+
+    // --- LÓGICA DE CAMBIO DE MODOS (Blur/Focus) ---
+
+    // 1. Detectar click fuera de la aplicación (pérdida de foco)
+    mainWindow.on('blur', () => {
+        if (currentMode === 'expanded') {
+            console.log('App lost focus (blur), switching to mini mode');
+            // Usamos un pequeño delay para evitar conflictos si el usuario solo cambia de ventana rápidamente
+            setTimeout(() => {
+                if (!mainWindow.isFocused() && currentMode === 'expanded') {
+                    updateWindowGeometry('mini');
+                    mainWindow.webContents.send('force-mode-update', 'mini');
+                }
+            }, 100);
+        }
+    });
+
+    // Nota: No usamos 'focus' para expandir automáticamente. 
+    // La expansión solo ocurre vía IPC ('resize-window') desde el botón del hexágono.
 }
 
 function updateWindowGeometry(mode) {
     if (!mainWindow) return;
+
+    // Si estamos en mini y pasamos a expanded, marcamos la prevención
+    if (currentMode === 'mini' && mode === 'expanded') {
+        // Lógica opcional si necesitaras controlar el foco
+    }
 
     const newSize = WINDOW_SIZES[mode];
     const newPos = getBottomRightPosition(newSize);
@@ -80,6 +107,14 @@ function updateWindowGeometry(mode) {
     mainWindow.focus();
 
     currentMode = mode;
+    
+    // Si cambiamos a mini, activamos el bloqueo temporal de expansión (si fuera necesario en el futuro)
+    if (mode === 'mini') {
+        preventFocusExpansion = true;
+        setTimeout(() => {
+            preventFocusExpansion = false;
+        }, 500); 
+    }
 }
 
 // App Lifecycle
@@ -87,9 +122,10 @@ app.on('ready', () => {
     createWindow();
 
     // IPC Events
+    
+    // Este evento es el que dispara el HEXÁGONO al hacer click
     ipcMain.on('resize-window', (event, mode) => {
-        // Este evento se dispara desde el renderer (el hexágono),
-        // por lo que permite volver a modo expanded explícitamente.
+        console.log(`Manual resize requested to: ${mode}`);
         updateWindowGeometry(mode);
         event.sender.send('force-mode-update', mode);
     });
@@ -101,10 +137,6 @@ app.on('ready', () => {
     // IPC Handler para exportación de archivos
     ipcMain.handle('save-file', async (event, { nombreArchivo, contenido, tipoArchivo }) => {
         try {
-            const { dialog } = require('electron');
-            const fs = require('fs').promises;
-            const path = require('path');
-            
             // Obtener directorio de descargas del usuario
             const downloadsPath = app.getPath('downloads');
             const rutaCompleta = path.join(downloadsPath, nombreArchivo);
@@ -146,22 +178,6 @@ app.on('ready', () => {
             };
         }
     });
-
-    // --- NUEVA LÓGICA DE CAMBIO DE MODOS ---
-
-    // Detectar click fuera de la aplicación (pérdida de foco)
-    mainWindow.on('blur', () => {
-        if (currentMode === 'expanded') {
-            console.log('App lost focus (blur), switching to mini mode');
-            updateWindowGeometry('mini');
-            mainWindow.webContents.send('force-mode-update', 'mini');
-        }
-    });
-
-    // NOTA: Se ha eliminado el evento 'focus' y el 'setInterval' de rastreo del mouse
-    // para evitar que la ventana se expanda sola o se cierre solo por mover el mouse.
-    
-    // ---------------------------------------
 
     globalShortcut.register('Ctrl+Shift+G', () => {
         if (mainWindow.isVisible()) {

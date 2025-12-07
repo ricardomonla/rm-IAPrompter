@@ -1,7 +1,7 @@
 //  -----------------------------------------------------------------------------
 //  Project:     rm-Prompter
 //  File:        app-version.js
-//  Version:     3.1.5
+//  Version:     3.1.7
 //  Date:        2025-12-06
 //  Author:      Lic. Ricardo MONLA
 //  Email:       rmonla@gmail.com
@@ -17,7 +17,7 @@
 
 // ========== CONFIGURACIÓN DE VERSIÓN ==========
 const APP_VERSION = "3.1.7";
-const APP_NAME = "rm-IAPromper";
+const APP_NAME = "rm-IAPrompter";
 const APP_FULL_NAME = `${APP_NAME} v${APP_VERSION}`;
 
 // ========== HISTORIAL DE VERSIONES ==========

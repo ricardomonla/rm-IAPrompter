@@ -2,8 +2,9 @@
   -----------------------------------------------------------------------------
   Project:     rm-IAPrompter
   File:        app-interface/index.html
-  Version:     v3.1.4
-  Date:        2025-12-04
+  Version:     
+    v3.1.6 Arregla botones fantasmas
+  Date:        2025-12-04 20:55
   Author:      Lic. Ricardo MONLA
   Email:       rmonla@gmail.com
   Description: Estructura HTML principal de la interfaz de usuario.
@@ -21,8 +22,7 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <link rel="stylesheet" href="styles.css">
-    <script src="../app-version.js"></script>
-
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 </head>
@@ -84,9 +84,13 @@
                     <div id="result-section">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
                             <span class="section-label">Prompt Resultante</span>
-                            <div id="toolbar-container">
-                                <button id="export-md-btn">>>MD</button>
+                            
+                            <div id="toolbar-container" style="display:flex; gap:5px; align-items:center;">
+                                <span id="export-status" style="font-size:10px; margin-right:5px; transition: opacity 0.5s;"></span>
+                                <button id="export-txt-btn" title="Exportar a TXT">TXT</button>
+                                <button id="export-md-btn" title="Exportar a Markdown">>>MD</button>
                             </div>
+                            
                         </div>
                         <div id="active-response-area">
                             <div style="text-align:center; color:#444; margin-top:20vh;">
@@ -809,7 +813,15 @@
         ui.exportMdBtn.addEventListener('click', exportarAMarkdown);
         ui.exportTxtBtn.addEventListener('click', exportarATexto);
 
-        document.getElementById('version').textContent = window.AppVersion.APP_VERSION;
+        // FIX VERSIÓN: Carga segura vía require para evitar problemas de ruta relativa en <head>
+        try {
+            const versionData = require('../app-version.js');
+            const v = versionData.APP_VERSION || (window.AppVersion ? window.AppVersion.APP_VERSION : 'Err');
+            document.getElementById('version').textContent = v;
+        } catch (e) {
+            console.error("No se pudo cargar app-version.js:", e);
+            document.getElementById('version').textContent = 'v3.1.4';
+        }
     </script>
 </body>
 </html>
