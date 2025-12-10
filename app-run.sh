@@ -3,11 +3,12 @@
 #  -----------------------------------------------------------------------------
 #  Project:     rm-IAPrompter
 #  File:        app-run.sh
-#  Version:     v1.0.6
+#  Version:     v1.0.7
 #  Date:        2025-12-10
 #  Author:      Lic. Ricardo MONLA
 #  Email:       rmonla@gmail.com
 #  Description: Script para ejecutar la aplicación en un contenedor Docker.
+#  Último Cambio: 2025-12-10 - Implementado menú interactivo con detección de estado y preguntas con opciones predeterminadas
 #  -----------------------------------------------------------------------------
 
 # --- Definiciones ---
@@ -36,8 +37,30 @@ STOP_MODE=false
 RESTART_MODE=false
 RESTART_FRONTEND_MODE=false
 RESTART_BACKEND_MODE=false
+INTERACTIVE_MODE=false
+
+# Variables de Estado de Aplicación
+APP_RUNNING=false
+FRONTEND_RUNNING=false
+BACKEND_RUNNING=false
 
 # --- Funciones ---
+
+function ask_question() {
+    local question="$1"
+    local default="$2"
+    local response
+    
+    if [ "$default" = "S" ]; then
+        read -p "$question [S/n]: " response
+        response=${response:-S}
+    else
+        read -p "$question [s/N]: " response
+        response=${response:-N}
+    fi
+    
+    echo "$response"
+}
 
 function show_usage() {
     echo "Uso: $0 [opciones]"
@@ -130,6 +153,45 @@ function stop_backend() {
     echo -e "${GREEN}✅ Backend detenido.${NC}"
 }
 
+function check_app_status() {
+    echo -e "${BLUE}>> Verificando estado de la aplicación...${NC}"
+    
+    # Verificar backend (Docker container)
+    if docker compose ps | grep -q "backend"; then
+        if docker compose ps backend | grep -q "Up"; then
+            BACKEND_RUNNING=true
+            echo -e "   ✅ Backend: ${GREEN}En ejecución${NC}"
+        else
+            BACKEND_RUNNING=false
+            echo -e "   ❌ Backend: ${RED}Detenido${NC}"
+        fi
+    else
+        BACKEND_RUNNING=false
+        echo -e "   ❌ Backend: ${RED}No existe${NC}"
+    fi
+    
+    # Verificar frontend (Electron process)
+    if pgrep -f "electron" > /dev/null; then
+        FRONTEND_RUNNING=true
+        echo -e "   ✅ Frontend: ${GREEN}En ejecución${NC}"
+    else
+        FRONTEND_RUNNING=false
+        echo -e "   ❌ Frontend: ${RED}Detenido${NC}"
+    fi
+    
+    # Determinar estado general
+    if [ "$BACKEND_RUNNING" = true ] && [ "$FRONTEND_RUNNING" = true ]; then
+        APP_RUNNING=true
+        echo -e "   🎯 Aplicación: ${GREEN}COMPLETA - Ambos servicios activos${NC}"
+    elif [ "$BACKEND_RUNNING" = true ]; then
+        APP_RUNNING=true
+        echo -e "   ⚠️  Aplicación: ${YELLOW}PARCIAL - Backend activo, frontend detenido${NC}"
+    else
+        APP_RUNNING=false
+        echo -e "   ❌ Aplicación: ${RED}DETENIDA - Ningún servicio activo${NC}"
+    fi
+}
+
 function start_frontend() {
     echo -e "${BLUE}>> Iniciando Interfaz Electron ($ELECTRON_DIR)...${NC}"
     cd "$ELECTRON_DIR" || exit
@@ -180,6 +242,127 @@ function start_backend() {
     else
         echo -e "${GREEN}✨ Backend iniciado en segundo plano.${NC}"
     fi
+}
+
+function interactive_menu() {
+    while true; do
+        echo -e "\n${CYAN}===== MENÚ INTERACTIVO =====${NC}"
+        echo -e "${YELLOW}Estado actual:${NC}"
+        if [ "$APP_RUNNING" = true ]; then
+            echo -e "   🎯 Aplicación: ${GREEN}EN EJECUCIÓN${NC}"
+        else
+            echo -e "   ❌ Aplicación: ${RED}DETENIDA${NC}"
+        fi
+        echo ""
+        echo "Seleccione una opción:"
+        echo "1) Iniciar aplicación"
+        echo "2) Detener aplicación"
+        echo "3) Reiniciar aplicación"
+        echo "4) Reiniciar solo Backend"
+        echo "5) Reiniciar solo Frontend"
+        echo "6) Ver logs"
+        echo "7) Salir"
+        echo ""
+        read -p "Opción [1-7]: " choice
+        
+        case $choice in
+            1)
+                if [ "$APP_RUNNING" = true ]; then
+                    echo -e "${YELLOW}⚠️  La aplicación ya está en ejecución.${NC}"
+                else
+                    echo -e "${BLUE}>> Iniciando aplicación...${NC}"
+                    start_app
+                    echo -e "${GREEN}✅ Aplicación iniciada.${NC}"
+                fi
+                ;;
+            2)
+                if [ "$APP_RUNNING" = false ]; then
+                    echo -e "${YELLOW}⚠️  La aplicación ya está detenida.${NC}"
+                else
+                    echo -e "${BLUE}>> Deteniendo aplicación...${NC}"
+                    stop_services
+                    echo -e "${GREEN}✅ Aplicación detenida.${NC}"
+                    echo ""
+                    response=$(ask_question "¿Desea salir del menú?" "S")
+                    if [[ $response =~ ^[Ss]$ ]]; then
+                        echo -e "${GREEN}👋 Saliendo del menú interactivo.${NC}"
+                        return 0
+                    fi
+                fi
+                ;;
+            3)
+                echo -e "${BLUE}>> Reiniciando aplicación...${NC}"
+                stop_services
+                start_app
+                echo -e "${GREEN}✅ Aplicación reiniciada.${NC}"
+                ;;
+            4)
+                echo -e "${BLUE}>> Reiniciando Backend...${NC}"
+                stop_backend
+                start_backend
+                echo -e "${GREEN}✅ Backend reiniciado.${NC}"
+                ;;
+            5)
+                echo -e "${BLUE}>> Reiniciando Frontend...${NC}"
+                stop_frontend
+                start_frontend
+                echo -e "${GREEN}✅ Frontend reiniciado.${NC}"
+                ;;
+            6)
+                show_logs_menu
+                ;;
+            7)
+                echo -e "${GREEN}👋 Saliendo del menú interactivo.${NC}"
+                return 0
+                ;;
+            *)
+                echo -e "${RED}❌ Opción inválida. Por favor, elija una opción del 1 al 7.${NC}"
+                ;;
+        esac
+        
+        echo ""
+        read -p "Presione Enter para continuar..."
+    done
+}
+
+function show_logs_menu() {
+    echo ""
+    echo "Seleccione qué logs desea ver:"
+    echo "1) Backend (Docker)"
+    echo "2) Frontend (Electron)"
+    echo "3) Volver al menú principal"
+    read -p "Opción [1-2-3]: " log_choice
+    
+    case $log_choice in
+        1)
+            if [ "$BACKEND_RUNNING" = true ]; then
+                echo -e "${BLUE}>> Mostrando logs del Backend (Ctrl+C para salir)...${NC}"
+                $DOCKER_COMPOSE_CMD logs -f "$CONTAINER_NAME"
+            else
+                echo -e "${RED}❌ El Backend no está en ejecución.${NC}"
+            fi
+            ;;
+        2)
+            if [ "$FRONTEND_RUNNING" = true ]; then
+                echo -e "${BLUE}>> Mostrando logs del Frontend (Ctrl+C para salir)...${NC}"
+                # Buscar el archivo de log más reciente
+                LATEST_LOG=$(ls -t "$LOG_DIR"/frontend_*.log 2>/dev/null | head -1)
+                if [ -n "$LATEST_LOG" ]; then
+                    tail -f "$LATEST_LOG"
+                else
+                    echo -e "${YELLOW}⚠️  No se encontró archivo de log del Frontend.${NC}"
+                fi
+            else
+                echo -e "${RED}❌ El Frontend no está en ejecución.${NC}"
+            fi
+            ;;
+        3)
+            return 0
+            ;;
+        *)
+            echo -e "${RED}❌ Opción inválida.${NC}"
+            ;;
+    esac
 }
 
 function start_app() {
@@ -251,6 +434,7 @@ while [[ "$#" -gt 0 ]]; do
         -r|--restart) RESTART_MODE=true ;;
         -rf|--restart-frontend) RESTART_FRONTEND_MODE=true ;;
         -rb|--restart-backend) RESTART_BACKEND_MODE=true ;;
+        -i|--interactive) INTERACTIVE_MODE=true ;;
         -h|--help) show_usage; exit 0 ;;
         *) echo "Opción desconocida: $1"; show_usage; exit 1 ;;
     esac
@@ -261,6 +445,40 @@ done
 echo -e "${BLUE}===== rm-IAPrompter Launcher v${VERSION} =====${NC}"
 
 check_docker_compose
+
+# Verificar estado de la aplicación
+check_app_status
+
+# Modo interactivo: Si no se pasaron parámetros o se especificó --interactive
+if [ "$INTERACTIVE_MODE" = true ] || ([ "$#" -eq 0 ] && [ "$STOP_MODE" = false ] && [ "$RESTART_MODE" = false ] && [ "$RESTART_FRONTEND_MODE" = false ] && [ "$RESTART_BACKEND_MODE" = false ]); then
+    echo ""
+    if [ "$APP_RUNNING" = true ]; then
+        echo -e "${GREEN}🎯 La aplicación ya está en ejecución.${NC}"
+        interactive_menu
+    else
+        echo -e "${YELLOW}⚠️  La aplicación no está en ejecución.${NC}"
+        echo ""
+        response=$(ask_question "¿Desea iniciar la aplicación?" "S")
+        if [[ $response =~ ^[Ss]$ ]]; then
+            setup_security
+            start_app
+            echo -e "${GREEN}✅ Aplicación iniciada exitosamente.${NC}"
+            echo ""
+            response=$(ask_question "¿Desea acceder al menú interactivo?" "S")
+            if [[ $response =~ ^[Ss]$ ]]; then
+                # Actualizar estado después de iniciar
+                check_app_status
+                interactive_menu
+            fi
+        else
+            echo -e "${YELLOW}👋 Saliendo sin iniciar la aplicación.${NC}"
+            exit 0
+        fi
+    fi
+    exit 0
+fi
+
+# Modo de parámetros: Ejecutar según los parámetros pasados
 if [ "$RESTART_MODE" = true ]; then
     stop_services
 elif [ "$RESTART_FRONTEND_MODE" = true ] || [ "$RESTART_BACKEND_MODE" = true ]; then

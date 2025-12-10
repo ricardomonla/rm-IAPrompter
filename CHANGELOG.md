@@ -4,6 +4,22 @@ Todos los cambios notables en el proyecto **rm-IAPrompter** se documentarán en 
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.13] - 2025-12-10
+
+### **Añadido**
+
+* **Menú Interactivo:** Implementado menú interactivo con detección automática del estado de la aplicación.
+  * **Detección de Estado:** Función `check_app_status()` que verifica si el backend (Docker) y frontend (Electron) están en ejecución.
+  * **Flujo Inteligente:** Si la aplicación no está en ejecución, pregunta si desea iniciarla. Si ya está en ejecución, muestra directamente el menú interactivo.
+  * **Opciones del Menú:** Iniciar, Detener, Reiniciar, Reiniciar solo Backend/Frontend, Ver logs, Salir.
+  * **Preguntas con Opciones Predeterminadas:** Implementada función `ask_question()` que muestra opciones predeterminadas (S/n) para mejor experiencia de usuario.
+  * **Compatibilidad con Parámetros:** Se mantienen todas las funcionalidades existentes con parámetros de línea de comandos.
+
+### **Cambiado**
+
+* **Versionado Individual:** Incrementada versión de `app-run.sh` a v1.0.7.
+* **Interfaz de Usuario:** Mejorada la experiencia de usuario con mensajes claros y opciones predeterminadas.
+
 ## [3.1.12] - 2025-12-10
 
 ### **Cambiado**
