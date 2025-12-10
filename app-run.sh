@@ -3,8 +3,8 @@
 #  -----------------------------------------------------------------------------
 #  Project:     rm-IAPrompter
 #  File:        app-run.sh
-#  Version:     v1.0.5
-#  Date:        2025-12-07
+#  Version:     v1.0.6
+#  Date:        2025-12-10
 #  Author:      Lic. Ricardo MONLA
 #  Email:       rmonla@gmail.com
 #  Description: Script para ejecutar la aplicación en un contenedor Docker.
@@ -20,7 +20,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # Leer versión desde archivo centralizado
-VERSION=$(node -e "const v=require('./app-version.js'); console.log(v.APP_VERSION);")
+VERSION=$(node -e "const v=require('./app-data/app-version.js'); console.log(v.APP_VERSION);")
 
 # Colores
 GREEN='\033[0;32m'

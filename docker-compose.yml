@@ -1,8 +1,8 @@
 #  -----------------------------------------------------------------------------
 #  Project:     rm-IAPrompter
 #  File:        docker-compose.yml
-#  Version:     1.0.2
-#  Date:        2025-12-06
+#  Version:     1.0.3
+#  Date:        2025-12-10
 #  Author:      Lic. Ricardo MONLA
 #  Email:       rmonla@gmail.com
 #  Description: Configuración de Docker Compose para el backend.
@@ -19,7 +19,7 @@ services:
       - /proc:/host/proc:ro
 
       # Código en vivo (opcional, para desarrollo)
-      - ./app-flask.py:/app/app.py
+      - ./app-data/app-flask.py:/app/app.py
 
       # Datos persistentes
       - ./app-data:/app/data

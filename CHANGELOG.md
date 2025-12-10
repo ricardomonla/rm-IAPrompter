@@ -4,6 +4,15 @@ Todos los cambios notables en el proyecto **rm-IAPrompter** se documentarán en 
 
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/), y este proyecto se adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.12] - 2025-12-10
+
+### **Cambiado**
+
+* **Reorganización de Archivos:** Movidos `app-flask.py` y `app-version.js` al directorio `app-data/` para centralizar todos los archivos de datos y configuración.
+  * **Actualización de Referencias:** Modificados `app-run.sh`, `docker-compose.yml` y `Dockerfile` para reflejar las nuevas ubicaciones de los archivos.
+  * **Versionado Individual:** Incrementadas versiones en encabezados de archivos modificados (`app-run.sh` v1.0.6, `docker-compose.yml` 1.0.3, `Dockerfile` 1.0.2).
+  * **Compatibilidad Mantenida:** La aplicación continúa funcionando correctamente con la nueva estructura de directorios.
+
 ## [3.1.11] - 2025-12-07
 
 ### **Mejorado**

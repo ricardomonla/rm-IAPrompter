@@ -1,8 +1,8 @@
 #  -----------------------------------------------------------------------------
 #  Project:     rm-IAPrompter
 #  File:        Dockerfile
-#  Version:     1.0.1
-#  Date:        2025-12-06
+#  Version:     1.0.2
+#  Date:        2025-12-10
 #  Author:      Lic. Ricardo MONLA
 #  Email:       rmonla@gmail.com
 #  Description: Dockerfile para el contenedor del backend Flask.
@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --no-cache-dir flask google-generativeai cryptography
 
 # Copiamos el código
-COPY app-flask.py app.py
+COPY app-data/app-flask.py app.py
 
 EXPOSE 5000
 
